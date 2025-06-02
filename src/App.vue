@@ -4,9 +4,7 @@
 
 <template>
   <div class="virtual-exhibition">
-    <header class="exhibition-header">
-      <h1>虚拟展厅</h1>
-    </header>
+    
     
     <main class="exhibition-content">
       <router-view></router-view>
@@ -27,6 +25,15 @@
   padding: 1rem;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.home-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.home-link:hover h1 {
+  color: #666;
 }
 
 .exhibition-content {
