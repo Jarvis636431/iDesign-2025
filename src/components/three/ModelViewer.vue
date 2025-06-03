@@ -3,6 +3,7 @@ import { onMounted, onBeforeUnmount, ref } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 const props = defineProps({
   modelUrl: {
@@ -64,8 +65,14 @@ const initThree = () => {
   directionalLight.position.set(1, 1, 1);
   scene.add(directionalLight);
 
-  // 加载3D模型
+  // 配置 GLTFLoader 支持 Draco
   const loader = new GLTFLoader();
+  const dracoLoader = new DRACOLoader();
+  // 推荐使用 three.js 官方 CDN
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+  loader.setDRACOLoader(dracoLoader);
+
+  // 加载3D模型
   loader.load(
     props.modelUrl,
     (gltf) => {
