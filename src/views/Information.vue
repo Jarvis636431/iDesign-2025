@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useInformationStore } from '../stores/information'
+import ModelViewer from '../components/three/ModelViewer.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -43,15 +44,12 @@ const goToExhibit = (direction) => {
         <div class="exhibit-content">
           <div class="exhibit-image">
             <!-- 图片展示 -->
-            <img v-if="exhibitInfo.imageUrl" :src="exhibitInfo.imageUrl" :alt="exhibitInfo.title">
-            <!-- 视频展示（示例） -->
-            <!--
-            <video v-if="exhibitInfo.videoUrl" :src="exhibitInfo.videoUrl" controls></video>
-            -->
-            <!-- 3D模型展示（示例） -->
-            <!--
-            <model-viewer v-if="exhibitInfo.modelUrl" :src="exhibitInfo.modelUrl" auto-rotate camera-controls></model-viewer>
-            -->
+            <img v-if="exhibitInfo.imageUrl && !exhibitInfo.modelUrl" 
+                 :src="exhibitInfo.imageUrl" 
+                 :alt="exhibitInfo.title">
+            <!-- 3D模型展示 -->
+            <ModelViewer v-if="exhibitInfo.modelUrl" 
+                        :modelUrl="exhibitInfo.modelUrl" />
           </div>
           <div class="exhibit-details">
             <h1>

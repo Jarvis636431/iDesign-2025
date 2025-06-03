@@ -5,13 +5,15 @@ export const useInformationStore = defineStore('information', {
     exhibits: [
       {
         id: 1,
-        title: '展品一',
-        description: '这是第一个展品的详细描述',
-        imageUrl: '/path/to/image1.jpg',
+        title: '数字展品',
+        description: '这是一个3D展示的数字艺术作品，展现了现代科技与艺术的结合。观众可以通过交互方式从不同角度欣赏这件作品。',
+        modelUrl: '/public/models/chuxianzhe_t.glb', // 这里需要替换为实际的3D模型文件路径
+        type: '3d',
         details: {
-          author: '作者A',
-          year: '2024',
-          medium: '油画'
+          author: '数字艺术家A',
+          year: '2025',
+          medium: '数字雕塑',
+          teacher: '指导教师A'
         }
       },
       {
