@@ -15,7 +15,26 @@ const container = ref(null);
 let scene, camera, renderer, controls;
 
 // 初始化Three.js场景
+// 清理现有场景
+const cleanupScene = () => {
+  if (scene) {
+    while(scene.children.length > 0) {
+      scene.remove(scene.children[0]);
+    }
+  }
+  if (renderer && container.value) {
+    container.value.removeChild(renderer.domElement);
+    renderer.dispose();
+  }
+  if (controls) {
+    controls.dispose();
+  }
+};
+
 const initThree = () => {
+  // 如果已存在场景，先清理
+  cleanupScene();
+  
   scene = new THREE.Scene();
   
   // 设置相机
@@ -95,6 +114,15 @@ const handleResize = () => {
   }
 };
 
+import { watch } from 'vue';
+
+// 监听 modelUrl 的变化
+watch(() => props.modelUrl, () => {
+  if (container.value) {
+    initThree();
+  }
+}, { immediate: false });
+
 onMounted(() => {
   initThree();
   animate();
@@ -103,12 +131,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize);
-  if (renderer) {
-    renderer.dispose();
-  }
-  if (controls) {
-    controls.dispose();
-  }
+  cleanupScene();
 });
 </script>
 

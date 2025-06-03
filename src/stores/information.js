@@ -7,7 +7,7 @@ export const useInformationStore = defineStore('information', {
         id: 1,
         title: '数字展品',
         description: '这是一个3D展示的数字艺术作品，展现了现代科技与艺术的结合。观众可以通过交互方式从不同角度欣赏这件作品。',
-        modelUrl: '/public/models/chuxianzhe_t.glb', // 这里需要替换为实际的3D模型文件路径
+        modelUrl: '/models/chuxianzhe_t.glb',
         type: '3d',
         details: {
           author: '数字艺术家A',
@@ -20,7 +20,8 @@ export const useInformationStore = defineStore('information', {
         id: 2,
         title: '展品二',
         description: '这是第二个展品的详细描述',
-        imageUrl: '/path/to/image2.jpg',
+        type: '3d',
+        modelUrl: '/public/models/cimushouzhong_w_l.glb', // 这里需要替换为实际的3D模型文件路径
         details: {
           author: '作者B',
           year: '2025',
