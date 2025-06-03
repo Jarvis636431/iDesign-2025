@@ -4,6 +4,7 @@
 
 <template>
     <main class="exhibition-content">
+      <router-link to="/demo" style="position: absolute; top: 20px; right: 40px; z-index: 10; font-size: 18px; color: #2FA3B0;">Demo页面</router-link>
       <router-view></router-view>
     </main>
 </template>
