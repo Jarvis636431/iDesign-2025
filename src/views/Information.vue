@@ -60,14 +60,18 @@ const exhibitInfo = computed(() => {
       imageUrl = fullUrl(item.more.thumbnail)
     }
   }
-  console.log('exhibitInfo computed:', { imageUrl, videoUrl })
+  // 处理所有作者
+  let authors = []
+  if (Array.isArray(item.more?.authors)) {
+    authors = item.more.authors.map(a => a.zh_names).filter(Boolean)
+  }
   return {
     title: item.post_title,
     description: item.intro_zh,
     imageUrl,
     videoUrl,
     details: {
-      author: item.more?.authors?.[0]?.zh_names || '',
+      authors, // 数组
       teacher: item.tutors_zh || '',
       year: '',
       medium: ''
@@ -166,7 +170,15 @@ const goToExhibit = (direction) => {
                 {{ exhibitInfo.description }}
               </div>
               <div class="desc-footer">
-                <span>作者：{{ exhibitInfo.details.author }}</span>
+                <span>
+                  作者：
+                  <template v-if="Array.isArray(exhibitInfo.details.authors) && exhibitInfo.details.authors.length">
+                    {{ exhibitInfo.details.authors.join('、') }}
+                  </template>
+                  <template v-else>
+                    无
+                  </template>
+                </span>
                 <span class="footer-divider">|</span>
                 <span>指导教师：{{ exhibitInfo.details.teacher || '无' }}</span>
               </div>
