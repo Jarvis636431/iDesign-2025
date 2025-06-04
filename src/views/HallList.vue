@@ -7,13 +7,17 @@
       <div v-for="hall in halls" :key="hall.id" class="hall-card" @click="goFirstExhibit(hall)">
         <div class="hall-card-img-wrap">
           <img
-            v-if="hall.cover"
-            :src="hall.cover"
+            v-if="hall.logo"
+            :src="hall.logo"
             class="hall-card-img"
             @error="e => e.target.src = defaultCover"
-            alt="展厅封面"
+            alt="展厅LOGO"
           />
-          <div v-else class="hall-card-img-placeholder">无封面</div>
+          <div v-else class="hall-card-img-placeholder">无LOGO</div>
+        </div>
+        <div class="hall-card-icon-border">
+          <img v-if="hall.icon" :src="hall.icon" class="hall-card-icon" alt="icon" />
+          <img v-if="hall.border" :src="hall.border" class="hall-card-border" alt="border" />
         </div>
         <h2 class="hall-card-title">{{ hall.name }}</h2>
         <p class="hall-card-desc">{{ hall.desc }}</p>
@@ -32,6 +36,7 @@ const router = useRouter()
 const halls = ref([])
 const loading = ref(true)
 const error = ref('')
+const defaultCover = ''
 
 onMounted(async () => {
   try {
@@ -41,13 +46,11 @@ onMounted(async () => {
       const res = await axios.get('http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists', {
         params: { per_page: 1, current_page: 1, category_id: hall.id }
       })
-      let cover = ''
       let firstExhibitId = null
       if (res.data && res.data.data && res.data.data.length > 0) {
-        cover = 'http://idesign.tju.edu.cn/' + res.data.data[0].more.thumbnail
         firstExhibitId = res.data.data[0].id
       }
-      return { ...hall, cover: cover || hall.cover, firstExhibitId }
+      return { ...hall, firstExhibitId }
     }))
     halls.value = results
   } catch (e) {
@@ -58,9 +61,19 @@ onMounted(async () => {
 })
 
 function goFirstExhibit(hall) {
-  if (hall.firstExhibitId) {
-    router.push(`/information/${hall.firstExhibitId}`)
-  }
+  axios.get('http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists', {
+    params: { per_page: 1, current_page: 1, category_id: hall.id }
+  }).then(res => {
+    let firstExhibitId = null
+    if (res.data && res.data.data && res.data.data.length > 0) {
+      firstExhibitId = res.data.data[0].id
+    }
+    // 跳转到information页面，带上展厅id和展品id
+    router.push(`/information/${firstExhibitId || ''}?hallId=${hall.id}`)
+  }).catch(() => {
+    // 请求失败也跳转，只带hallId
+    router.push(`/information/?hallId=${hall.id}`)
+  })
 }
 </script>
 
@@ -108,7 +121,7 @@ function goFirstExhibit(hall) {
 }
 .hall-card-img-wrap {
   width: 100%;
-  height: 180px;
+  height: 120px;
   border-radius: 0.7rem;
   overflow: hidden;
   background: #eaf6fb;
@@ -120,13 +133,30 @@ function goFirstExhibit(hall) {
 .hall-card-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 0.7rem;
   transition: opacity 0.2s;
+  background: #fff;
 }
 .hall-card-img-placeholder {
   color: #bbb;
   font-size: 1.1rem;
+}
+.hall-card-icon-border {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.hall-card-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.hall-card-border {
+  width: 60px;
+  height: 32px;
+  object-fit: contain;
 }
 .hall-card-title {
   font-size: 1.3rem;

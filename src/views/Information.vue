@@ -3,12 +3,14 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useInformationStore } from '../stores/information'
 import ModelViewer from '../components/three/ModelViewer.vue'
+import { halls as hallConfigs } from '@/constants/halls'
 
 const route = useRoute()
 const router = useRouter()
 const store = useInformationStore()
 
-const currentId = computed(() => parseInt(route.params.id) || 1)
+const hallId = computed(() => parseInt(route.query.hallId))
+const currentId = computed(() => parseInt(route.params.id))
 const totalExhibits = computed(() => store.getTotalExhibits)
 const exhibitInfo = computed(() => store.getExhibitById(currentId.value) || {
   title: '加载中...',
@@ -17,6 +19,9 @@ const exhibitInfo = computed(() => store.getExhibitById(currentId.value) || {
   details: { author: '', year: '', medium: '' }
 })
 
+const hallInfo = computed(() => hallConfigs.find(h => h.id === hallId.value))
+const hallColor = computed(() => hallInfo.value?.color || '#2FA3B0')
+
 const goToExhibit = (direction) => {
   let newId
   if (direction === 'next') {
@@ -24,45 +29,41 @@ const goToExhibit = (direction) => {
   } else {
     newId = currentId.value > 1 ? currentId.value - 1 : totalExhibits.value
   }
-  router.push(`/information/${newId}`)
+  router.push(`/information/${newId}?hallId=${hallId.value}`)
 }
 </script>
 
 <template>
   <div class="information-page">
     <div class="background-blur"></div>
-
-    <div class="navigation-container">
+    <div v-if="!currentId || isNaN(currentId)">
+      <div style="text-align:center;padding:4rem;font-size:1.5rem;color:#888;">无效的展品ID</div>
+    </div>
+    <div v-else class="navigation-container">
       <button class="nav-button prev" @click="goToExhibit('prev')">
         <svg viewBox="0 0 24 24" class="arrow-icon">
           <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
         </svg>
       </button>
-
       <div class="exhibit-container">
-        <img class="border-image" src="/src/assets/images/borders/border-blue.png" alt="边框" />
+        <img v-if="hallInfo && hallInfo.border" class="border-image" :src="hallInfo.border" alt="边框" />
         <div class="exhibit-content">
           <div class="exhibit-image">
-            <!-- 图片展示 -->
-            <img v-if="exhibitInfo.imageUrl && !exhibitInfo.modelUrl" 
-                 :src="exhibitInfo.imageUrl" 
-                 :alt="exhibitInfo.title">
-            <!-- 3D模型展示 -->
-            <ModelViewer v-if="exhibitInfo.modelUrl" 
-                        :modelUrl="exhibitInfo.modelUrl" />
+            <img v-if="exhibitInfo.imageUrl && !exhibitInfo.modelUrl" :src="exhibitInfo.imageUrl" :alt="exhibitInfo.title">
+            <ModelViewer v-if="exhibitInfo.modelUrl" :modelUrl="exhibitInfo.modelUrl" />
           </div>
           <div class="exhibit-details">
             <h1>
-              <img class="hall-icon" src="/src/assets/images/icons/icon-blue.png" alt="icon" />
+              <img v-if="hallInfo && hallInfo.icon" class="hall-icon" :src="hallInfo.icon" alt="icon" />
               <span class="hall-text-group">
-                <span class="hall-text">启风山谷</span>
-                <span class="hall-subtext">FIRST WHISPER</span>
+                <span class="hall-text" :style="{ color: hallColor }">{{ hallInfo?.name || '' }}</span>
+                <span class="hall-subtext" :style="{ color: hallColor }">{{ hallInfo?.enName || '' }}</span>
               </span>
             </h1>
             <div class="desc-section">
               <div class="desc-header">
                 <span class="desc-title">{{ exhibitInfo.title }}</span>
-                <button class="share-btn">
+                <button class="share-btn" :style="{ backgroundColor: hallColor }">
                   <img src="/src/assets/images/icons/share.png" alt="分享" />
                 </button>
               </div>
@@ -78,7 +79,6 @@ const goToExhibit = (direction) => {
           </div>
         </div>
       </div>
-
       <button class="nav-button next" @click="goToExhibit('next')">
         <svg viewBox="0 0 24 24" class="arrow-icon">
           <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
@@ -255,18 +255,16 @@ const goToExhibit = (direction) => {
   text-align: right;
   font-size: 24px;
   font-weight: bold;
-  color: #2FA3B0;
 }
 
 .hall-subtext {
   font-size: 16px;
-  color: #2FA3B0;
   font-weight: normal;
   text-align: right;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: -0.5rem; /* 向上移动子标题 */
+  margin-top: -0.5rem;
 }
 
 .description {
