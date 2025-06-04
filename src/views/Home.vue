@@ -17,7 +17,7 @@ onMounted(() => {
       <div class="section">
         <h2>展厅导航</h2>
         <div class="items">
-          <router-link to="/halls" class="item">
+          <router-link to="/2025/halls" class="item">
             查看所有展厅
           </router-link>
         </div>
@@ -27,7 +27,7 @@ onMounted(() => {
       <div class="section">
         <h2>展品信息</h2>
         <div class="items">
-          <router-link to="/information/1" class="item special">
+          <router-link to="/2025/information/1" class="item special">
             浏览展品信息
           </router-link>
         </div>

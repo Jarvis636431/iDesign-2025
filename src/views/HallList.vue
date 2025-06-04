@@ -69,10 +69,10 @@ function goFirstExhibit(hall) {
       firstExhibitId = res.data.data[0].id
     }
     // 跳转到information页面，带上展厅id和展品id
-    router.push(`/information/${firstExhibitId || ''}?hallId=${hall.id}`)
+    router.push(`/2025/information/${firstExhibitId || ''}?hallId=${hall.id}`)
   }).catch(() => {
     // 请求失败也跳转，只带hallId
-    router.push(`/information/?hallId=${hall.id}`)
+    router.push(`/2025/information/?hallId=${hall.id}`)
   })
 }
 </script>
