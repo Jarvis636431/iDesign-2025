@@ -75,15 +75,27 @@ watch(() => props.slides, (newSlides, oldSlides) => {
         <template v-if="currentSlide.type === 'model'">
           <ModelViewer
             :modelUrl="currentSlide.src"
-            :key="currentSlideIndex + '-' + currentSlide.src + '-model'" /* More specific key */
+            :key="currentSlideIndex + '-' + currentSlide.src + '-model'"
             style="width:100%;height:100%;border-radius:24px;overflow:hidden;"
-          />
+          ></ModelViewer>
         </template>
         <template v-else-if="currentSlide.type === 'video'">
-          <video :src="currentSlide.src" controls class="carousel-video" @error="() => alert('视频加载失败！\n'+currentSlide.src)" :key="currentSlideIndex + '-' + currentSlide.src + '-video'"></video>
+          <video 
+            :src="currentSlide.src" 
+            controls 
+            class="carousel-video" 
+            @error="() => alert('视频加载失败！\n'+currentSlide.src)" 
+            :key="currentSlideIndex + '-' + currentSlide.src + '-video'"
+          ></video>
         </template>
         <template v-else-if="currentSlide.type === 'image'">
-          <img :src="currentSlide.src" :alt="'Slide ' + currentSlideIndex" class="carousel-image" @error="() => alert('图片加载失败！\n'+currentSlide.src)" :key="currentSlideIndex + '-' + currentSlide.src + '-image'" />
+          <img 
+            :src="currentSlide.src" 
+            :alt="'Slide ' + currentSlideIndex" 
+            class="carousel-image" 
+            @error="() => alert('图片加载失败！\n'+currentSlide.src)" 
+            :key="currentSlideIndex + '-' + currentSlide.src + '-image'"
+          >
         </template>
         <div v-else class="slide-type-unknown">
           未知类型的幻灯片: {{ currentSlide.type }}
@@ -97,7 +109,7 @@ watch(() => props.slides, (newSlides, oldSlides) => {
     <div class="slide-indicators" v-if="totalSlides > 1">
       <span
         v-for="(slide, index) in slides"
-        :key="'dot-' + index" /* Key for v-for */
+        :key="'dot-' + index"
         :class="['slide-dot', { active: index === currentSlideIndex }]"
         @click="goToSlide(index)"
         :style="{ background: index === currentSlideIndex ? hallColor : '#ccc' }"

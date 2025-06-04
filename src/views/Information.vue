@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import CustomCarousel from '@/components/slides/CustomCarousel.vue' // Import CustomCarousel
+import AuthorCards from '@/components/exhibition/AuthorCards.vue'
 import { halls as hallConfigs } from '@/constants/halls'
 import axios from 'axios'
 import { exhibitModels } from '@/constants/exhibitModels'
@@ -63,7 +64,11 @@ const exhibitInfo = computed(() => {
   // 处理所有作者
   let authors = []
   if (Array.isArray(item.more?.authors)) {
-    authors = item.more.authors.map(a => a.zh_names).filter(Boolean)
+    authors = item.more.authors.map(author => ({
+      zh_names: author.zh_names,
+      grade: author.grade || '未知年级',
+      avatar: author.avatar || null // 如果有头像的话
+    }))
   }
   return {
     title: item.post_title,
@@ -71,7 +76,7 @@ const exhibitInfo = computed(() => {
     imageUrl,
     videoUrl,
     details: {
-      authors, // 数组
+      authors,
       teacher: item.tutors_zh || '',
       year: '',
       medium: ''
@@ -193,17 +198,13 @@ const exhibitSlides = computed(() => {
                 {{ exhibitInfo.description }}
               </div>
               <div class="desc-footer">
-                <span>
-                  作者：
-                  <template v-if="Array.isArray(exhibitInfo.details.authors) && exhibitInfo.details.authors.length">
-                    {{ exhibitInfo.details.authors.join('、') }}
-                  </template>
-                  <template v-else>
-                    无
-                  </template>
-                </span>
-                <span class="footer-divider">|</span>
-                <span>指导教师：{{ exhibitInfo.details.teacher || '无' }}</span>
+                <div class="authors-section">
+                  <AuthorCards :authors="exhibitInfo.details.authors || []" />
+                </div>
+                <div class="teacher-section">
+                  <div class="section-label">指导教师</div>
+                  <div class="teacher-name">{{ exhibitInfo.details.teacher || '无' }}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -244,7 +245,7 @@ const exhibitSlides = computed(() => {
   align-items: center;
   justify-content: center;
   width: 100%;
-  gap: 2vw;
+  gap: 1vw; /* 减小间距，从 2vw 改为 1vw */
   position: relative;
   z-index: 1;
 }
@@ -253,10 +254,10 @@ const exhibitSlides = computed(() => {
   position: relative;
   background: white;
   border-radius: 50px;
-  max-width: 1100px;
-  width: 70vw;
-  min-width: 800px;
-  min-height: 600px;
+  max-width: 1300px; /* 增加最大宽度，从 1100px 改为 1300px */
+  width: 80vw;  /* 增加宽度比例，从 70vw 改为 80vw */
+  min-width: 900px; /* 增加最小宽度，从 800px 改为 900px */
+  min-height: 680px; /* 增加最小高度，从 600px 改为 680px */
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -293,13 +294,13 @@ const exhibitSlides = computed(() => {
 .nav-button {
   background: none;
   border: none;
-  padding: 1rem;
+  padding: 0.8rem; /* 减小内边距，从 1rem 改为 0.8rem */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 48px; /* 适当调整按钮大小，从 56px 改为 48px */
+  height: 48px;
   border-radius: 50%;
   background-color: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -312,8 +313,8 @@ const exhibitSlides = computed(() => {
 }
 
 .arrow-icon {
-  width: 32px;
-  height: 32px;
+  width: 28px; /* 适当调整图标大小，从 32px 改为 28px */
+  height: 28px;
   fill: #4a90e2;
 }
 
@@ -324,12 +325,12 @@ const exhibitSlides = computed(() => {
   background: #f8f8f8;
   border-radius: 32px;
   box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
-  width: 480px;
-  height: 480px;
-  min-width: 320px;
-  min-height: 320px;
-  max-width: 520px;
-  max-height: 520px;
+  width: 580px; /* 增加宽度，从 480px 改为 580px */
+  height: 580px; /* 增加高度，从 480px 改为 580px */
+  min-width: 360px; /* 增加最小宽度，从 320px 改为 360px */
+  min-height: 360px; /* 增加最小高度，从 320px 改为 360px */
+  max-width: 620px; /* 增加最大宽度，从 520px 改为 620px */
+  max-height: 620px; /* 增加最大高度，从 520px 改为 620px */
   margin: 0 auto;
   position: relative;
   flex-shrink: 0;
@@ -379,28 +380,34 @@ const exhibitSlides = computed(() => {
 }
 
 .desc-section {
-  margin-top: 1.5rem;
+  flex: 1 1 auto; /* 可伸缩，占据剩余空间 */
+  overflow-y: auto; /* 内容过多时可滚动 */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 0;
+  padding-right: 0.5rem;
 }
 
 .desc-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
 }
 
 .desc-title {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   font-weight: bold;
+  color: #333;
 }
 
 .share-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
   border-radius: 50%;
   box-sizing: border-box;
   overflow: hidden;
@@ -408,6 +415,7 @@ const exhibitSlides = computed(() => {
   border: none;
   outline: none;
   padding: 0;
+  margin-left: 1rem;
 }
 
 .share-btn:focus {
@@ -415,47 +423,55 @@ const exhibitSlides = computed(() => {
 }
 
 .share-btn img {
-  width: 18px;
-  height: 18px;
+  width: 20px;
   object-fit: contain;
 }
 
 .desc-content {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: #666;
   line-height: 1.6;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .desc-footer {
-  margin-top: 1rem;
-  font-size: 1rem;
-  color: #999;
+  flex: 0 0 auto;
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.5rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.5rem 0;
+  margin: 0;
+  border-top: 1px solid #eee;
+  gap: 2rem;
 }
 
-.footer-divider {
-  height: 12px;
-  width: 1px;
-  background: #ddd;
+.authors-section,
+.teacher-section {
+  flex: 1;
+}
+
+
+.teacher-name {
+  font-size: 1rem;
+  color: #333;
+  font-weight: 500;
+  justify-self: end;
 }
 
 .hall-info {
+  flex: 0 0 auto; /* 不会被压缩 */
   display: flex;
   align-items: center;
-  gap: rem;
+  gap: 1rem;
   justify-content: space-between;
+  margin-bottom: 4rem;
 }
 
 .hall-icon {
-  width: 40px;
-  height: 40px;
-  max-width: 40px;
-  max-height: 40px;
+  width: 60px;
+  height: 60px;
   vertical-align: middle;
-  margin-right: 0.6em;
 }
 
 .hall-text-group {
@@ -464,29 +480,28 @@ const exhibitSlides = computed(() => {
   justify-content: center;
   align-items: flex-end; /* 右对齐 */
   vertical-align: middle;
+  padding-right: 0.6rem; /* 右侧留白 */
 }
 
 .hall-text {
   font-size: 1.4rem;
   font-weight: bold;
-  color: #333;
 }
 .hall-subtext {
   font-size: 1.1rem;
-  color: #666;
 }
 
 .exhibit-details {
-  max-height: 480px;
-  overflow-y: auto;
+  max-height: 580px; /* 与左侧图片区域高度一致 */
   min-width: 0;
   min-height: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  height: 100%;
+  position: relative;
+  margin-left: -1rem; /* 向左偏移，和图片区域对齐 */
 }
-
 .slide-arrow {
   display: none;
 }
