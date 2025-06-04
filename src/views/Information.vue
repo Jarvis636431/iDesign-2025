@@ -82,7 +82,8 @@ const exhibitInfo = computed(() => {
 const modelFile = computed(() => {
   if (!currentId.value) return ''
   const file = exhibitModels[currentId.value]
-  return file ? `/models/${file}` : ''
+  // 适配 Vite base 配置，确保开发和生产都能加载模型
+  return file ? import.meta.env.BASE_URL + 'models/' + file : ''
 })
 
 function fullUrl(path) {
