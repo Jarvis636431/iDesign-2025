@@ -163,7 +163,7 @@ const goToExhibit = (direction) => {
               <div class="desc-header">
                 <span class="desc-title">{{ exhibitInfo.title }}</span>
                 <button class="share-btn" :style="{ backgroundColor: hallColor }">
-                  <img src="/src/assets/images/icons/share.png" alt="分享" />
+                  <img src="/assets/images/icons/share.png" alt="分享" />
                 </button>
               </div>
               <div class="desc-content">
@@ -210,7 +210,7 @@ const goToExhibit = (direction) => {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: url('/src/assets/images/background.jpg') no-repeat center center;
+  background: url('/assets/images/background.jpg') no-repeat center center;
   background-size: cover;
   filter: blur(16px);
   pointer-events: none;

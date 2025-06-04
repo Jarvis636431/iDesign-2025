@@ -1,5 +1,3 @@
-import { iconDark } from "naive-ui";
-
 // 展厅基础信息配置，可全局复用
 export const halls = [
   {
@@ -11,9 +9,9 @@ export const halls = [
     desc: '启风山谷展厅简介',
     enDesc: 'Introduction of First Whisper Hall',
     color: '#2FA3B0',
-    icon: '/src/assets/images/halls/hall-icons/icon73.png',
-    logo: '/src/assets/images/halls/hall-logos/hall-73.png',
-    border: '/src/assets/images/halls/hall-borders/border73.png',
+    icon: import.meta.env.BASE_URL + 'assets/images/halls/hall-icons/icon73.png',
+    logo: import.meta.env.BASE_URL + 'assets/images/halls/hall-logos/hall-73.png',
+    border: import.meta.env.BASE_URL + 'assets/images/halls/hall-borders/border73.png',
   },
   {
     id: 74,
@@ -24,9 +22,9 @@ export const halls = [
     desc: '驰风原野展厅简介',
     enDesc: 'Introduction of Unveiled Horizons Hall',
     color: '#6CB130',
-    icon: '/src/assets/images/halls/hall-icons/icon74.png',
-    logo: '/src/assets/images/halls/hall-logos/hall-74.png',
-    border: '/src/assets/images/halls/hall-borders/border74.png',
+    icon: import.meta.env.BASE_URL + 'assets/images/halls/hall-icons/icon74.png',
+    logo: import.meta.env.BASE_URL + 'assets/images/halls/hall-logos/hall-74.png',
+    border: import.meta.env.BASE_URL + 'assets/images/halls/hall-borders/border74.png',
   },
   {
     id: 75,
@@ -37,9 +35,9 @@ export const halls = [
     desc: '融和万象展厅简介',
     enDesc: 'Introduction of Fusion Cosmos Hall',
     color: '#F5A623',
-    icon: '/src/assets/images/halls/hall-icons/icon75.png',
-    logo: '/src/assets/images/halls/hall-logos/hall-75.png',
-    border: '/src/assets/images/halls/hall-borders/border75.png',
+    icon: import.meta.env.BASE_URL + 'assets/images/halls/hall-icons/icon75.png',
+    logo: import.meta.env.BASE_URL + 'assets/images/halls/hall-logos/hall-75.png',
+    border: import.meta.env.BASE_URL + 'assets/images/halls/hall-borders/border75.png',
   },
   {
     id: 76,
@@ -50,9 +48,9 @@ export const halls = [
     desc: '掠泽听声展厅简介',
     enDesc: 'Introduction of Infinite Colors Hall',
     color: '#7B61FF',
-    icon: '/src/assets/images/halls/hall-icons/icon76.png',
-    logo: '/src/assets/images/halls/hall-logos/hall-76.png',
-    border: '/src/assets/images/halls/hall-borders/border76.png',
+    icon: import.meta.env.BASE_URL + 'assets/images/halls/hall-icons/icon76.png',
+    logo: import.meta.env.BASE_URL + 'assets/images/halls/hall-logos/hall-76.png',
+    border: import.meta.env.BASE_URL + 'assets/images/halls/hall-borders/border76.png',
   },
   {
     id: 77,
@@ -63,8 +61,8 @@ export const halls = [
     desc: '终风化木展厅简介',
     enDesc: 'Introduction of Rising Stars Hall',
     color: '#FF6F61',
-    icon: '/src/assets/images/halls/hall-icons/icon77.png',
-    logo: '/src/assets/images/halls/hall-logos/hall-77.png',
-    border: '/src/assets/images/halls/hall-borders/border77.png',
+    icon: import.meta.env.BASE_URL + 'assets/images/halls/hall-icons/icon77.png',
+    logo: import.meta.env.BASE_URL + 'assets/images/halls/hall-logos/hall-77.png',
+    border: import.meta.env.BASE_URL + 'assets/images/halls/hall-borders/border77.png',
   }
 ]
