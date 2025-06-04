@@ -1,42 +1,104 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useInformationStore } from '../stores/information'
 import ModelViewer from '../components/three/ModelViewer.vue'
 import { halls as hallConfigs } from '@/constants/halls'
+import axios from 'axios'
 
 const route = useRoute()
 const router = useRouter()
-const store = useInformationStore()
 
 const hallId = computed(() => parseInt(route.query.hallId))
 const currentId = computed(() => parseInt(route.params.id))
-const totalExhibits = computed(() => store.getTotalExhibits)
-const exhibitInfo = computed(() => store.getExhibitById(currentId.value) || {
-  title: '加载中...',
-  description: '',
-  imageUrl: '',
-  details: { author: '', year: '', medium: '' }
-})
-
 const hallInfo = computed(() => hallConfigs.find(h => h.id === hallId.value))
 const hallColor = computed(() => hallInfo.value?.color || '#2FA3B0')
 
-const goToExhibit = (direction) => {
-  let newId
-  if (direction === 'next') {
-    newId = currentId.value < totalExhibits.value ? currentId.value + 1 : 1
-  } else {
-    newId = currentId.value > 1 ? currentId.value - 1 : totalExhibits.value
+const exhibits = ref([])
+const loading = ref(false)
+const error = ref('')
+
+// 获取展厅所有展品
+async function fetchExhibits() {
+  if (!hallId.value) return
+  loading.value = true
+  error.value = ''
+  try {
+    const res = await axios.get('http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists', {
+      params: { per_page: 9999, current_page: 1, category_id: hallId.value }
+    })
+    console.log('接口返回数据:', res.data)
+    exhibits.value = res.data?.data || []
+    console.log('exhibits.value:', exhibits.value)
+  } catch (e) {
+    error.value = '展品数据加载失败'
+    exhibits.value = []
+  } finally {
+    loading.value = false
   }
-  router.push(`/information/${newId}?hallId=${hallId.value}`)
+}
+
+onMounted(fetchExhibits)
+watch(hallId, fetchExhibits)
+
+const exhibitInfo = computed(() => {
+  if (!currentId.value || !Array.isArray(exhibits.value)) return null
+  // id 强制转为数字，避免类型不一致导致找不到
+  const item = exhibits.value.find(e => Number(e.id) === Number(currentId.value))
+  if (!item) return null
+  // 优先展示视频，没有视频再展示图片，兼容对象数组
+  let imageUrl = ''
+  let videoUrl = ''
+  if (item.more) {
+    if (item.more.files && item.more.files.length > 0) {
+      const file = item.more.files[0]
+      videoUrl = fullUrl(file.url)
+    } else if (item.more.photos && item.more.photos.length > 0) {
+      const photo = item.more.photos[0]
+      imageUrl = fullUrl(photo.url)
+    } else if (item.more.thumbnail) {
+      imageUrl = fullUrl(item.more.thumbnail)
+    }
+  }
+  console.log('exhibitInfo computed:', { imageUrl, videoUrl })
+  return {
+    title: item.post_title,
+    description: item.intro_zh,
+    imageUrl,
+    videoUrl,
+    details: {
+      author: item.more?.authors?.[0]?.zh_names || '',
+      teacher: item.tutors_zh || '',
+      year: '',
+      medium: ''
+    }
+  }
+})
+
+function fullUrl(path) {
+  if (!path) return ''
+  return path.startsWith('http') ? path : `http://idesign.tju.edu.cn/upload/${path.replace(/^\//, '')}`
+}
+
+const goToExhibit = (direction) => {
+  if (!exhibits.value.length) return
+  const idx = exhibits.value.findIndex(e => e.id === currentId.value)
+  let newIdx
+  if (direction === 'next') {
+    newIdx = idx < exhibits.value.length - 1 ? idx + 1 : 0
+  } else {
+    newIdx = idx > 0 ? idx - 1 : exhibits.value.length - 1
+  }
+  const nextId = exhibits.value[newIdx]?.id
+  router.push(`/information/${nextId}?hallId=${hallId.value}`)
 }
 </script>
 
 <template>
   <div class="information-page">
     <div class="background-blur"></div>
-    <div v-if="!currentId || isNaN(currentId)">
+    <div v-if="loading">展品加载中...</div>
+    <div v-else-if="error">{{ error }}</div>
+    <div v-else-if="!exhibitInfo">
       <div style="text-align:center;padding:4rem;font-size:1.5rem;color:#888;">无效的展品ID</div>
     </div>
     <div v-else class="navigation-container">
@@ -48,18 +110,39 @@ const goToExhibit = (direction) => {
       <div class="exhibit-container">
         <img v-if="hallInfo && hallInfo.border" class="border-image" :src="hallInfo.border" alt="边框" />
         <div class="exhibit-content">
-          <div class="exhibit-image">
-            <img v-if="exhibitInfo.imageUrl && !exhibitInfo.modelUrl" :src="exhibitInfo.imageUrl" :alt="exhibitInfo.title">
-            <ModelViewer v-if="exhibitInfo.modelUrl" :modelUrl="exhibitInfo.modelUrl" />
+          <div class="exhibit-image-wrapper">
+            <div class="exhibit-image-inner">
+              <img
+                v-if="exhibitInfo.imageUrl && !exhibitInfo.videoUrl"
+                :src="exhibitInfo.imageUrl"
+                :alt="exhibitInfo.title"
+                class="exhibit-main-image"
+                @error="alert('图片加载失败！\n'+exhibitInfo.imageUrl)"
+                @click="e => e.target.requestFullscreen && e.target.requestFullscreen()"
+                style="cursor:pointer;"
+              />
+              <video
+                v-else-if="exhibitInfo.videoUrl"
+                :src="exhibitInfo.videoUrl"
+                controls
+                class="exhibit-main-video"
+                @error="alert('视频加载失败！\n'+exhibitInfo.videoUrl)"
+                @click="e => { if(e.target.requestFullscreen) e.target.requestFullscreen(); }"
+                style="cursor:pointer;"
+              >
+                您的浏览器不支持 video 标签，或视频加载失败。
+              </video>
+              <div v-else class="exhibit-image-empty">无可用图片或视频资源</div>
+            </div>
           </div>
           <div class="exhibit-details">
-            <h1>
+            <div class="hall-info">
               <img v-if="hallInfo && hallInfo.icon" class="hall-icon" :src="hallInfo.icon" alt="icon" />
               <span class="hall-text-group">
                 <span class="hall-text" :style="{ color: hallColor }">{{ hallInfo?.name || '' }}</span>
                 <span class="hall-subtext" :style="{ color: hallColor }">{{ hallInfo?.enName || '' }}</span>
               </span>
-            </h1>
+            </div>
             <div class="desc-section">
               <div class="desc-header">
                 <span class="desc-title">{{ exhibitInfo.title }}</span>
@@ -155,6 +238,9 @@ const goToExhibit = (direction) => {
   width: 100%;
   padding: 3.5rem 3rem;
   box-sizing: border-box;
+  align-items: start; /* 由center改为start，防止右侧内容撑高左侧 */
+  height: 100%;
+  min-height: 0;
 }
 
 .nav-button {
@@ -184,171 +270,174 @@ const goToExhibit = (direction) => {
   fill: #4a90e2;
 }
 
-.exhibit-image {
-  position: relative;
-  overflow: hidden;
-  border-radius: 10px;
-  background: #eee;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  min-width: 0;
-  min-height: 0;
+.exhibit-image-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 新增：最大宽高限制，可根据需要调整 */
-  max-width: 480px;
-  max-height: 480px;
+  background: #f8f8f8;
+  border-radius: 32px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  width: 480px;
+  height: 480px;
+  min-width: 320px;
+  min-height: 320px;
+  max-width: 520px;
+  max-height: 520px;
   margin: 0 auto;
+  position: relative;
+  flex-shrink: 0;
+  align-self: flex-start; /* 保证左侧区域高度只受自身内容影响 */
 }
 
-.exhibit-image img,
-.exhibit-image video,
-.exhibit-image model-viewer {
+.exhibit-image-inner {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  border-radius: 10px;
-  background: #eee;
-}
-
-.exhibit-details {
-  display: flex;
-  flex-direction: column;
-  justify-content: top;
-  /* 向上整体移动内容（可选，按需调整） */
-  padding-top: 0;
-}
-
-.exhibit-details h1 {
-  color: #2FA3B0;
-  font-size: 24px;
-  font-weight: bold;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-left: -1rem; /* 向左移动标题 */
-}
-
-.hall-icon {
-  width: 4rem;
-  height: 4rem;
-  object-fit: contain;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-.hall-text-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end; /* 右对齐 */
-  flex: 1;
-  min-width: 0;
-    margin-top: 0.2rem; /* 保持与图标的间距 */
- 
-}
-
-.hall-text {
-  white-space: nowrap;
+  justify-content: center;
+  border-radius: 24px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: right;
-  font-size: 24px;
+  background: #fff;
+}
+
+.exhibit-main-image,
+.exhibit-main-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 1/1;
+  border-radius: 24px;
+  background: #f8f8f8;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.exhibit-main-image:hover,
+.exhibit-main-video:hover {
+  box-shadow: 0 4px 24px 0 rgba(47,163,176,0.18);
+}
+
+.exhibit-image-empty {
+  width: 100%;
+  height: 100%;
+  color: #e74c3c;
   font-weight: bold;
-}
-
-.hall-subtext {
-  font-size: 16px;
-  font-weight: normal;
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: -0.5rem;
-}
-
-.description {
-  color: #666;
-  line-height: 1.6;
-  font-size: 1.1rem;
-    margin-left: 1rem;
-}
-
-.details-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.detail-item {
+  font-size: 1.2rem;
   display: flex;
-  gap: 0.5rem;
-}
-
-.label {
-  font-weight: bold;
-  color: #555;
+  align-items: center;
+  justify-content: center;
+  background: #fff0f0;
+  border-radius: 24px;
 }
 
 .desc-section {
-  margin-top: 1.2rem;
-  margin-left: -0.6rem; /* 向左移动描述部分 */
-  display: flex;
-  flex-direction: column;
+  margin-top: 1.5rem;
 }
 
 .desc-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .desc-title {
-  font-size: 48px;
-  color: #222;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 1.8rem;
+  font-weight: bold;
 }
 
 .share-btn {
-  background: #2FA3B0;
-  border: none;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  border-radius: 50%;
-  /* 可选：设置最小宽高，保证圆形更大 */
-  min-width: 3rem;
-  min-height: 3rem;
   justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+}
+
+.share-btn:focus {
+  outline: none;
 }
 
 .share-btn img {
-  width: 1.4rem;   /* 图标也适当变大 */
-  height: 1.4rem;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
 }
 
 .desc-content {
+  font-size: 1.2rem;
   color: #666;
   line-height: 1.6;
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
 }
 
 .desc-footer {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #999;
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  font-size: 1rem;
-  color: #888;
-  margin-top: 0.5rem;
+  justify-content: flex-start;
+  gap: 0.5rem;
 }
 
 .footer-divider {
-  color: #ccc;
-  font-size: 1.1em;
+  height: 12px;
+  width: 1px;
+  background: #ddd;
+}
+
+.hall-info {
+  display: flex;
+  align-items: center;
+  gap: rem;
+  justify-content: space-between;
+}
+
+.hall-icon {
+  width: 40px;
+  height: 40px;
+  max-width: 40px;
+  max-height: 40px;
+  vertical-align: middle;
+  margin-right: 0.6em;
+}
+
+.hall-text-group {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end; /* 右对齐 */
+  vertical-align: middle;
+}
+
+.hall-text {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #333;
+}
+.hall-subtext {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.exhibit-details {
+  max-height: 480px;
+  overflow-y: auto;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 @media (max-width: 1200px) {
@@ -366,9 +455,26 @@ const goToExhibit = (direction) => {
   .exhibit-content {
     grid-template-columns: 1fr;
     padding: 1.2rem 0.5rem;
+    gap: 1.2rem;
   }
-  .exhibit-image {
-    min-height: 200px;
+  .exhibit-image-wrapper {
+    width: 90vw;
+    height: 90vw;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100vw;
+    max-height: 100vw;
+    align-self: flex-start;
+  }
+  .exhibit-details {
+    max-height: none;
+    overflow-y: visible;
+  }
+  .hall-icon {
+    width: 28px;
+    height: 28px;
+    max-width: 28px;
+    max-height: 28px;
   }
 }
 </style>
