@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -129,12 +129,13 @@ const handleResize = () => {
 import { watch } from 'vue';
 
 // 尝试初始化 Three.js
-const tryInitThree = () => {
+const tryInitThree = async () => {
+  await nextTick();
   if (!container.value) return;
   const w = container.value.clientWidth;
   const h = container.value.clientHeight;
   if (w === 0 || h === 0) {
-    setTimeout(tryInitThree, 100); // 容器未布局好，延迟重试
+    requestAnimationFrame(tryInitThree); // 容器未布局好，延迟重试
     return;
   }
   // 先清理所有子节点，防止canvas残留
@@ -145,10 +146,10 @@ const tryInitThree = () => {
 };
 
 // 监听 modelUrl 的变化
-watch(() => props.modelUrl, () => {
+watch(() => props.modelUrl, async () => {
   if (container.value) {
     cleanupScene(); // 先彻底清理
-    tryInitThree();
+    await tryInitThree();
     setTimeout(() => {
       if (renderer && container.value) {
         renderer.setSize(container.value.clientWidth, container.value.clientHeight);
@@ -157,8 +158,8 @@ watch(() => props.modelUrl, () => {
   }
 }, { immediate: true });
 
-onMounted(() => {
-  tryInitThree();
+onMounted(async () => {
+  await tryInitThree();
   animate();
   window.addEventListener('resize', handleResize);
 });
