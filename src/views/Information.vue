@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import ModelViewer from '../components/three/ModelViewer.vue'
 import { halls as hallConfigs } from '@/constants/halls'
 import axios from 'axios'
+import { exhibitModels } from '@/constants/exhibitModels'
 
 const route = useRoute()
 const router = useRouter()
@@ -74,6 +75,12 @@ const exhibitInfo = computed(() => {
   }
 })
 
+const modelFile = computed(() => {
+  if (!currentId.value) return ''
+  const file = exhibitModels[currentId.value]
+  return file ? `/models/${file}` : ''
+})
+
 function fullUrl(path) {
   if (!path) return ''
   return path.startsWith('http') ? path : `http://idesign.tju.edu.cn/upload/${path.replace(/^\//, '')}`
@@ -112,8 +119,13 @@ const goToExhibit = (direction) => {
         <div class="exhibit-content">
           <div class="exhibit-image-wrapper">
             <div class="exhibit-image-inner">
+              <ModelViewer
+                v-if="modelFile"
+                :modelUrl="modelFile"
+                style="width:100%;height:100%;border-radius:24px;overflow:hidden;"
+              />
               <img
-                v-if="exhibitInfo.imageUrl && !exhibitInfo.videoUrl"
+                v-else-if="exhibitInfo.imageUrl && !exhibitInfo.videoUrl"
                 :src="exhibitInfo.imageUrl"
                 :alt="exhibitInfo.title"
                 class="exhibit-main-image"
