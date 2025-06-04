@@ -1,48 +1,70 @@
+import { iconDark } from "naive-ui";
+
 // 展厅基础信息配置，可全局复用
 export const halls = [
   {
     id: 73,
     name: '启风山谷',
     enName: 'First Whisper',
+    subTitle: 'Chasing the Wind',
+    enSubTitle: 'Chasing the Wind',
     desc: '启风山谷展厅简介',
+    enDesc: 'Introduction of First Whisper Hall',
     color: '#2FA3B0',
-    cover: '', // 可选：本地或远程图片
-    bg: '' // 可选：背景图
+    icon: '/src/assets/images/halls/hall-icons/icon73.png',
+    logo: '/src/assets/images/halls/hall-logos/hall-73.png',
+    border: '/src/assets/images/halls/hall-borders/border73.png',
   },
   {
     id: 74,
-    name: '驰风原野',
+    name: '穿林探径',
     enName: 'Unveiled Horizons',
+    subTitle: 'Chasing the Wind',
+    enSubTitle: 'Chasing the Wind',
     desc: '驰风原野展厅简介',
-    color: '#4A90E2',
-    cover: '',
-    bg: ''
+    enDesc: 'Introduction of Unveiled Horizons Hall',
+    color: '#6CB130',
+    icon: '/src/assets/images/halls/hall-icons/icon74.png',
+    logo: '/src/assets/images/halls/hall-logos/hall-74.png',
+    border: '/src/assets/images/halls/hall-borders/border74.png',
   },
   {
     id: 75,
-    name: '融和万象',
+    name: '驰风原野',
     enName: 'Fusion Cosmos',
+    subTitle: 'Chasing the Wind',
+    enSubTitle: 'Chasing the Wind',
     desc: '融和万象展厅简介',
+    enDesc: 'Introduction of Fusion Cosmos Hall',
     color: '#F5A623',
-    cover: '',
-    bg: ''
+    icon: '/src/assets/images/halls/hall-icons/icon75.png',
+    logo: '/src/assets/images/halls/hall-logos/hall-75.png',
+    border: '/src/assets/images/halls/hall-borders/border75.png',
   },
   {
     id: 76,
-    name: '艺无多彩',
+    name: '掠泽听声',
     enName: 'Infinite Colors',
+    subTitle: 'Chasing the Wind',
+    enSubTitle: 'Chasing the Wind',
     desc: '艺无多彩展厅简介',
+    enDesc: 'Introduction of Infinite Colors Hall',
     color: '#7B61FF',
-    cover: '',
-    bg: ''
+    icon: '/src/assets/images/halls/hall-icons/icon76.png',
+    logo: '/src/assets/images/halls/hall-logos/hall-76.png',
+    border: '/src/assets/images/halls/hall-borders/border76.png',
   },
   {
     id: 77,
-    name: '日出环星',
+    name: '钟风化木',
     enName: 'Rising Stars',
+    subTitle: 'Chasing the Wind',
+    enSubTitle: 'Chasing the Wind',
     desc: '日出环星展厅简介',
+    enDesc: 'Introduction of Rising Stars Hall',
     color: '#FF6F61',
-    cover: '',
-    bg: ''
+    icon: '/src/assets/images/halls/hall-icons/icon77.png',
+    logo: '/src/assets/images/halls/hall-logos/hall-77.png',
+    border: '/src/assets/images/halls/hall-borders/border77.png',
   }
 ]
