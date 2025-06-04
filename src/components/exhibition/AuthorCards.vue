@@ -14,7 +14,7 @@
       <div 
         class="author-avatar"
         :style="author.avatar ? {
-          backgroundImage: `url(${author.avatar})`
+          backgroundImage: `url(${author.avatar})` // author.avatar 字段实际来自 author.url
         } : {}"
       >
         <span v-if="!author.avatar" class="author-initial">{{ author.zh_names?.[0] || '?' }}</span>

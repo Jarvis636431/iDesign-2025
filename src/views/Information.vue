@@ -67,7 +67,7 @@ const exhibitInfo = computed(() => {
     authors = item.more.authors.map(author => ({
       zh_names: author.zh_names,
       grade: author.grade || '未知年级',
-      avatar: author.avatar || null // 如果有头像的话
+      avatar: author.url ? fullUrl(author.url) : null // 作者头像URL需要通过fullUrl处理
     }))
   }
   return {
