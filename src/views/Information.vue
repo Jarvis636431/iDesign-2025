@@ -438,7 +438,7 @@ const exhibitSlides = computed(() => {
 .desc-footer {
   flex: 0 0 auto;
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end; /* 改为底部对齐 */
   justify-content: space-between;
   padding: 1.5rem 0;
   margin: 0;
@@ -446,17 +446,46 @@ const exhibitSlides = computed(() => {
   gap: 2rem;
 }
 
-.authors-section,
-.teacher-section {
+.authors-section {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* 内容底部对齐 */
 }
 
+.teacher-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end; /* 内容底部对齐 */
+}
+
+.teacher-section h3 {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.teacher-section p {
+  color: #666;
+  font-size: 1rem;
+  text-align: right;
+  margin: 0.25rem 0;
+}
+
+.section-label {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
 
 .teacher-name {
   font-size: 1rem;
   color: #333;
   font-weight: 500;
-  justify-self: end;
+  text-align: right;
 }
 
 .hall-info {

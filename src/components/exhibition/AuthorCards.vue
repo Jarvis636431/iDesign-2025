@@ -72,7 +72,6 @@ const hasMoreAuthors = computed(() => {
   }
   
   &:hover {
-    transform: translateY(-5px) !important;
     z-index: 10 !important;
   }
 
@@ -82,8 +81,8 @@ const hasMoreAuthors = computed(() => {
 }
 
 .author-avatar {
-  width: 36px;
-  height: 36px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: #f0f0f0;
   display: flex;
@@ -94,10 +93,18 @@ const hasMoreAuthors = computed(() => {
   position: relative;
   background-size: cover;
   background-position: center;
+  transition: all 0.3s ease;
+  filter: grayscale(100%) brightness(1.1); /* 默认灰白色 */
+  z-index: 6; /* 确保头像在信息框上方 */
+
+  &:hover {
+    filter: grayscale(0%); /* 悬浮时显示原色 */
+    transform: scale(1.05);
+  }
 }
 
 .author-initial {
-  font-size: 1rem;
+  font-size: 1.2rem; /* 增大字体大小，从 1rem 改为 1.2rem */
   font-weight: bold;
   color: #666;
   position: absolute;
@@ -111,64 +118,53 @@ const hasMoreAuthors = computed(() => {
 
 .author-info {
   position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%) scale(0.8);
+  top: 50%;
+  left: 25px; /* 让胶囊与头像重叠 */
+  transform: translateY(-50%) scale(0.8);
   background: white;
-  padding: 0.8rem 1.2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 0.3rem 1.2rem 0.3rem 2rem; /* 减小上下内边距 */
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   opacity: 0;
   visibility: hidden;
   transition: all 0.2s ease;
   white-space: nowrap;
   pointer-events: none;
-  z-index: 20;
+  z-index: 5; /* 降低层级，确保在头像下方 */
   min-width: 120px;
-  text-align: center;
+  display: flex;
+  flex-direction: column; /* 文字上下排列 */
+  align-items: flex-start;
+  gap: 0px; /* 减小文字之间的间距 */
 
   &::after {
-    content: '';
-    position: absolute;
-    bottom: -6px;
-    left: 50%;
-    transform: translateX(-50%) rotate(45deg);
-    width: 12px;
-    height: 12px;
-    background: white;
-    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.08);
+    content: none; /* 移除原来的箭头 */
   }
 
   &::before {
-    content: '';
-    position: absolute;
-    bottom: -7px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 16px;
-    height: 16px;
-    background: white;
-    z-index: 1;
+    content: none; /* 移除原来的箭头 */
   }
 }
 
 .author-info.active {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) scale(1);
+  transform: translateY(-50%) scale(1);
   transition-delay: 0.1s;
 }
 
 .author-name {
-  font-size: 0.9rem;
-  font-weight: bold;
+  font-size: 0.95rem;
   color: #333;
-  margin-bottom: 0.2rem;
+  font-weight: 500;
+  line-height: 1.1; /* 减小行高 */
 }
 
 .author-grade {
-  font-size: 0.8rem;
+  font-size: 0.8rem; /* 稍微减小字体 */
   color: #666;
+  padding: 0;
+  line-height: 1.1; /* 减小行高 */
 }
 
 .author-card:hover {
