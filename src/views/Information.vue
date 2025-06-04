@@ -199,7 +199,10 @@ const exhibitSlides = computed(() => {
               </div>
               <div class="desc-footer">
                 <div class="authors-section">
-                  <AuthorCards :authors="exhibitInfo.details.authors || []" />
+                  <AuthorCards 
+                    :authors="exhibitInfo.details.authors || []"
+                    :hallColor="hallColor"
+                  />
                 </div>
                 <div class="teacher-section">
                   <div class="section-label">指导教师</div>
@@ -440,9 +443,7 @@ const exhibitSlides = computed(() => {
   display: flex;
   align-items: flex-end; /* 改为底部对齐 */
   justify-content: space-between;
-  padding: 1.5rem 0;
-  margin: 0;
-  border-top: 1px solid #eee;
+  margin-left: 0.5rem;
   gap: 2rem;
 }
 
@@ -478,7 +479,6 @@ const exhibitSlides = computed(() => {
 .section-label {
   color: #666;
   font-size: 0.9rem;
-  margin-bottom: 0.5rem;
 }
 
 .teacher-name {
@@ -486,6 +486,7 @@ const exhibitSlides = computed(() => {
   color: #333;
   font-weight: 500;
   text-align: right;
+  margin-bottom: 0.3rem;
 }
 
 .hall-info {

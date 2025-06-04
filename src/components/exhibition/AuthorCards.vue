@@ -5,7 +5,8 @@
       :key="index"
       class="author-card"
       :style="{ 
-        zIndex: index
+        zIndex: index,
+        '--hall-color': hallColor
       }"
       @mouseenter="activeCard = index"
       @mouseleave="activeCard = null"
@@ -33,6 +34,10 @@ const props = defineProps({
   authors: {
     type: Array,
     default: () => []
+  },
+  hallColor: {
+    type: String,
+    default: '#2FA3B0'
   }
 })
 
@@ -64,15 +69,31 @@ const hasMoreAuthors = computed(() => {
 .author-card {
   position: relative;
   cursor: pointer;
-  transition: all 0.3s ea2se;
+  transition: all 0.3s ease;
   margin-left: -10px; /* 改为右侧叠加，减小叠加面积 */
   
   &:last-child {
     margin-right: 0;
   }
-  
+
   &:hover {
     z-index: 10 !important;
+
+    .author-avatar {
+      transform: scale(1.1);
+      border: 2px solid var(--hall-color); /* 保持边框宽度一致 */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬浮时加强阴影 */
+      
+      &::before {
+        opacity: 0; /* 悬浮时显示真实头像 */
+      }
+    }
+
+    .author-info {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(-50%) scale(1);
+    }
   }
 
   &:nth-child(n+6) {
@@ -84,26 +105,30 @@ const hasMoreAuthors = computed(() => {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: #f0f0f0;
+  background: #d9d9d9; /* 默认灰色圆形 */
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #fff; /* 默认白色边框 */
   position: relative;
   background-size: cover;
   background-position: center;
   transition: all 0.3s ease;
-  filter: grayscale(100%) brightness(1.1); /* 默认灰白色 */
-  z-index: 6; /* 确保头像在信息框上方 */
+  z-index: 6;
 
-  &:hover {
-    filter: grayscale(0%); /* 悬浮时显示原色 */
-    transform: scale(1.05);
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #d9d9d9;
+    border-radius: 50%;
+    transition: opacity 0.3s ease;
+    opacity: 1;
   }
 }
 
 .author-initial {
+  opacity: 0; /* 默认隐藏初始字母 */
   font-size: 1.2rem; /* 增大字体大小，从 1rem 改为 1.2rem */
   font-weight: bold;
   color: #666;
@@ -114,6 +139,11 @@ const hasMoreAuthors = computed(() => {
   justify-content: center;
   background: #f0f0f0;
   border-radius: 50%;
+  transition: opacity 0.3s ease;
+}
+
+.author-card:hover .author-initial {
+  opacity: 1; /* 悬浮时显示初始字母 */
 }
 
 .author-info {
@@ -122,7 +152,7 @@ const hasMoreAuthors = computed(() => {
   left: 25px; /* 让胶囊与头像重叠 */
   transform: translateY(-50%) scale(0.8);
   background: white;
-  padding: 0.3rem 1.2rem 0.3rem 2rem; /* 减小上下内边距 */
+  padding: 0.3rem 0rem 0.3rem 2rem; /* 减小上下内边距 */
   border-radius: 999px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   opacity: 0;
@@ -131,11 +161,12 @@ const hasMoreAuthors = computed(() => {
   white-space: nowrap;
   pointer-events: none;
   z-index: 5; /* 降低层级，确保在头像下方 */
-  min-width: 120px;
+  min-width: 90px;
   display: flex;
   flex-direction: column; /* 文字上下排列 */
   align-items: flex-start;
   gap: 0px; /* 减小文字之间的间距 */
+  border: 1px solid var(--hall-color);
 
   &::after {
     content: none; /* 移除原来的箭头 */
