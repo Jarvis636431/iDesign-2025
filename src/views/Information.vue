@@ -88,7 +88,7 @@ const modelFile = computed(() => {
   if (!currentId.value) return ''
   const file = exhibitModels[currentId.value]
   // 适配 Vite base 配置，确保开发和生产都能加载模型
-  return file ? import.meta.env.BASE_URL + 'models/' + file : ''
+  return file ? import.meta.env.BASE_URL + '/assets/models/' + file : ''
 })
 
 function fullUrl(path) {
@@ -116,7 +116,7 @@ const exhibitSlides = computed(() => {
   // 1. 模型
   const file = exhibitModels[currentId.value]
   if (file) {
-    slides.push({ type: 'model', src: '/models/' + file })
+    slides.push({ type: 'model', src: '/assets/models/' + file })
   }
   // 2. 所有视频
   const item = exhibits.value.find(e => Number(e.id) === Number(currentId.value))
