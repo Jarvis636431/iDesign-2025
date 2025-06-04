@@ -24,7 +24,10 @@ const cleanupScene = () => {
     }
   }
   if (renderer && container.value) {
-    container.value.removeChild(renderer.domElement);
+    // 彻底清理 container 的所有子节点
+    while (container.value.firstChild) {
+      container.value.removeChild(container.value.firstChild);
+    }
     renderer.dispose();
   }
   if (controls) {
@@ -103,9 +106,11 @@ const initThree = () => {
   );
 };
 
+let animationId;
+
 // 动画循环
 const animate = () => {
-  requestAnimationFrame(animate);
+  animationId = requestAnimationFrame(animate);
   if (controls) controls.update();
   if (renderer && scene && camera) {
     renderer.render(scene, camera);
@@ -123,21 +128,44 @@ const handleResize = () => {
 
 import { watch } from 'vue';
 
+// 尝试初始化 Three.js
+const tryInitThree = () => {
+  if (!container.value) return;
+  const w = container.value.clientWidth;
+  const h = container.value.clientHeight;
+  if (w === 0 || h === 0) {
+    setTimeout(tryInitThree, 100); // 容器未布局好，延迟重试
+    return;
+  }
+  // 先清理所有子节点，防止canvas残留
+  while (container.value.firstChild) {
+    container.value.removeChild(container.value.firstChild);
+  }
+  initThree();
+};
+
 // 监听 modelUrl 的变化
 watch(() => props.modelUrl, () => {
   if (container.value) {
-    initThree();
+    cleanupScene(); // 先彻底清理
+    tryInitThree();
+    setTimeout(() => {
+      if (renderer && container.value) {
+        renderer.setSize(container.value.clientWidth, container.value.clientHeight);
+      }
+    }, 120);
   }
-}, { immediate: false });
+}, { immediate: true });
 
 onMounted(() => {
-  initThree();
+  tryInitThree();
   animate();
   window.addEventListener('resize', handleResize);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize);
+  if (animationId) cancelAnimationFrame(animationId);
   cleanupScene();
 });
 </script>

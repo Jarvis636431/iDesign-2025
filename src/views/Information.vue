@@ -27,9 +27,7 @@ async function fetchExhibits() {
     const res = await axios.get('http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists', {
       params: { per_page: 9999, current_page: 1, category_id: hallId.value }
     })
-    console.log('接口返回数据:', res.data)
     exhibits.value = res.data?.data || []
-    console.log('exhibits.value:', exhibits.value)
   } catch (e) {
     error.value = '展品数据加载失败'
     exhibits.value = []
@@ -103,6 +101,45 @@ const goToExhibit = (direction) => {
   const nextId = exhibits.value[newIdx]?.id
   router.push(`/information/${nextId}?hallId=${hallId.value}`)
 }
+
+const currentSlide = ref(0)
+
+const exhibitSlides = computed(() => {
+  const slides = []
+  // 1. 模型
+  const file = exhibitModels[currentId.value]
+  if (file) {
+    slides.push({ type: 'model', src: '/models/' + file })
+  }
+  // 2. 所有视频
+  const item = exhibits.value.find(e => Number(e.id) === Number(currentId.value))
+  if (item && item.more && Array.isArray(item.more.files) && item.more.files.length > 0) {
+    item.more.files.forEach(f => {
+      if (f.url) slides.push({ type: 'video', src: fullUrl(f.url) })
+    })
+  }
+  // 3. 所有图片
+  if (item && item.more) {
+    if (Array.isArray(item.more.photos) && item.more.photos.length > 0) {
+      item.more.photos.forEach(photo => {
+        if (photo.url) slides.push({ type: 'image', src: fullUrl(photo.url) })
+      })
+    } else if (item.more.thumbnail) {
+      slides.push({ type: 'image', src: fullUrl(item.more.thumbnail) })
+    }
+  }
+  return slides
+})
+
+function prevSlide() {
+  if (exhibitSlides.value.length === 0) return
+  currentSlide.value = (currentSlide.value - 1 + exhibitSlides.value.length) % exhibitSlides.value.length
+}
+function nextSlide() {
+  if (exhibitSlides.value.length === 0) return
+  currentSlide.value = (currentSlide.value + 1) % exhibitSlides.value.length
+}
+watch([exhibits, currentId], () => { currentSlide.value = 0 })
 </script>
 
 <template>
@@ -114,6 +151,7 @@ const goToExhibit = (direction) => {
       <div style="text-align:center;padding:4rem;font-size:1.5rem;color:#888;">无效的展品ID</div>
     </div>
     <div v-else class="navigation-container">
+
       <button class="nav-button prev" @click="goToExhibit('prev')">
         <svg viewBox="0 0 24 24" class="arrow-icon">
           <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
@@ -123,33 +161,24 @@ const goToExhibit = (direction) => {
         <img v-if="hallInfo && hallInfo.border" class="border-image" :src="hallInfo.border" alt="边框" />
         <div class="exhibit-content">
           <div class="exhibit-image-wrapper">
-            <div class="exhibit-image-inner">
-              <ModelViewer
-                v-if="modelFile"
-                :modelUrl="modelFile"
-                style="width:100%;height:100%;border-radius:24px;overflow:hidden;"
-              />
-              <img
-                v-else-if="exhibitInfo.imageUrl && !exhibitInfo.videoUrl"
-                :src="exhibitInfo.imageUrl"
-                :alt="exhibitInfo.title"
-                class="exhibit-main-image"
-                @error="alert('图片加载失败！\n'+exhibitInfo.imageUrl)"
-                @click="e => e.target.requestFullscreen && e.target.requestFullscreen()"
-                style="cursor:pointer;"
-              />
-              <video
-                v-else-if="exhibitInfo.videoUrl"
-                :src="exhibitInfo.videoUrl"
-                controls
-                class="exhibit-main-video"
-                @error="alert('视频加载失败！\n'+exhibitInfo.videoUrl)"
-                @click="e => { if(e.target.requestFullscreen) e.target.requestFullscreen(); }"
-                style="cursor:pointer;"
-              >
-                您的浏览器不支持 video 标签，或视频加载失败。
-              </video>
-              <div v-else class="exhibit-image-empty">无可用图片或视频资源</div>
+            <div class="exhibit-image-inner" :key="currentSlide">
+              <div v-if="exhibitSlides.length">
+                <div class="slide-content" :key="exhibitSlides[currentSlide]?.type + '-' + exhibitSlides[currentSlide]?.src">
+                  <div v-if="exhibitSlides[currentSlide]?.type==='model'">
+                    <ModelViewer
+                      :modelUrl="exhibitSlides[currentSlide].src"
+                      :key="exhibitSlides[currentSlide].type + '-' + exhibitSlides[currentSlide].src + '-' + currentSlide"
+                      style="width:100%;height:100%;border-radius:24px;overflow:hidden;"
+                    />
+                  </div>
+                  <video v-else-if="exhibitSlides[currentSlide]?.type==='video'" :src="exhibitSlides[currentSlide].src" controls class="exhibit-main-video" @error="alert('视频加载失败！\n'+exhibitSlides[currentSlide].src)" @click="e => { if(e.target.requestFullscreen) e.target.requestFullscreen(); }" style="cursor:pointer;" >您的浏览器不支持 video 标签，或视频加载失败。</video>
+                  <img v-else-if="exhibitSlides[currentSlide]?.type==='image'" :src="exhibitSlides[currentSlide].src" :alt="exhibitInfo.title" class="exhibit-main-image" @error="alert('图片加载失败！\n'+exhibitSlides[currentSlide].src)" @click="e => e.target.requestFullscreen && e.target.requestFullscreen()" style="cursor:pointer;" />
+                </div>
+                <div class="slide-indicators">
+                  <span v-for="(s, i) in exhibitSlides" :key="i" :class="['slide-dot', {active: i===currentSlide}]" @click="currentSlide=i" :style="{ background: i===currentSlide ? hallColor : '#ccc' }"></span>
+                </div>
+              </div>
+              <div v-else class="exhibit-image-empty">无可用模型、视频或图片资源</div>
             </div>
           </div>
           <div class="exhibit-details">
@@ -465,6 +494,26 @@ const goToExhibit = (direction) => {
   justify-content: flex-start;
 }
 
+.slide-arrow {
+  display: none;
+}
+.slide-indicators {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+}
+.slide-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ccc;
+  display: inline-block;
+  cursor: pointer;
+  transition: background 0.2s;
+}
 @media (max-width: 1200px) {
   .exhibit-container {
     min-width: 0;
