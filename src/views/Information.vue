@@ -1,13 +1,15 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import ModelViewer from '../components/three/ModelViewer.vue'
+import CustomCarousel from '@/components/slides/CustomCarousel.vue' // Import CustomCarousel
 import { halls as hallConfigs } from '@/constants/halls'
 import axios from 'axios'
 import { exhibitModels } from '@/constants/exhibitModels'
 
 const route = useRoute()
 const router = useRouter()
+
+const carouselRef = ref(null); // Add carouselRef
 
 const hallId = computed(() => parseInt(route.query.hallId))
 const currentId = computed(() => parseInt(route.params.id))
@@ -102,7 +104,7 @@ const goToExhibit = (direction) => {
   router.push(`/information/${nextId}?hallId=${hallId.value}`)
 }
 
-const currentSlide = ref(0)
+// const currentSlide = ref(0) // Remove old currentSlide
 
 const exhibitSlides = computed(() => {
   const slides = []
@@ -131,15 +133,16 @@ const exhibitSlides = computed(() => {
   return slides
 })
 
-function prevSlide() {
-  if (exhibitSlides.value.length === 0) return
-  currentSlide.value = (currentSlide.value - 1 + exhibitSlides.value.length) % exhibitSlides.value.length
-}
-function nextSlide() {
-  if (exhibitSlides.value.length === 0) return
-  currentSlide.value = (currentSlide.value + 1) % exhibitSlides.value.length
-}
-watch([exhibits, currentId], () => { currentSlide.value = 0 })
+// Remove old prevSlide and nextSlide methods
+// function prevSlide() {
+//   if (exhibitSlides.value.length === 0) return
+//   currentSlide.value = (currentSlide.value - 1 + exhibitSlides.value.length) % exhibitSlides.value.length
+// }
+// function nextSlide() {
+//   if (exhibitSlides.value.length === 0) return
+//   currentSlide.value = (currentSlide.value + 1) % exhibitSlides.value.length
+// }
+// watch([exhibits, currentId], () => { currentSlide.value = 0 }) // Remove old watcher
 </script>
 
 <template>
@@ -161,24 +164,14 @@ watch([exhibits, currentId], () => { currentSlide.value = 0 })
         <img v-if="hallInfo && hallInfo.border" class="border-image" :src="hallInfo.border" alt="边框" />
         <div class="exhibit-content">
           <div class="exhibit-image-wrapper">
-            <div class="exhibit-image-inner" :key="currentSlide">
-              <div v-if="exhibitSlides.length">
-                <div class="slide-content" :key="exhibitSlides[currentSlide]?.type + '-' + exhibitSlides[currentSlide]?.src">
-                  <div v-if="exhibitSlides[currentSlide]?.type==='model'">
-                    <ModelViewer
-                      :modelUrl="exhibitSlides[currentSlide].src"
-                      :key="exhibitSlides[currentSlide].type + '-' + exhibitSlides[currentSlide].src + '-' + currentSlide"
-                      style="width:100%;height:100%;border-radius:24px;overflow:hidden;"
-                    />
-                  </div>
-                  <video v-else-if="exhibitSlides[currentSlide]?.type==='video'" :src="exhibitSlides[currentSlide].src" controls class="exhibit-main-video" @error="alert('视频加载失败！\n'+exhibitSlides[currentSlide].src)" @click="e => { if(e.target.requestFullscreen) e.target.requestFullscreen(); }" style="cursor:pointer;" >您的浏览器不支持 video 标签，或视频加载失败。</video>
-                  <img v-else-if="exhibitSlides[currentSlide]?.type==='image'" :src="exhibitSlides[currentSlide].src" :alt="exhibitInfo.title" class="exhibit-main-image" @error="alert('图片加载失败！\n'+exhibitSlides[currentSlide].src)" @click="e => e.target.requestFullscreen && e.target.requestFullscreen()" style="cursor:pointer;" />
-                </div>
-                <div class="slide-indicators">
-                  <span v-for="(s, i) in exhibitSlides" :key="i" :class="['slide-dot', {active: i===currentSlide}]" @click="currentSlide=i" :style="{ background: i===currentSlide ? hallColor : '#ccc' }"></span>
-                </div>
-              </div>
-              <div v-else class="exhibit-image-empty">无可用模型、视频或图片资源</div>
+            <div class="exhibit-image-inner">
+              <!-- Replace old carousel content with CustomCarousel component -->
+              <CustomCarousel
+                :slides="exhibitSlides"
+                :hallColor="hallColor"
+                ref="carouselRef"
+                style="width:100%; height:100%;"
+              />
             </div>
           </div>
           <div class="exhibit-details">
@@ -497,6 +490,8 @@ watch([exhibits, currentId], () => { currentSlide.value = 0 })
 .slide-arrow {
   display: none;
 }
+/* Remove old carousel specific styles, as they are now in CustomCarousel.vue */
+/*
 .slide-indicators {
   position: absolute;
   bottom: 1rem;
@@ -514,6 +509,7 @@ watch([exhibits, currentId], () => { currentSlide.value = 0 })
   cursor: pointer;
   transition: background 0.2s;
 }
+*/
 @media (max-width: 1200px) {
   .exhibit-container {
     min-width: 0;
