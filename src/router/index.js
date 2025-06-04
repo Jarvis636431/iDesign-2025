@@ -2,29 +2,29 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
-    path: '/',
-    name: 'Welcome',
+    path: '/2025/',
+    name: 'Home',
     component: () => import('../views/Home.vue')
   },
   {
-    path: '/information/:id',
+    path: '/2025/information/:id',
     name: 'Information',
     component: () => import('../views/Information.vue')
   },
   {
-    path: '/demo',
+    path: '/2025/demo',
     name: 'Demo',
     component: () => import('../views/Demo.vue')
   },
   {
-    path: '/halls',
+    path: '/2025/halls',
     name: 'HallList',
     component: () => import('../views/HallList.vue')
   },
+  // 添加根路径重定向
   {
-    path: '/halls/:id',
-    name: 'HallDetail',
-    component: () => import('../views/HallDetail.vue')
+    path: '/',
+    redirect: '/2025/'
   }
 ]
 
