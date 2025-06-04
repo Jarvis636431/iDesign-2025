@@ -11,6 +11,10 @@ onMounted(() => {
 
 <template>
   <div class="home">
+    <nav class="top-navigation">
+      <router-link to="/2025/halls">展厅入口</router-link>
+      <router-link to="/2025/demo">Demo页面</router-link>
+    </nav>
     <h1>虚拟展厅首页</h1>
     <div class="exhibition-list">
       <!-- 展厅导航 -->
@@ -37,6 +41,28 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.top-navigation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.top-navigation a {
+  font-size: 18px;
+  color: #2FA3B0;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.top-navigation a:hover {
+  color: #1a7c85;
+}
+
 .home {
   padding: 2rem;
   max-width: 1200px;
@@ -100,6 +126,11 @@ h2 {
 
 .item.special:hover {
   background-color: #ff5252;
+}
+
+/* 为了避免导航栏遮挡内容 */
+.home {
+  padding-top: 80px;
 }
 
 @media (max-width: 768px) {
