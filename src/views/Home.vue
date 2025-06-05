@@ -2,6 +2,12 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useExhibitionStore } from '../stores/exhibition'
+import HomeSection from '../components/sections/HomeSection.vue'
+import PrefaceSection from '../components/sections/PrefaceSection.vue'
+import VideoSection from '../components/sections/VideoSection.vue'
+import ExhibitionSection from '../components/sections/ExhibitionSection.vue'
+import GraduatesSection from '../components/sections/GraduatesSection.vue'
+import TeamSection from '../components/sections/TeamSection.vue'
 
 const isEnglish = ref(false)
 const currentSection = ref('home')
@@ -102,36 +108,12 @@ onMounted(() => {
     <!-- 主内容区域 -->
     <main class="main-content">
       <div class="scroll-container" ref="scrollContainerRef" @scroll="handleScroll">
-        <!-- 首页板块 -->
-        <section class="content-section" id="home">
-          <h1>天津大学设计学院<br>2025届毕业设计展</h1>
-        </section>
-
-        <!-- 卷首语板块 -->
-        <section class="content-section" id="preface">
-          <h2>卷首语</h2>
-          <div class="section-content">
-            <p>这里是卷首语内容...</p>
-          </div>
-        </section>
-
-        <!-- 宣传片板块 -->
-        <section class="content-section" id="video">
-          <h2>宣传片</h2>
-          <div class="section-content">
-            <!-- 这里可以放视频播放器 -->
-          </div>
-        </section>
-
-        <!-- 展厅板块 -->
-        <section class="content-section" id="exhibition">
-          <h2>虚拟展厅</h2>
-          <div class="section-content">
-            <router-link to="/2025/halls" class="enter-button">
-              进入展厅
-            </router-link>
-          </div>
-        </section>
+        <HomeSection />
+        <PrefaceSection :is-english="isEnglish" />
+        <VideoSection :is-english="isEnglish" />
+        <ExhibitionSection :is-english="isEnglish" />
+        <GraduatesSection :is-english="isEnglish" />
+        <TeamSection :is-english="isEnglish" />
 
         <!-- 毕业生板块 -->
         <section class="content-section" id="graduates">
