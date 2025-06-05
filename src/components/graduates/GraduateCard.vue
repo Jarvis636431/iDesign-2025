@@ -16,10 +16,6 @@
       <div v-else class="avatar-placeholder">
         {{ name ? name.charAt(0) : '?' }}
       </div>
-      <div class="graduate-info" :class="{ 'show': isHovered }">
-        <h3 class="name">{{ isEnglish ? name.en : name.zh }}</h3>
-        <p class="destination">{{ isEnglish ? destination.en : destination.zh }}</p>
-      </div>
     </div>
   </div>
 </template>
@@ -64,16 +60,10 @@ const handleImageError = (e) => {
 <style scoped>
 .graduate-card {
   background: #fff;
-  border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
   cursor: pointer;
-  border: 2px solid #000000;
-  
-  &:hover {
-    transform: translateY(-2px);
-  }
 }
 
 .photo-container {
@@ -110,39 +100,5 @@ const handleImageError = (e) => {
   color: #666;
   font-size: 2rem;
   font-weight: bold;
-}
-
-.graduate-info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-  color: white;
-  padding: 20px;
-  transform: translateY(100%);
-  transition: transform 0.3s ease;
-  
-  &.show {
-    transform: translateY(0);
-  }
-}
-
-.name {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin: 0 0 4px 0;
-}
-
-.major {
-  font-size: 0.9rem;
-  margin: 0 0 4px 0;
-  opacity: 0.9;
-}
-
-.mentor {
-  font-size: 0.8rem;
-  margin: 0;
-  opacity: 0.8;
 }
 </style>
