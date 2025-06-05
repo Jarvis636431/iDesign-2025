@@ -1,79 +1,170 @@
 <script setup>
-import { onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useExhibitionStore } from '../stores/exhibition'
 
-// 暂时不需要 store 和 router
-onMounted(() => {
-  // 这里可以添加初始化逻辑
-})
+const isEnglish = ref(false)
+
+const toggleLanguage = () => {
+  isEnglish.value = !isEnglish.value
+}
 </script>
 
 <template>
-  <div class="home">
-    <nav class="top-navigation">
-      <router-link to="/2025/halls">展厅入口</router-link>
-      <router-link to="/2025/demo">Demo页面</router-link>
+  <div class="home-container">
+    <!-- 左侧导航栏 -->
+    <nav class="side-navigation">
+      <div class="nav-logo">
+        <img src="/assets/images/logos/logo2025.png" alt="天津大学设计学院">
+      </div>
+      <div class="nav-links">
+        <router-link to="/2025/preface" class="nav-item">
+          {{ isEnglish ? 'Preface' : '卷首语' }}
+        </router-link>
+        <router-link to="/2025/video" class="nav-item">
+          {{ isEnglish ? 'Video' : '宣传片' }}
+        </router-link>
+        <router-link to="/2025/halls" class="nav-item">
+          {{ isEnglish ? 'Exhibition' : '虚拟展厅' }}
+        </router-link>
+        <router-link to="/2025/graduates" class="nav-item">
+          {{ isEnglish ? 'Graduates' : '毕业生' }}
+        </router-link>
+        <router-link to="/2025/team" class="nav-item">
+          {{ isEnglish ? 'Team' : '年展组' }}
+        </router-link>
+      </div>
+      <div class="language-switch" @click="toggleLanguage">
+        {{ isEnglish ? 'CN' : 'EN' }}
+      </div>
     </nav>
-    <h1>虚拟展厅首页</h1>
-    <div class="exhibition-list">
-      <!-- 展厅导航 -->
-      <div class="section">
-        <h2>展厅导航</h2>
-        <div class="items">
-          <router-link to="/2025/halls" class="item">
-            查看所有展厅
-          </router-link>
-        </div>
-      </div>
 
-      <!-- 展品信息入口 -->
-      <div class="section">
-        <h2>展品信息</h2>
-        <div class="items">
-          <router-link to="/2025/information/1" class="item special">
-            浏览展品信息
-          </router-link>
+    <!-- 主内容区域 -->
+    <main class="main-content">
+      <h1>天津大学设计学院2025届毕业设计展</h1>
+      <div class="exhibition-list">
+        <!-- 展厅导航 -->
+        <div class="section">
+          <h2>展厅导航</h2>
+          <div class="items">
+            <router-link to="/2025/halls" class="item">
+              查看所有展厅
+            </router-link>
+          </div>
+        </div>
+
+        <!-- 展品信息入口 -->
+        <div class="section">
+          <h2>展品信息</h2>
+          <div class="items">
+            <router-link to="/2025/information/1" class="item special">
+              浏览展品信息
+            </router-link>
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
 <style scoped>
-.top-navigation {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 20px 40px;
+.home-container {
   display: flex;
-  justify-content: space-between;
-  z-index: 10;
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
 
-.top-navigation a {
-  font-size: 18px;
-  color: #2FA3B0;
-  text-decoration: none;
-  transition: color 0.3s ease;
+.side-navigation {
+  width: 90px;
+  background-color: #fff;
+  border-right: 1px solid #eee;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 2rem;
 }
 
-.top-navigation a:hover {
-  color: #1a7c85;
-}
-
-.home {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+.nav-logo {
+  padding: 1rem;
   text-align: center;
+  justify-self: center;
+}
+
+.nav-logo img {
+  width: 60px;
+  height: auto;
+}
+
+.nav-links {
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.nav-item:hover {
+  transform: translateY(-2px);
+}
+
+.nav-item.router-link-active {
+  font-weight: 500;
+  position: relative;
+}
+
+.nav-item.router-link-active::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  border-radius: 2px;
+}
+
+.language-switch {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 1.2rem;
+  color: #666;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.language-switch:hover {
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.main-content {
+  flex: 1;
+  padding: 2.5rem;
+  margin-left: 120px;
+  max-width: 1200px;
 }
 
 h1 {
   color: #333;
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
+  font-size: 2.2rem;
+  margin-bottom: 2.5rem;
   font-weight: bold;
 }
 
@@ -92,7 +183,6 @@ h1 {
 }
 
 h2 {
-  color: #2FA3B0;
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
 }
@@ -107,7 +197,6 @@ h2 {
 .item {
   display: inline-block;
   padding: 1rem 2rem;
-  background-color: #2FA3B0;
   color: white;
   text-decoration: none;
   border-radius: 6px;
@@ -126,28 +215,5 @@ h2 {
 
 .item.special:hover {
   background-color: #ff5252;
-}
-
-/* 为了避免导航栏遮挡内容 */
-.home {
-  padding-top: 80px;
-}
-
-@media (max-width: 768px) {
-  .home {
-    padding: 1rem;
-  }
-
-  h1 {
-    font-size: 2rem;
-  }
-
-  h2 {
-    font-size: 1.5rem;
-  }
-
-  .section {
-    padding: 1.5rem;
-  }
 }
 </style>
