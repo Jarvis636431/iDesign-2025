@@ -24,50 +24,29 @@ const scrollToSection = (sectionId) => {
   }
 }
 
-// 监听滚动位置更新当前section
-const handleScroll = (e) => {
-  const container = e.target
-  const scrollLeft = container.scrollLeft
-  const width = container.clientWidth
-  const sections = ['home', 'preface', 'video', 'exhibition', 'graduates', 'team']
-  
-  // 找出当前最靠近视口中心的 section
-  const sectionElements = document.querySelectorAll('.content-section')
-  let minDistance = Infinity
-  let closestSection = null
-  
-  sectionElements.forEach((section) => {
-    const rect = section.getBoundingClientRect()
-    const distance = Math.abs(rect.left - width / 2)
-    if (distance < minDistance) {
-      minDistance = distance
-      closestSection = section
-    }
-  })
-  
-  if (closestSection) {
-    currentSection.value = closestSection.id
-  }
-}
-
 // 使用 IntersectionObserver 监测每个 section 的可见性
 onMounted(() => {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      // 只有当 section 完全进入视口时才更新
-      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-        currentSection.value = entry.target.id
-      }
-    })
-  }, {
-    root: scrollContainerRef.value,
-    threshold: [0, 0.5, 1]
-  })
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          currentSection.value = entry.target.id
+        }
+      })
+    },
+    {
+      root: null, // 使用视口作为根
+      threshold: [0.5],
+      rootMargin: '0px'
+    }
+  )
 
   // 观察所有section
   document.querySelectorAll('.content-section').forEach(section => {
     observer.observe(section)
   })
+
+  return () => observer.disconnect()
 })
 </script>
 
@@ -122,7 +101,7 @@ onMounted(() => {
 
     <!-- 主内容区域 -->
     <main class="main-content">
-      <div class="scroll-container" ref="scrollContainerRef" @scroll="handleScroll">
+      <div class="scroll-container" ref="scrollContainerRef">
         <HomeSection id="home" class="content-section" />
         <PrefaceSection id="preface" class="content-section" :is-english="isEnglish" />
         <VideoSection id="video" class="content-section" :is-english="isEnglish" />
@@ -136,9 +115,10 @@ onMounted(() => {
 
 <style scoped>
 .home-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f5f5f5;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .side-navigation {
@@ -237,21 +217,33 @@ onMounted(() => {
   display: flex;
   flex-direction: row;
   height: 100vh;
-  overflow-x: auto;
+  overflow-x: scroll;
   overflow-y: hidden;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
 
-.content-section {
-  min-width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
+/* 隐藏滚动条但保持功能 */
+.scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.scroll-container {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* 确保每个section都能完整显示 */
+:deep(.content-section) {
+  flex-shrink: 0;
+  width: 100vw;
+  height: 100vh;
   position: relative;
+}
+
+/* 对于团队section特别处理 */
+:deep(#team) {
+  width: 200vw;
 }
 
 h1 {
@@ -292,16 +284,6 @@ h2 {
   transform: translateY(-2px);
 }
 
-/* 隐藏滚动条但保留功能 */
-.scroll-container::-webkit-scrollbar {
-  display: none;
-}
-
-.scroll-container {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
 /* 为每个section添加不同的背景色或背景图 */
 #home {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -313,9 +295,5 @@ h2 {
 
 #video {
   background: linear-gradient(135deg, #f5f7fa 0%, #d4e6f1 100%);
-}
-
-#team {
-  background: linear-gradient(135deg, #f5f7fa 0%, #dac9e3 100%);
 }
 </style>
