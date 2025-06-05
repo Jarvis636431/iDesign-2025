@@ -34,18 +34,20 @@ const handleSelectGraduate = (graduate) => {
         </div>
       </div>
 
-      <!-- 右侧头像列表 -->
-      <div class="avatars-list">
-        <GraduateCard
-          v-for="graduate in graduates" 
-          :key="graduate.id"
-          :name="graduate.name"
-          :destination="graduate.destination"
-          :is-english="isEnglish"
-          :avatar="graduate.avatar"
-          :class="{ 'active': selectedGraduate?.id === graduate.id }"
-          @click="handleSelectGraduate(graduate)"
-        />
+      <!-- 右侧头像列表容器 -->
+      <div class="avatars-container">
+        <div class="avatars-list">
+          <GraduateCard
+            v-for="graduate in graduates" 
+            :key="graduate.id"
+            :name="graduate.name"
+            :destination="graduate.destination"
+            :is-english="isEnglish"
+            :avatar="graduate.avatar"
+            :class="{ 'active': selectedGraduate?.id === graduate.id }"
+            @click="handleSelectGraduate(graduate)"
+          />
+        </div>
       </div>
     </div>
   </section>
@@ -65,11 +67,11 @@ const handleSelectGraduate = (graduate) => {
 
 .graduates-layout {
   width: 100%;
-  height: 100%;
+  height: 100vh;
   display: flex;
   justify-content: space-between;
-  padding: 40px;
   box-sizing: border-box;
+  padding: 0;
 }
 
 .left-content {
@@ -80,13 +82,6 @@ const handleSelectGraduate = (graduate) => {
   gap: 80px;
   border: #000 solid 12px;
     border-radius: 24px;
-}
-
-h1 {
-  font-size: 56px;
-  font-weight: normal;
-  color: #000;
-  margin: 0;
 }
 
 .graduate-info {
@@ -116,9 +111,15 @@ h1 {
   white-space: pre-line;
 }
 
+.avatars-container {
+  width: 120px;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
 .avatars-list {
   width: 120px;
-  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -148,4 +149,6 @@ h1 {
     }
   }
 }
+
+
 </style>
