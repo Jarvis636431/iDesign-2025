@@ -1,38 +1,98 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useExhibitionStore } from '../stores/exhibition'
 
 const isEnglish = ref(false)
+const currentSection = ref('home')
+const scrollContainerRef = ref(null)
 
 const toggleLanguage = () => {
   isEnglish.value = !isEnglish.value
 }
+
+// 滚动到指定区域
+const scrollToSection = (sectionId) => {
+  const section = document.getElementById(sectionId)
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth' })
+    currentSection.value = sectionId
+  }
+}
+
+// 监听滚动位置更新当前section
+const handleScroll = (e) => {
+  const container = e.target
+  const scrollLeft = container.scrollLeft
+  const width = container.clientWidth
+  const sectionIndex = Math.round(scrollLeft / width)
+  const sections = ['home', 'preface', 'video', 'exhibition', 'graduates', 'team']
+  currentSection.value = sections[sectionIndex]
+}
+
+// 增加IntersectionObserver来精确检测当前可见section
+onMounted(() => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        currentSection.value = entry.target.id
+      }
+    })
+  }, {
+    root: scrollContainerRef.value,
+    threshold: 0.7
+  })
+
+  // 观察所有section
+  document.querySelectorAll('.content-section').forEach(section => {
+    observer.observe(section)
+  })
+})
 </script>
 
 <template>
   <div class="home-container">
     <!-- 左侧导航栏 -->
     <nav class="side-navigation">
-      <div class="nav-logo">
+      <div class="nav-logo" @click="scrollToSection('home')">
         <img src="/assets/images/logos/logo2025.png" alt="天津大学设计学院">
       </div>
       <div class="nav-links">
-        <router-link to="/2025/preface" class="nav-item">
+        <div 
+          class="nav-item"
+          :class="{ 'active': currentSection === 'preface' }"
+          @click="scrollToSection('preface')"
+        >
           {{ isEnglish ? 'Preface' : '卷首语' }}
-        </router-link>
-        <router-link to="/2025/video" class="nav-item">
+        </div>
+        <div 
+          class="nav-item"
+          :class="{ 'active': currentSection === 'video' }"
+          @click="scrollToSection('video')"
+        >
           {{ isEnglish ? 'Video' : '宣传片' }}
-        </router-link>
-        <router-link to="/2025/halls" class="nav-item">
+        </div>
+        <div 
+          class="nav-item"
+          :class="{ 'active': currentSection === 'exhibition' }"
+          @click="scrollToSection('exhibition')"
+        >
           {{ isEnglish ? 'Exhibition' : '虚拟展厅' }}
-        </router-link>
-        <router-link to="/2025/graduates" class="nav-item">
+        </div>
+        <div 
+          class="nav-item"
+          :class="{ 'active': currentSection === 'graduates' }"
+          @click="scrollToSection('graduates')"
+        >
           {{ isEnglish ? 'Graduates' : '毕业生' }}
-        </router-link>
-        <router-link to="/2025/team" class="nav-item">
+        </div>
+        <div 
+          class="nav-item"
+          :class="{ 'active': currentSection === 'team' }"
+          @click="scrollToSection('team')"
+        >
           {{ isEnglish ? 'Team' : '年展组' }}
-        </router-link>
+        </div>
       </div>
       <div class="language-switch" @click="toggleLanguage">
         {{ isEnglish ? 'CN' : 'EN' }}
@@ -41,27 +101,53 @@ const toggleLanguage = () => {
 
     <!-- 主内容区域 -->
     <main class="main-content">
-      <h1>天津大学设计学院2025届毕业设计展</h1>
-      <div class="exhibition-list">
-        <!-- 展厅导航 -->
-        <div class="section">
-          <h2>展厅导航</h2>
-          <div class="items">
-            <router-link to="/2025/halls" class="item">
-              查看所有展厅
-            </router-link>
-          </div>
-        </div>
+      <div class="scroll-container" ref="scrollContainerRef" @scroll="handleScroll">
+        <!-- 首页板块 -->
+        <section class="content-section" id="home">
+          <h1>天津大学设计学院<br>2025届毕业设计展</h1>
+        </section>
 
-        <!-- 展品信息入口 -->
-        <div class="section">
-          <h2>展品信息</h2>
-          <div class="items">
-            <router-link to="/2025/information/1" class="item special">
-              浏览展品信息
+        <!-- 卷首语板块 -->
+        <section class="content-section" id="preface">
+          <h2>卷首语</h2>
+          <div class="section-content">
+            <p>这里是卷首语内容...</p>
+          </div>
+        </section>
+
+        <!-- 宣传片板块 -->
+        <section class="content-section" id="video">
+          <h2>宣传片</h2>
+          <div class="section-content">
+            <!-- 这里可以放视频播放器 -->
+          </div>
+        </section>
+
+        <!-- 展厅板块 -->
+        <section class="content-section" id="exhibition">
+          <h2>虚拟展厅</h2>
+          <div class="section-content">
+            <router-link to="/2025/halls" class="enter-button">
+              进入展厅
             </router-link>
           </div>
-        </div>
+        </section>
+
+        <!-- 毕业生板块 -->
+        <section class="content-section" id="graduates">
+          <h2>毕业生</h2>
+          <div class="section-content">
+            <!-- 这里可以放毕业生列表 -->
+          </div>
+        </section>
+
+        <!-- 年展组板块 -->
+        <section class="content-section" id="team">
+          <h2>年展组</h2>
+          <div class="section-content">
+            <!-- 这里可以放年展组介绍 -->
+          </div>
+        </section>
       </div>
     </main>
   </div>
@@ -115,18 +201,23 @@ const toggleLanguage = () => {
   text-decoration: none;
   font-size: 1rem;
   transition: all 0.3s ease;
+  cursor: pointer;
+  padding: 0.8rem 0;
+  position: relative;
 }
 
 .nav-item:hover {
   transform: translateY(-2px);
+  color: #2FA3B0;
 }
 
-.nav-item.router-link-active {
+.nav-item.active {
   font-weight: 500;
+  color: #2FA3B0;
   position: relative;
 }
 
-.nav-item.router-link-active::after {
+.nav-item.active::after {
   content: '';
   position: absolute;
   right: 0;
@@ -156,64 +247,104 @@ const toggleLanguage = () => {
 
 .main-content {
   flex: 1;
-  padding: 2.5rem;
-  margin-left: 120px;
-  max-width: 1200px;
+  margin-left: 90px;
+  overflow: hidden;
+  position: relative;
+}
+
+.scroll-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content-section {
+  min-width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  position: relative;
 }
 
 h1 {
   color: #333;
-  font-size: 2.2rem;
-  margin-bottom: 2.5rem;
+  font-size: 3.5rem;
   font-weight: bold;
-}
-
-.exhibition-list {
-  margin-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.section {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  line-height: 1.4;
 }
 
 h2 {
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #2FA3B0;
 }
 
-.items {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+.section-content {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
 }
 
-.item {
+.enter-button {
   display: inline-block;
-  padding: 1rem 2rem;
+  padding: 1rem 3rem;
+  background-color: #2FA3B0;
   color: white;
   text-decoration: none;
-  border-radius: 6px;
-  font-size: 1.1rem;
+  border-radius: 8px;
+  font-size: 1.2rem;
   transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
 }
 
-.item:hover {
+.enter-button:hover {
   background-color: #1a7c85;
   transform: translateY(-2px);
 }
 
-.item.special {
-  background-color: #ff6b6b;
+/* 隐藏滚动条但保留功能 */
+.scroll-container::-webkit-scrollbar {
+  display: none;
 }
 
-.item.special:hover {
-  background-color: #ff5252;
+.scroll-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 为每个section添加不同的背景色或背景图 */
+#home {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+#preface {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e0eafc 100%);
+}
+
+#video {
+  background: linear-gradient(135deg, #f5f7fa 0%, #d4e6f1 100%);
+}
+
+#exhibition {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3e6cb 100%);
+}
+
+#graduates {
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffd3b6 100%);
+}
+
+#team {
+  background: linear-gradient(135deg, #f5f7fa 0%, #dac9e3 100%);
 }
 </style>
