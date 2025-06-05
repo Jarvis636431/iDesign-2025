@@ -78,6 +78,8 @@ const handleSelectGraduate = (graduate) => {
   display: flex;
   flex-direction: column;
   gap: 80px;
+  border: #000 solid 12px;
+    border-radius: 24px;
 }
 
 h1 {
