@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { halls } from '../../constants/halls'
 
 const props = defineProps({
@@ -10,225 +10,279 @@ const props = defineProps({
 })
 
 const activeHallIndex = ref(0)
-const intervalId = ref(null)
+const isTransitioning = ref(false)
 
-const startAutoPlay = () => {
-  intervalId.value = setInterval(() => {
-    activeHallIndex.value = (activeHallIndex.value + 1) % halls.length
-  }, 3000)
-}
+const activeHall = computed(() => halls[activeHallIndex.value])
 
-const stopAutoPlay = () => {
-  if (intervalId.value) {
-    clearInterval(intervalId.value)
-  }
-}
-
-const setActiveHall = (index) => {
+const setActiveHall = async (index) => {
+  if (isTransitioning.value || index === activeHallIndex.value) return
+  isTransitioning.value = true
   activeHallIndex.value = index
-  stopAutoPlay()
+  await new Promise(resolve => setTimeout(resolve, 1000)) // 等待过渡动画完成
+  isTransitioning.value = false
 }
 
-onMounted(() => {
-  startAutoPlay()
-})
+const getHallPosition = (index) => {
+  const position = index - activeHallIndex.value
+  return `translateX(${position * 100}%)`
+}
 </script>
 
 <template>
-  <section class="content-section" id="exhibition">
-    <div class="exhibition-background"></div>
-    <div class="exhibition-content">
-      <h2>{{ isEnglish ? 'Virtual Exhibition' : '虚拟展厅' }}</h2>
-      <div class="exhibition-preview">
-        <div class="preview-container" 
-             @mouseenter="stopAutoPlay"
-             @mouseleave="startAutoPlay">
-          <div class="halls-preview">
-            <div v-for="(hall, index) in halls" 
-                 :key="hall.id"
-                 :class="['hall-card', { active: index === activeHallIndex }]"
-                 @click="setActiveHall(index)">
-              <img :src="hall.logo" :alt="hall.name" class="hall-logo" />
-              <div class="hall-info">
-                <img v-if="hall.icon" :src="hall.icon" class="hall-icon" />
-                <img v-if="hall.border" :src="hall.border" class="hall-border" />
-                <h3>{{ hall.name }}</h3>
-                <p>{{ hall.desc }}</p>
-              </div>
-            </div>
-          </div>
-          <div class="preview-indicators">
-            <span v-for="(hall, index) in halls" 
-                  :key="index"
-                  :class="['indicator', { active: index === activeHallIndex }]"
-                  @click="setActiveHall(index)">
-            </span>
+  <section 
+    class="exhibition-section" 
+    id="exhibition"
+    :style="{ backgroundColor: activeHall.backgroundColor }">
+    <!-- 左侧装饰线条和导航 -->
+    <div class="left-navigation">
+      <div class="decorative-lines">
+        <div class="line line-1"></div>
+        <div class="line line-2"></div>
+        <div class="line line-3"></div>
+      </div>
+      <div class="hall-nav-list">
+        <button v-for="(hall, index) in halls"
+                :key="hall.id"
+                :class="['hall-nav-item', { active: index === activeHallIndex }]"
+                @click="setActiveHall(index)">
+          <img :src="hall.icon" :alt="isEnglish ? hall.enName : hall.name">
+          <span class="hall-nav-name">{{ isEnglish ? hall.enName : hall.name }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 右侧主要内容区域 -->
+    <div class="main-content">
+      <!-- 顶部横向导航 -->
+      <div class="top-navigation">
+        <div class="nav-track">
+          <div v-for="(hall, index) in halls"
+               :key="hall.id"
+               :class="['nav-item', { active: index === activeHallIndex }]"
+               @click="setActiveHall(index)">
+            <div class="nav-dot"></div>
+            <span class="nav-label">{{ isEnglish ? hall.enName : hall.name }}</span>
           </div>
         </div>
-        <router-link to="/2025/halls" class="enter-button">
-          {{ isEnglish ? 'Enter Exhibition' : '进入展厅' }}
-          <span class="button-arrow">→</span>
-        </router-link>
+      </div>
+
+      <!-- 展厅预览区域 -->
+      <div class="exhibition-preview">
+        <div class="preview-container"
+             :style="{ transform: `translateX(-${activeHallIndex * 100}%)` }">
+          <div v-for="(hall, index) in halls"
+               :key="hall.id"
+               class="hall-preview"
+               :style="{ transform: getHallPosition(index) }">
+            <img :src="hall.logo" :alt="isEnglish ? hall.enName : hall.name"
+                 class="hall-image">
+            <img :src="hall.border" class="hall-border">
+          </div>
+        </div>
+      </div>
+
+      <!-- 展厅描述区域 -->
+      <div class="hall-description" :class="{ transitioning: isTransitioning }">
+        <h3 class="hall-title">
+          {{ isEnglish ? activeHall.enName : activeHall.name }}
+        </h3>
+        <div class="hall-subtitle">
+          {{ isEnglish ? activeHall.enSubTitle : activeHall.subTitle }}
+        </div>
+        <p class="hall-text">
+          {{ isEnglish ? activeHall.enDesc : activeHall.desc }}
+        </p>
       </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-.content-section {
-  min-width: 100%;
+.exhibition-section {
+  display: flex;
   height: 100vh;
-  scroll-snap-align: start;
-  position: relative;
+  color: #333;
   overflow: hidden;
-  background-color: #000;
+  position: relative;
+  transition: background-color 0.3s ease;
+  background-color: #fff;
 }
 
-.exhibition-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
-  z-index: 1;
-}
-
-.exhibition-content {
+/* 左侧导航样式 */
+.left-navigation {
+  width: 180px;
+  padding: 40px 20px;
   position: relative;
   z-index: 2;
+}
+
+.decorative-lines {
+  position: absolute;
+  left: 0;
+  top: 0;
   height: 100%;
+  width: 100%;
+  pointer-events: none;
+}
+
+.line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+  height: 1px;
+  width: 100%;
+  transform-origin: left center;
+}
+
+.line-1 { top: 25%; transform: rotate(-15deg); }
+.line-2 { top: 50%; transform: rotate(10deg); }
+.line-3 { top: 75%; transform: rotate(-20deg); }
+
+.hall-nav-list {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
+  gap: 20px;
+  margin-top: 100px;
 }
 
-h2 {
-  font-size: 3rem;
-  margin-bottom: 3rem;
-  color: #fff;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.exhibition-preview {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.preview-container {
-  margin-bottom: 2rem;
-  position: relative;
-}
-
-.halls-preview {
+.hall-nav-item {
   display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.hall-card {
-  width: 280px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 12px;
-  padding: 1.5rem;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  opacity: 0.6;
-  transform: scale(0.95);
 }
 
-.hall-card.active {
-  opacity: 1;
-  transform: scale(1);
-  background: rgba(255,255,255,0.2);
-}
-
-.hall-logo {
-  width: 100%;
-  height: 160px;
-  object-fit: contain;
-  margin-bottom: 1rem;
+.hall-nav-item.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
 }
 
-.hall-info {
-  text-align: center;
-  color: #fff;
+.hall-nav-item img {
+  width: 24px;
+  height: 24px;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
 }
 
-.hall-icon {
-  width: 32px;
-  height: 32px;
-  margin-right: 0.5rem;
+.hall-nav-item.active img {
+  opacity: 1;
 }
 
-.hall-border {
-  height: 32px;
-}
-
-.hall-info h3 {
-  font-size: 1.2rem;
-  margin: 0.5rem 0;
-}
-
-.hall-info p {
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-.preview-indicators {
+/* 主要内容区域样式 */
+.main-content {
+  flex: 1;
   display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  flex-direction: column;
+  padding: 40px;
+  position: relative;
 }
 
-.indicator {
+/* 顶部导航样式 */
+.top-navigation {
+  height: 60px;
+  margin-bottom: 40px;
+}
+
+.nav-track {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.nav-item.active {
+  opacity: 1;
+}
+
+.nav-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.3);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  background: currentColor;
 }
 
-.indicator.active {
-  background: #fff;
-  transform: scale(1.2);
+/* 展厅预览区域样式 */
+.exhibition-preview {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
 }
 
-.enter-button {
-  display: inline-flex;
-  align-items: center;
-  padding: 1rem 3rem;
-  background-color: rgba(47, 163, 176, 0.9);
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 1.2rem;
-  transition: all 0.3s ease;
-  border: none;
-  cursor: pointer;
-  backdrop-filter: blur(5px);
+.preview-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.button-arrow {
-  margin-left: 0.5rem;
-  font-size: 1.4rem;
-  transition: transform 0.3s ease;
+.hall-preview {
+  min-width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.enter-button:hover {
-  background-color: rgba(26, 124, 133, 0.9);
-  transform: translateY(-2px);
+.hall-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.enter-button:hover .button-arrow {
-  transform: translateX(5px);
+.hall-border {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.3;
+}
+
+/* 展厅描述区域样式 */
+.hall-description {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  max-width: 400px;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  transition: opacity 0.5s ease;
+}
+
+.hall-description.transitioning {
+  opacity: 0;
+}
+
+.hall-title {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: var(--primary-color);
+}
+
+.hall-subtitle {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.hall-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
 }
 </style>

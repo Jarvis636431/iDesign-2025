@@ -1,7 +1,5 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useExhibitionStore } from '../stores/exhibition'
 import HomeSection from '../components/sections/HomeSection.vue'
 import PrefaceSection from '../components/sections/PrefaceSection.vue'
 import VideoSection from '../components/sections/VideoSection.vue'
@@ -108,28 +106,12 @@ onMounted(() => {
     <!-- 主内容区域 -->
     <main class="main-content">
       <div class="scroll-container" ref="scrollContainerRef" @scroll="handleScroll">
-        <HomeSection />
-        <PrefaceSection :is-english="isEnglish" />
-        <VideoSection :is-english="isEnglish" />
-        <ExhibitionSection :is-english="isEnglish" />
-        <GraduatesSection :is-english="isEnglish" />
-        <TeamSection :is-english="isEnglish" />
-
-        <!-- 毕业生板块 -->
-        <section class="content-section" id="graduates">
-          <h2>毕业生</h2>
-          <div class="section-content">
-            <!-- 这里可以放毕业生列表 -->
-          </div>
-        </section>
-
-        <!-- 年展组板块 -->
-        <section class="content-section" id="team">
-          <h2>年展组</h2>
-          <div class="section-content">
-            <!-- 这里可以放年展组介绍 -->
-          </div>
-        </section>
+        <HomeSection id="home" class="content-section" />
+        <PrefaceSection id="preface" class="content-section" :is-english="isEnglish" />
+        <VideoSection id="video" class="content-section" :is-english="isEnglish" />
+        <ExhibitionSection id="exhibition" class="content-section" :is-english="isEnglish" />
+        <GraduatesSection id="graduates" class="content-section" :is-english="isEnglish" />
+        <TeamSection id="team" class="content-section" :is-english="isEnglish" />
       </div>
     </main>
   </div>
@@ -316,10 +298,6 @@ h2 {
 
 #video {
   background: linear-gradient(135deg, #f5f7fa 0%, #d4e6f1 100%);
-}
-
-#exhibition {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3e6cb 100%);
 }
 
 #graduates {
