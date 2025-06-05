@@ -1,54 +1,54 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import HomeSection from '../components/sections/HomeSection.vue'
-import PrefaceSection from '../components/sections/PrefaceSection.vue'
-import VideoSection from '../components/sections/VideoSection.vue'
-import ExhibitionSection from '../components/sections/ExhibitionSection.vue'
-import GraduatesSection from '../components/sections/GraduatesSection.vue'
-import TeamSection from '../components/sections/TeamSection.vue'
-import TransitionSlide from '../components/slides/TransitionSlide.vue'
+import { ref, onMounted } from "vue";
+import HomeSection from "../components/sections/HomeSection.vue";
+import PrefaceSection from "../components/sections/PrefaceSection.vue";
+import VideoSection from "../components/sections/VideoSection.vue";
+import ExhibitionSection from "../components/sections/ExhibitionSection.vue";
+import GraduatesSection from "../components/sections/GraduatesSection.vue";
+import TeamSection from "../components/sections/TeamSection.vue";
+import TransitionSlide from "../components/slides/TransitionSlide.vue";
 
-const isEnglish = ref(false)
-const currentSection = ref('home')
-const scrollContainerRef = ref(null)
+const isEnglish = ref(false);
+const currentSection = ref("home");
+const scrollContainerRef = ref(null);
 
 const toggleLanguage = () => {
-  isEnglish.value = !isEnglish.value
-}
+  isEnglish.value = !isEnglish.value;
+};
 
 // 滚动到指定区域
 const scrollToSection = (sectionId) => {
-  const section = document.getElementById(sectionId)
+  const section = document.getElementById(sectionId);
   if (section) {
-    section.scrollIntoView({ behavior: 'smooth' })
-    currentSection.value = sectionId
+    section.scrollIntoView({ behavior: "smooth" });
+    currentSection.value = sectionId;
   }
-}
+};
 
 // 使用 IntersectionObserver 监测每个 section 的可见性
 onMounted(() => {
   const observer = new IntersectionObserver(
     (entries) => {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-          currentSection.value = entry.target.id
+          currentSection.value = entry.target.id;
         }
-      })
+      });
     },
     {
       root: null, // 使用视口作为根
       threshold: [0.5],
-      rootMargin: '0px'
+      rootMargin: "0px",
     }
-  )
+  );
 
   // 观察所有section
-  document.querySelectorAll('.content-section').forEach(section => {
-    observer.observe(section)
-  })
+  document.querySelectorAll(".content-section").forEach((section) => {
+    observer.observe(section);
+  });
 
-  return () => observer.disconnect()
-})
+  return () => observer.disconnect();
+});
 </script>
 
 <template>
@@ -56,47 +56,47 @@ onMounted(() => {
     <!-- 左侧导航栏 -->
     <nav class="side-navigation">
       <div class="nav-logo" @click="scrollToSection('home')">
-        <img src="/assets/images/logos/logo2025.png" alt="天津大学设计学院">
+        <img src="/assets/images/logos/logo2025.png" alt="天津大学设计学院" />
       </div>
       <div class="nav-links">
-        <div 
+        <div
           class="nav-item"
-          :class="{ 'active': currentSection === 'preface' }"
+          :class="{ active: currentSection === 'preface' }"
           @click="scrollToSection('preface')"
         >
-          {{ isEnglish ? 'Preface' : '卷首语' }}
+          {{ isEnglish ? "Preface" : "卷首语" }}
         </div>
-        <div 
+        <div
           class="nav-item"
-          :class="{ 'active': currentSection === 'video' }"
+          :class="{ active: currentSection === 'video' }"
           @click="scrollToSection('video')"
         >
-          {{ isEnglish ? 'Video' : '宣传片' }}
+          {{ isEnglish ? "Video" : "宣传片" }}
         </div>
-        <div 
+        <div
           class="nav-item"
-          :class="{ 'active': currentSection === 'exhibition' }"
+          :class="{ active: currentSection === 'exhibition' }"
           @click="scrollToSection('exhibition')"
         >
-          {{ isEnglish ? 'Exhibition' : '虚拟展厅' }}
+          {{ isEnglish ? "Exhibition" : "虚拟展厅" }}
         </div>
-        <div 
+        <div
           class="nav-item"
-          :class="{ 'active': currentSection === 'graduates' }"
+          :class="{ active: currentSection === 'graduates' }"
           @click="scrollToSection('graduates')"
         >
-          {{ isEnglish ? 'Graduates' : '毕业生' }}
+          {{ isEnglish ? "Graduates" : "毕业生" }}
         </div>
-        <div 
+        <div
           class="nav-item"
-          :class="{ 'active': currentSection === 'team' }"
+          :class="{ active: currentSection === 'team' }"
           @click="scrollToSection('team')"
         >
-          {{ isEnglish ? 'Team' : '年展组' }}
+          {{ isEnglish ? "Team" : "年展组" }}
         </div>
       </div>
       <div class="language-switch" @click="toggleLanguage">
-        {{ isEnglish ? 'CN' : 'EN' }}
+        {{ isEnglish ? "CN" : "EN" }}
       </div>
     </nav>
 
@@ -104,12 +104,36 @@ onMounted(() => {
     <main class="main-content">
       <div class="scroll-container" ref="scrollContainerRef">
         <HomeSection id="home" class="content-section" />
-        <PrefaceSection id="preface" class="content-section" :is-english="isEnglish" />
-        <VideoSection id="video" class="content-section" :is-english="isEnglish" />
-        <ExhibitionSection id="exhibition" class="content-section" :is-english="isEnglish" />
-        <GraduatesSection id="graduates" class="content-section" :is-english="isEnglish" />
-        <TransitionSlide id="story" class="content-section" :is-english="isEnglish" />
-        <TeamSection id="team" class="content-section" :is-english="isEnglish" />
+        <PrefaceSection
+          id="preface"
+          class="content-section"
+          :is-english="isEnglish"
+        />
+        <VideoSection
+          id="video"
+          class="content-section"
+          :is-english="isEnglish"
+        />
+        <ExhibitionSection
+          id="exhibition"
+          class="content-section"
+          :is-english="isEnglish"
+        />
+        <GraduatesSection
+          id="graduates"
+          class="content-section"
+          :is-english="isEnglish"
+        />
+        <TransitionSlide
+          id="story"
+          class="content-section"
+          :is-english="isEnglish"
+        />
+        <TeamSection
+          id="team"
+          class="content-section"
+          :is-english="isEnglish"
+        />
       </div>
     </main>
   </div>
@@ -171,17 +195,17 @@ onMounted(() => {
 
 .nav-item:hover {
   transform: translateY(-2px);
-  color: #2FA3B0;
+  color: #2fa3b0;
 }
 
 .nav-item.active {
   font-weight: 500;
-  color: #2FA3B0;
+  color: #2fa3b0;
   position: relative;
 }
 
 .nav-item.active::after {
-  content: '';
+  content: "";
   position: absolute;
   right: 0;
   top: 50%;
@@ -223,6 +247,8 @@ onMounted(() => {
   overflow-y: hidden;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  position: relative;
+  width: 100%;
 }
 
 /* 隐藏滚动条但保持功能 */
@@ -243,9 +269,13 @@ onMounted(() => {
   position: relative;
 }
 
-/* 对于团队section特别处理 */
+/* 特殊宽度section处理 */
 :deep(#team) {
   width: 200vw;
+}
+
+:deep(#graduates) {
+  width: 120vw;
 }
 
 h1 {
@@ -259,7 +289,7 @@ h1 {
 h2 {
   font-size: 2.5rem;
   margin-bottom: 2rem;
-  color: #2FA3B0;
+  color: #2fa3b0;
 }
 
 .section-content {
@@ -271,7 +301,7 @@ h2 {
 .enter-button {
   display: inline-block;
   padding: 1rem 3rem;
-  background-color: #2FA3B0;
+  background-color: #2fa3b0;
   color: white;
   text-decoration: none;
   border-radius: 8px;
