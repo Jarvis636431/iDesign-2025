@@ -26,17 +26,20 @@ onBeforeUnmount(() => {
 
 const initializeRectangles = () => {
   rectangles.value = staffGroups.map((group, index) => {
-    const isTop = index % 2 === 1; // 第一个(index=0)在下面
+    const isTop = index % 2 === 1; // 第一个在下面
     const positionIndex = Math.floor(index / 2);
     const groupsInRow = Math.ceil(staffGroups.length / 2);
     
-    // 水平间距为40vw
-    const horizontalOffset = (positionIndex - (groupsInRow - 1) / 2) * 40;
+    // 基础水平偏移
+    let horizontalOffset = (positionIndex - (groupsInRow - 1) / 2) * 45;
+    
+    // 添加错开效果：上方的矩形向右偏移，下方的向左偏移
+    horizontalOffset += isTop ? 15 : -15;
     
     return {
       ...group,
       position: isTop ? 'top' : 'bottom',
-      translateY: isTop ? -60 : 60, // 初始位置更靠近可视区域
+      translateY: isTop ? -60 : 60,
       translateX: horizontalOffset
     }
   })
