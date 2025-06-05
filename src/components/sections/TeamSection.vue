@@ -25,11 +25,25 @@ onBeforeUnmount(() => {
 })
 
 const initializeRectangles = () => {
-  rectangles.value = staffGroups.map((group, index) => ({
-    ...group,
-    position: index % 2 === 0 ? 'top' : 'bottom',
-    translateY: index % 2 === 0 ? -100 : 100
-  }))
+  // 获取上下各有多少个矩形
+  const topCount = Math.ceil(staffGroups.length / 2);
+  const bottomCount = Math.floor(staffGroups.length / 2);
+  
+  rectangles.value = staffGroups.map((group, index) => {
+    const isTop = index % 2 === 0;
+    const positionIndex = Math.floor(index / 2); // 在上/下序列中的位置
+    const totalInRow = isTop ? topCount : bottomCount;
+    
+    // 计算水平偏移
+    const horizontalOffset = (positionIndex - (totalInRow - 1) / 2) * 90; // 90vw 作为水平间距
+    
+    return {
+      ...group,
+      position: isTop ? 'top' : 'bottom',
+      translateY: isTop ? -100 : 100,
+      translateX: horizontalOffset
+    }
+  })
 }
 
 const setupIntersectionObserver = () => {
@@ -59,7 +73,8 @@ const updateRectanglesPosition = (progress) => {
     ...rect,
     translateY: rect.position === 'top'
       ? -100 + (progress * 100)
-      : 100 - (progress * 100)
+      : 100 - (progress * 100),
+    translateX: rect.translateX // 保持水平偏移不变
   }))
 }
 </script>
@@ -72,7 +87,7 @@ const updateRectanglesPosition = (progress) => {
            class="team-rectangle"
            :class="rectangle.position"
            :style="{
-             transform: `translateY(${rectangle.translateY}%)`
+             transform: `translate(calc(${rectangle.translateX}vw + 50%), ${rectangle.translateY}%)`
            }">
         <h3>{{ rectangle.name }}</h3>
         <div class="members-grid">
@@ -110,15 +125,14 @@ const updateRectanglesPosition = (progress) => {
 
 .team-rectangle {
   position: absolute;
-  left: 100vw;
-  transform: translate(-50%, 0);
-  width: 80vw;
+  left: 100vw; /* 设置初始位置在中心 */
+  width: 70vw; /* 减小宽度，避免重叠 */
   max-height: 80vh;
   background-color: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 2rem;
-  transition: transform 0.3s ease-out;
+  transition: all 0.5s ease-out;
   overflow-y: auto;
 }
 
