@@ -32,7 +32,7 @@ const handleWheel = (event) => {
     
     <!-- 左上角标题 -->
     <div class="hall-title-area">
-      <h2 class="hall-title">{{ isEnglish ? activeHall.enName : activeHall.name }}</h2>
+      <h2 class="hall-title" :style="{color:activeHall.color}" >{{ isEnglish ? activeHall.enName : activeHall.name }}</h2>
     </div>
 
     <!-- 右侧中间Logo -->
@@ -65,17 +65,25 @@ const handleWheel = (event) => {
 
 .hall-title-area {
   position: absolute;
-  top: 40px;
-  left: 40px;
+  top: 20px;
+  left: 30px;
   z-index: 2;
 }
 
 .hall-title {
-  font-size: 36px;
+  font-size: 96px;
   font-weight: bold;
   line-height: 1.4;
-  color: #333;
   margin: 0;
+  font-family: "MFXiHei", sans-serif; /* 添加自定义字体 */
+}
+
+@font-face {
+  font-family: "MFXiHei";
+  src: url("/assets/fonts/MFXiHei_Noncommercial-Regular.otf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
 .hall-logo-area {
