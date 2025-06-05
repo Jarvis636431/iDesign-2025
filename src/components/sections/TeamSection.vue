@@ -30,8 +30,9 @@ const initializeRectangles = () => {
     const positionIndex = Math.floor(index / 2);
     const groupsInRow = Math.ceil(staffGroups.length / 2);
     
-    let horizontalOffset = (positionIndex - (groupsInRow - 1) / 2) * 45;
-    horizontalOffset += isTop ? 15 : -15;
+    // 减小水平间距为25vw，因为矩形变窄了
+    let horizontalOffset = (positionIndex - (groupsInRow - 1) / 2) * 25;
+    horizontalOffset += isTop ? 10 : -10; // 减小错开距离
     
     return {
       ...group,
@@ -136,38 +137,39 @@ const easeInOutCubic = (x) => {
 .team-rectangle {
   position: absolute;
   left: 100vw;
-  width: 25vw;
-  max-height: 90vh; /* 增加最大高度 */
+  width: 160px; /* 照片宽度 + 边距 */
+  height: auto; /* 自适应内容高度 */
   background-color: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 16px;
-  padding: 1.5rem;
-  transition: all 0.3s ease-out; /* 减少过渡时间，使动画更快 */
-  overflow-y: auto;
+  padding: 1.2rem;
+  transition: all 0.3s ease-out;
+  overflow: visible; /* 改为 visible */
 }
 
 .team-rectangle.top {
-  top: 1vh; /* 更靠近顶部 */
+  top: 1vh;
 }
 
 .team-rectangle.bottom {
-  bottom: 1vh; /* 更靠近底部 */
+  bottom: 1vh;
 }
 
 .team-rectangle h3 {
   color: #ffffff;
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding-bottom: 0.8rem;
+  padding-bottom: 0.6rem;
+  white-space: nowrap;
 }
 
 .members-grid {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
-  padding: 0.5rem;
+  gap: 1.5rem;
+  padding: 0.3rem;
 }
 
 .member-card {
@@ -176,7 +178,7 @@ const easeInOutCubic = (x) => {
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  padding: 1.2rem;
+  padding: 1rem;
   transition: all 0.3s ease;
   text-align: center;
   width: 100%;
@@ -188,11 +190,11 @@ const easeInOutCubic = (x) => {
 }
 
 .member-avatar {
-  width: 100px; /* 增大头像尺寸 */
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -202,35 +204,16 @@ const easeInOutCubic = (x) => {
 }
 
 .member-info h4 {
-  font-size: 1.1rem;
-  margin: 0 0 0.4rem 0;
+  font-size: 1rem;
+  margin: 0 0 0.3rem 0;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .member-info p {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   opacity: 0.8;
   margin: 0;
-  line-height: 1.4;
-  white-space: pre-line; /* 允许文本换行 */
-}
-
-/* 自定义滚动条样式 */
-.team-rectangle::-webkit-scrollbar {
-  width: 6px;
-}
-
-.team-rectangle::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-
-.team-rectangle::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-.team-rectangle::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  line-height: 1.3;
 }
 </style>
