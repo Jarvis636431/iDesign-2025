@@ -6,6 +6,7 @@ import VideoSection from '../components/sections/VideoSection.vue'
 import ExhibitionSection from '../components/sections/ExhibitionSection.vue'
 import GraduatesSection from '../components/sections/GraduatesSection.vue'
 import TeamSection from '../components/sections/TeamSection.vue'
+import TransitionSlide from '../components/slides/TransitionSlide.vue'
 
 const isEnglish = ref(false)
 const currentSection = ref('home')
@@ -107,6 +108,7 @@ onMounted(() => {
         <VideoSection id="video" class="content-section" :is-english="isEnglish" />
         <ExhibitionSection id="exhibition" class="content-section" :is-english="isEnglish" />
         <GraduatesSection id="graduates" class="content-section" :is-english="isEnglish" />
+        <TransitionSlide id="story" class="content-section" :is-english="isEnglish" />
         <TeamSection id="team" class="content-section" :is-english="isEnglish" />
       </div>
     </main>
@@ -295,5 +297,10 @@ h2 {
 
 #video {
   background: linear-gradient(135deg, #f5f7fa 0%, #d4e6f1 100%);
+}
+
+/* 特殊处理过渡区域宽度 */
+:deep(#story) {
+  width: 150vw;
 }
 </style>

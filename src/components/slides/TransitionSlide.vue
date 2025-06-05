@@ -1,26 +1,124 @@
 <template>
   <div class="slide transition-slide">
-    <h2>探索即将开始</h2>
-    <p>继续滑动进入展厅选择</p>
+    <div class="transition-content">
+      <h2>有风自南，翼彼新苗</h2>
+      <div class="rotating-image">
+        <img src="/assets/images/chime.png" alt="chime" />
+      </div>
+    </div>
+    <div class="repeating-text">
+      <div class="text-container">
+        <div class="text-item">年展组 </div>
+        <div class="text-item">年展组 </div>
+        <div class="text-item">年展组 </div>
+        <div class="text-item">年展组 </div>
+        <div class="text-item">年展组 </div>
+        <div class="text-item">年展组 </div>
+        <div class="text-item">年展组 </div>
+        <div class="text-item">年展组 </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { onMounted, onUnmounted } from 'vue';
+
+let scrollHandler;
+let animationFrame;
+let rotationAngle = 0;
+
+onMounted(() => {
+  const image = document.querySelector('.rotating-image img');
+  
+  scrollHandler = () => {
+    animationFrame = requestAnimationFrame(() => {
+      rotationAngle += 1;
+      if (image) {
+        image.style.transform = `rotate(${rotationAngle}deg)`;
+      }
+    });
+  };
+
+  window.addEventListener('scroll', scrollHandler);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', scrollHandler);
+  if (animationFrame) {
+    cancelAnimationFrame(animationFrame);
+  }
+});
 </script>
 
 <style scoped>
+@font-face {
+  font-family: 'SmileySans';
+  src: url('/assets/fonts/SmileySans-Oblique.ttf') format('truetype');
+}
+
 .transition-slide {
-  background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
-  color: white;
+  min-height: 100vh;
+  width: 130vw;
+  background: #052A1B;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.transition-content {
+  position: relative;
+  left: 45%;
+  transform: translateX(-50%);
+  z-index: 2;
 }
 
 h2 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+  position: relative;
+  font-family: 'SmileySans', sans-serif;
+  font-size: 6rem;
+  color: #FFE29A;
+  margin: 0;
+  white-space: nowrap;
+  letter-spacing: 3rem;
+  z-index: 2;
 }
 
-p {
-  font-size: 1.5rem;
-  opacity: 0.8;
+.rotating-image {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.rotating-image img {
+  width: 300px;
+  height: 300px;
+  transition: transform 0.1s linear;
+  opacity: 0.2;
+}
+
+.repeating-text {
+  position: absolute;
+  right: 5vw;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+.text-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.text-item {
+  color: #ffffff;
+  font-family: 'SmileySans', sans-serif;
+  font-size: 5rem;
+  white-space: nowrap;
+  transform: rotate(-90deg);
 }
 </style> 
