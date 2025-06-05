@@ -289,7 +289,7 @@ export const staffGroups = [
           zh: "刘晋宇",
           en: "Jinyu LIU",
         },
-        avatar: `${baseURL}assets/images/staff/curations/wangzihan.jpg`,
+        avatar: `${baseURL}assets/images/staff/curations/liujinyu.jpg`,
         role: {
           zh: "设计制作虚拟展厅，主视觉动画",
           en: "Design and produce virtual exhibition hall, key visual animation",
@@ -379,7 +379,7 @@ export const staffGroups = [
           zh: "袁静怡",
           en: "Jingyi YUAN",
         },
-        avatar: `${baseURL}assets/images/staff/publicity/yuanjingyi.jpg`,
+        avatar: `${baseURL}assets/images/staff/curations/yuanjingyi.jpg`,
         role: {
           zh: "视频拍摄，后期制作，推送制作，采访",
           en: "Video shooting, post-production, push notification production, interviews",

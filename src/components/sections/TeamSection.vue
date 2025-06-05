@@ -30,9 +30,13 @@ const initializeRectangles = () => {
     const positionIndex = Math.floor(index / 2);
     const groupsInRow = Math.ceil(staffGroups.length / 2);
     
-    // 减小水平间距为25vw，因为矩形变窄了
-    let horizontalOffset = (positionIndex - (groupsInRow - 1) / 2) * 25;
-    horizontalOffset += isTop ? 10 : -10; // 减小错开距离
+    // 基础间距设为35vw
+    let horizontalOffset = (positionIndex - (groupsInRow - 1) / 2) * 35;
+    // 整体向左偏移，让第一个矩形更靠左
+    horizontalOffset -= 35;
+    
+    // 上下都向右错开，但错开距离不同
+    horizontalOffset += isTop ? 24 : 6;
     
     return {
       ...group,
@@ -48,38 +52,40 @@ const setupScrollHandler = () => {
   if (!scrollContainer) return
 
   scrollHandler = () => {
-    const teamSection = document.getElementById('team')
-    if (!teamSection) return
-
-    const rect = teamSection.getBoundingClientRect()
     const containerWidth = window.innerWidth
-    const sectionWidth = teamSection.offsetWidth
     
-    // 计算滚动进度：只要section出现在视口就开始计算
-    let progress = 0
-    // 当section开始进入视口
-    if (rect.right > 0 && rect.left < containerWidth) {
-      // 根据left位置计算进度，使整个section宽度作为计算基准
-      progress = (containerWidth - rect.left) / sectionWidth
-    } else if (rect.left >= containerWidth) {
-      // section还未进入视口
-      progress = 0
-    } else {
-      // section已完全滚过
-      progress = 1
-    }
+    // 更新每个矩形的位置
+    rectangles.value = rectangles.value.map(rect => {
+      // 获取矩形元素
+      const rectElement = document.querySelector(`#team-rect-${rect.id}`)
+      if (!rectElement) return rect
 
-    // 使用缓动函数使动画更平滑
-    const easeProgress = easeInOutCubic(progress)
-    
-    // 更新矩形位置，增加移动距离到120（允许超出对面边界）
-    rectangles.value = rectangles.value.map(rect => ({
-      ...rect,
-      translateY: rect.position === 'top'
-        ? -60 + (easeProgress * 120) // 从-60移动到60
-        : 60 - (easeProgress * 120), // 从60移动到-60
-      translateX: rect.translateX
-    }))
+      const rectBounds = rectElement.getBoundingClientRect()
+      let progress = 0
+
+      // 计算每个矩形自己的进度
+      if (rectBounds.right > 0 && rectBounds.left < containerWidth) {
+        // 当矩形开始进入视口，根据其位置计算进度
+        progress = (containerWidth - rectBounds.left) / containerWidth
+        // 限制进度在 0-1 之间
+        progress = Math.max(0, Math.min(1, progress))
+      } else if (rectBounds.left >= containerWidth) {
+        progress = 0
+      } else {
+        progress = 1
+      }
+
+      // 使用缓动函数使动画更平滑
+      const easeProgress = easeInOutCubic(progress)
+      
+      return {
+        ...rect,
+        translateY: rect.position === 'top'
+          ? -60 + (easeProgress * 120)
+          : 60 - (easeProgress * 120),
+        translateX: rect.translateX
+      }
+    })
   }
 
   scrollContainer.addEventListener('scroll', scrollHandler)
@@ -95,6 +101,7 @@ const easeInOutCubic = (x) => {
     <div class="team-container">
       <div v-for="rectangle in rectangles" 
            :key="rectangle.id"
+           :id="`team-rect-${rectangle.id}`"
            class="team-rectangle"
            :class="rectangle.position"
            :style="{
