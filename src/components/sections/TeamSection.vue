@@ -25,16 +25,13 @@ onBeforeUnmount(() => {
 })
 
 const initializeRectangles = () => {
-  const topCount = Math.ceil(staffGroups.length / 2);
-  const bottomCount = Math.floor(staffGroups.length / 2);
-  
   rectangles.value = staffGroups.map((group, index) => {
-    const isTop = index % 2 === 0;
+    const isTop = index % 2 === 1; // 第一个(index=0)在下面
     const positionIndex = Math.floor(index / 2);
-    const totalInRow = isTop ? topCount : bottomCount;
+    const groupsInRow = Math.ceil(staffGroups.length / 2);
     
-    // 减小水平间距为40vw
-    const horizontalOffset = (positionIndex - (totalInRow - 1) / 2) * 40;
+    // 水平间距为40vw
+    const horizontalOffset = (positionIndex - (groupsInRow - 1) / 2) * 40;
     
     return {
       ...group,
@@ -133,7 +130,7 @@ const easeInOutCubic = (x) => {
 .team-rectangle {
   position: absolute;
   left: 100vw;
-  width: 30vw; /* 减小宽度 */
+  width: 25vw; /* 减小宽度，适合单列布局 */
   max-height: 85vh;
   background-color: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -144,13 +141,11 @@ const easeInOutCubic = (x) => {
 }
 
 .team-rectangle.top {
-  top: 2vh; /* 初始位置更靠近可视区域 */
-  transform-origin: top center;
+  top: 2vh;
 }
 
 .team-rectangle.bottom {
-  bottom: 2vh; /* 初始位置更靠近可视区域 */
-  transform-origin: bottom center;
+  bottom: 2vh;
 }
 
 .team-rectangle h3 {
@@ -163,8 +158,8 @@ const easeInOutCubic = (x) => {
 }
 
 .members-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 两列布局 */
+  display: flex;
+  flex-direction: column;
   gap: 1.2rem;
   padding: 0.5rem;
 }
@@ -175,9 +170,10 @@ const easeInOutCubic = (x) => {
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.2rem;
   transition: all 0.3s ease;
   text-align: center;
+  width: 100%;
 }
 
 .member-card:hover {
@@ -186,8 +182,8 @@ const easeInOutCubic = (x) => {
 }
 
 .member-avatar {
-  width: 80px;
-  height: 80px;
+  width: 100px; /* 增大头像尺寸 */
+  height: 100px;
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 1rem;
@@ -200,16 +196,17 @@ const easeInOutCubic = (x) => {
 }
 
 .member-info h4 {
-  font-size: 1rem;
-  margin: 0 0 0.3rem 0;
+  font-size: 1.1rem;
+  margin: 0 0 0.4rem 0;
   font-weight: 500;
 }
 
 .member-info p {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   opacity: 0.8;
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.4;
+  white-space: pre-line; /* 允许文本换行 */
 }
 
 /* 自定义滚动条样式 */
