@@ -29,22 +29,39 @@ const handleScroll = (e) => {
   const container = e.target
   const scrollLeft = container.scrollLeft
   const width = container.clientWidth
-  const sectionIndex = Math.round(scrollLeft / width)
   const sections = ['home', 'preface', 'video', 'exhibition', 'graduates', 'team']
-  currentSection.value = sections[sectionIndex]
+  
+  // 找出当前最靠近视口中心的 section
+  const sectionElements = document.querySelectorAll('.content-section')
+  let minDistance = Infinity
+  let closestSection = null
+  
+  sectionElements.forEach((section) => {
+    const rect = section.getBoundingClientRect()
+    const distance = Math.abs(rect.left - width / 2)
+    if (distance < minDistance) {
+      minDistance = distance
+      closestSection = section
+    }
+  })
+  
+  if (closestSection) {
+    currentSection.value = closestSection.id
+  }
 }
 
-// 增加IntersectionObserver来精确检测当前可见section
+// 使用 IntersectionObserver 监测每个 section 的可见性
 onMounted(() => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
+      // 只有当 section 完全进入视口时才更新
+      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
         currentSection.value = entry.target.id
       }
     })
   }, {
     root: scrollContainerRef.value,
-    threshold: 0.7
+    threshold: [0, 0.5, 1]
   })
 
   // 观察所有section
@@ -222,7 +239,6 @@ onMounted(() => {
   height: 100vh;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
@@ -230,7 +246,6 @@ onMounted(() => {
 .content-section {
   min-width: 100%;
   height: 100%;
-  scroll-snap-align: start;
   display: flex;
   flex-direction: column;
   justify-content: center;
