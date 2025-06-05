@@ -34,8 +34,8 @@ const initializeRectangles = () => {
     const positionIndex = Math.floor(index / 2); // 在上/下序列中的位置
     const totalInRow = isTop ? topCount : bottomCount;
     
-    // 计算水平偏移
-    const horizontalOffset = (positionIndex - (totalInRow - 1) / 2) * 90; // 90vw 作为水平间距
+    // 计算水平偏移（减小间距为45vw，因为矩形宽度变小了）
+    const horizontalOffset = (positionIndex - (totalInRow - 1) / 2) * 45;
     
     return {
       ...group,
@@ -125,9 +125,9 @@ const updateRectanglesPosition = (progress) => {
 
 .team-rectangle {
   position: absolute;
-  left: 100vw; /* 设置初始位置在中心 */
-  width: 70vw; /* 减小宽度，避免重叠 */
-  max-height: 80vh;
+  left: 100vw;
+  width: 35vw; /* 减小宽度，适应竖直布局 */
+  max-height: 85vh;
   background-color: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -147,49 +147,58 @@ const updateRectanglesPosition = (progress) => {
 .team-rectangle h3 {
   color: #ffffff;
   font-size: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 1rem;
 }
 
 .members-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .member-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1rem;
-  text-align: center;
-  transition: transform 0.3s ease;
+  border-radius: 12px;
+  padding: 1.2rem;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  text-align: left;
 }
 
 .member-card:hover {
-  transform: translateY(-5px);
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .member-avatar {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 
 .member-info {
   color: #ffffff;
+  flex-grow: 1;
 }
 
 .member-info h4 {
-  font-size: 1rem;
-  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
 }
 
 .member-info p {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   opacity: 0.8;
   margin: 0;
+  line-height: 1.4;
 }
 </style>

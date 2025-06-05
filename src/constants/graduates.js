@@ -333,7 +333,7 @@ export const graduates = [
       zh: "读研",
       en: "Postgraduate studies",
     },
-    avatar: `${baseURL}assets/images/graduates/yinyihan.jpg`,
+    avatar: `${baseURL}assets/images/graduates/weiyihan.jpg`,
     thoughts: {
       zh: "毕业快乐!夏天快乐!虽然仍有未竟之事,但还请把遗憾和期待留给人生的下一个阶段吧!人生从此将展开新的一页…但前途必然是光明的!",
       en: "Happy graduation! Happy summer! Although there are still unfinished matters, please leave the regrets and expectations for the next stage of life! Life will henceforth turn a new page... but the future is bound to be bright!",
