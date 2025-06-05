@@ -11,29 +11,26 @@ const props = defineProps({
 })
 
 const rectangles = ref([])
-let observer = null
+let scrollHandler = null
 
 onMounted(() => {
   initializeRectangles()
-  setupIntersectionObserver()
+  setupScrollHandler()
 })
 
 onBeforeUnmount(() => {
-  if (observer) {
-    observer.disconnect()
+  if (scrollHandler) {
+    document.querySelector('.scroll-container').removeEventListener('scroll', scrollHandler)
   }
 })
 
 const initializeRectangles = () => {
   rectangles.value = staffGroups.map((group, index) => {
-    const isTop = index % 2 === 1; // 第一个在下面
+    const isTop = index % 2 === 1;
     const positionIndex = Math.floor(index / 2);
     const groupsInRow = Math.ceil(staffGroups.length / 2);
     
-    // 基础水平偏移
     let horizontalOffset = (positionIndex - (groupsInRow - 1) / 2) * 45;
-    
-    // 添加错开效果：上方的矩形向右偏移，下方的向左偏移
     horizontalOffset += isTop ? 15 : -15;
     
     return {
@@ -45,44 +42,50 @@ const initializeRectangles = () => {
   })
 }
 
-const setupIntersectionObserver = () => {
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const progress = entry.intersectionRatio
-          updateRectanglesPosition(progress)
-        }
-      })
-    },
-    {
-      threshold: Array.from({ length: 101 }, (_, i) => i / 100),
-      rootMargin: '0px'
+const setupScrollHandler = () => {
+  const scrollContainer = document.querySelector('.scroll-container')
+  if (!scrollContainer) return
+
+  scrollHandler = () => {
+    const teamSection = document.getElementById('team')
+    if (!teamSection) return
+
+    const rect = teamSection.getBoundingClientRect()
+    const containerWidth = window.innerWidth
+    const sectionWidth = teamSection.offsetWidth
+    
+    // 计算滚动进度：只要section出现在视口就开始计算
+    let progress = 0
+    // 当section开始进入视口
+    if (rect.right > 0 && rect.left < containerWidth) {
+      // 根据left位置计算进度，使整个section宽度作为计算基准
+      progress = (containerWidth - rect.left) / sectionWidth
+    } else if (rect.left >= containerWidth) {
+      // section还未进入视口
+      progress = 0
+    } else {
+      // section已完全滚过
+      progress = 1
     }
-  )
 
-  const teamSection = document.getElementById('team')
-  if (teamSection) {
-    observer.observe(teamSection)
+    // 使用缓动函数使动画更平滑
+    const easeProgress = easeInOutCubic(progress)
+    
+    // 更新矩形位置，增加移动距离到120（允许超出对面边界）
+    rectangles.value = rectangles.value.map(rect => ({
+      ...rect,
+      translateY: rect.position === 'top'
+        ? -60 + (easeProgress * 120) // 从-60移动到60
+        : 60 - (easeProgress * 120), // 从60移动到-60
+      translateX: rect.translateX
+    }))
   }
+
+  scrollContainer.addEventListener('scroll', scrollHandler)
 }
 
-const updateRectanglesPosition = (progress) => {
-  // 使用缓动函数使动画更平滑
-  const easeProgress = easeInOutCubic(progress);
-  
-  rectangles.value = rectangles.value.map(rect => ({
-    ...rect,
-    translateY: rect.position === 'top'
-      ? -60 + (easeProgress * 55) // 减小移动距离
-      : 60 - (easeProgress * 55),
-    translateX: rect.translateX
-  }))
-}
-
-// 缓动函数
 const easeInOutCubic = (x) => {
-  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
 }
 </script>
 
@@ -133,22 +136,22 @@ const easeInOutCubic = (x) => {
 .team-rectangle {
   position: absolute;
   left: 100vw;
-  width: 25vw; /* 减小宽度，适合单列布局 */
-  max-height: 85vh;
+  width: 25vw;
+  max-height: 90vh; /* 增加最大高度 */
   background-color: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 1.5rem;
-  transition: all 0.5s ease-out;
+  transition: all 0.3s ease-out; /* 减少过渡时间，使动画更快 */
   overflow-y: auto;
 }
 
 .team-rectangle.top {
-  top: 2vh;
+  top: 1vh; /* 更靠近顶部 */
 }
 
 .team-rectangle.bottom {
-  bottom: 2vh;
+  bottom: 1vh; /* 更靠近底部 */
 }
 
 .team-rectangle h3 {
