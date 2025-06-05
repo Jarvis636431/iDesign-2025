@@ -300,10 +300,6 @@ h2 {
   background: linear-gradient(135deg, #f5f7fa 0%, #d4e6f1 100%);
 }
 
-#graduates {
-  background: linear-gradient(135deg, #f5f7fa 0%, #ffd3b6 100%);
-}
-
 #team {
   background: linear-gradient(135deg, #f5f7fa 0%, #dac9e3 100%);
 }
