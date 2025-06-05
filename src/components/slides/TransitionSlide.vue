@@ -8,14 +8,14 @@
     </div>
     <div class="repeating-text">
       <div class="text-container">
-        <div class="text-item">年展组 </div>
-        <div class="text-item">年展组 </div>
-        <div class="text-item">年展组 </div>
-        <div class="text-item">年展组 </div>
-        <div class="text-item">年展组 </div>
-        <div class="text-item">年展组 </div>
-        <div class="text-item">年展组 </div>
-        <div class="text-item">年展组 </div>
+        <div class="text-item"> 年展组 </div>
+        <div class="text-item"> 年展组 </div>
+        <div class="text-item"> 年展组 </div>
+        <div class="text-item"> 年展组 </div>
+        <div class="text-item"> 年展组 </div>
+        <div class="text-item"> 年展组 </div>
+        <div class="text-item"> 年展组 </div>
+        <div class="text-item"> 年展组 </div>
       </div>
     </div>
   </div>
@@ -96,7 +96,6 @@ h2 {
   width: 300px;
   height: 300px;
   transition: transform 0.1s linear;
-  opacity: 0.2;
 }
 
 .repeating-text {
@@ -111,14 +110,13 @@ h2 {
 .text-container {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 5rem;
 }
 
 .text-item {
   color: #ffffff;
   font-family: 'SmileySans', sans-serif;
   font-size: 5rem;
-  white-space: nowrap;
   transform: rotate(-90deg);
 }
 </style> 
