@@ -25,22 +25,21 @@ onBeforeUnmount(() => {
 })
 
 const initializeRectangles = () => {
-  // 获取上下各有多少个矩形
   const topCount = Math.ceil(staffGroups.length / 2);
   const bottomCount = Math.floor(staffGroups.length / 2);
   
   rectangles.value = staffGroups.map((group, index) => {
     const isTop = index % 2 === 0;
-    const positionIndex = Math.floor(index / 2); // 在上/下序列中的位置
+    const positionIndex = Math.floor(index / 2);
     const totalInRow = isTop ? topCount : bottomCount;
     
-    // 计算水平偏移（减小间距为45vw，因为矩形宽度变小了）
-    const horizontalOffset = (positionIndex - (totalInRow - 1) / 2) * 45;
+    // 减小水平间距为40vw
+    const horizontalOffset = (positionIndex - (totalInRow - 1) / 2) * 40;
     
     return {
       ...group,
       position: isTop ? 'top' : 'bottom',
-      translateY: isTop ? -100 : 100,
+      translateY: isTop ? -60 : 60, // 初始位置更靠近可视区域
       translateX: horizontalOffset
     }
   })
@@ -69,13 +68,21 @@ const setupIntersectionObserver = () => {
 }
 
 const updateRectanglesPosition = (progress) => {
+  // 使用缓动函数使动画更平滑
+  const easeProgress = easeInOutCubic(progress);
+  
   rectangles.value = rectangles.value.map(rect => ({
     ...rect,
     translateY: rect.position === 'top'
-      ? -100 + (progress * 100)
-      : 100 - (progress * 100),
-    translateX: rect.translateX // 保持水平偏移不变
+      ? -60 + (easeProgress * 55) // 减小移动距离
+      : 60 - (easeProgress * 55),
+    translateX: rect.translateX
   }))
+}
+
+// 缓动函数
+const easeInOutCubic = (x) => {
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }
 </script>
 
@@ -126,79 +133,101 @@ const updateRectanglesPosition = (progress) => {
 .team-rectangle {
   position: absolute;
   left: 100vw;
-  width: 35vw; /* 减小宽度，适应竖直布局 */
+  width: 30vw; /* 减小宽度 */
   max-height: 85vh;
   background-color: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 16px;
-  padding: 2rem;
+  padding: 1.5rem;
   transition: all 0.5s ease-out;
   overflow-y: auto;
 }
 
 .team-rectangle.top {
-  top: 5vh;
+  top: 2vh; /* 初始位置更靠近可视区域 */
+  transform-origin: top center;
 }
 
 .team-rectangle.bottom {
-  bottom: 5vh;
+  bottom: 2vh; /* 初始位置更靠近可视区域 */
+  transform-origin: bottom center;
 }
 
 .team-rectangle h3 {
   color: #ffffff;
   font-size: 1.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding-bottom: 1rem;
+  padding-bottom: 0.8rem;
 }
 
 .members-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 两列布局 */
+  gap: 1.2rem;
   padding: 0.5rem;
 }
 
 .member-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  padding: 1.2rem;
-  transition: transform 0.3s ease, background-color 0.3s ease;
-  text-align: left;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  text-align: center;
 }
 
 .member-card:hover {
-  transform: translateX(5px);
+  transform: translateY(-5px);
   background: rgba(255, 255, 255, 0.1);
 }
 
 .member-avatar {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
+  margin-bottom: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .member-info {
   color: #ffffff;
-  flex-grow: 1;
+  width: 100%;
 }
 
 .member-info h4 {
-  font-size: 1.1rem;
-  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  margin: 0 0 0.3rem 0;
   font-weight: 500;
 }
 
 .member-info p {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   opacity: 0.8;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.3;
+}
+
+/* 自定义滚动条样式 */
+.team-rectangle::-webkit-scrollbar {
+  width: 6px;
+}
+
+.team-rectangle::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.team-rectangle::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.team-rectangle::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 </style>
