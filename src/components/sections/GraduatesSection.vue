@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { graduates } from '../../constants/graduates'
+import GraduateCard from '../graduates/GraduateCard.vue'
 
 const props = defineProps({
   isEnglish: {
@@ -21,35 +22,30 @@ const handleSelectGraduate = (graduate) => {
     <div class="graduates-layout">
       <!-- 左侧内容区域 -->
       <div class="left-content">
-        <h1>毕业生</h1>
-        
         <div class="graduate-info" v-if="selectedGraduate">
           <div class="info-header">
-            <h2 class="graduate-name">{{ selectedGraduate.name }}</h2>
-            <div class="graduate-title">{{ selectedGraduate.major }}</div>
+            <h2 class="graduate-name">{{ isEnglish ? selectedGraduate.name.en : selectedGraduate.name.zh }}</h2>
+            <div class="graduate-title">{{ isEnglish ? selectedGraduate.destination.en : selectedGraduate.destination.zh }}</div>
           </div>
           
           <div class="info-description">
-            毕业，是一段程程程程序序序序息息息息的结点,亦是新新新新生命命命命的起源。那些大大大大大大大大大大大大大的片刻，每每每每每每每每段段段段段段段段，我们总以为之前的经经经经经经经经验验验验验验验验会终其一生有用，但事经经经经经常常常常常常常常并非如此。新的事与物也在等待我们重新定义，重新解构，重新阐释。
+            {{ isEnglish ? selectedGraduate.thoughts.en : selectedGraduate.thoughts.zh }}
           </div>
         </div>
       </div>
 
       <!-- 右侧头像列表 -->
       <div class="avatars-list">
-        <div 
+        <GraduateCard
           v-for="graduate in graduates" 
           :key="graduate.id"
-          class="avatar-item"
+          :name="graduate.name"
+          :destination="graduate.destination"
+          :is-english="isEnglish"
+          :avatar="graduate.avatar"
           :class="{ 'active': selectedGraduate?.id === graduate.id }"
           @click="handleSelectGraduate(graduate)"
-        >
-          <img 
-            :src="graduate.avatar" 
-            :alt="graduate.name"
-            class="avatar-image"
-          />
-        </div>
+        />
       </div>
     </div>
   </section>
@@ -128,35 +124,26 @@ h1 {
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  
+
   &::-webkit-scrollbar {
     display: none;
   }
-}
 
-.avatar-item {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  opacity: 0.6;
-  
-  &:hover {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-  
-  &.active {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-}
+  :deep(.graduate-card) {
+    width: 80px;
+    height: 80px;
+    opacity: 0.6;
+    transition: all 0.3s ease;
 
-.avatar-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+    &:hover {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+
+    &.active {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
 }
 </style>

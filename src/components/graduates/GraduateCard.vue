@@ -17,9 +17,8 @@
         {{ name ? name.charAt(0) : '?' }}
       </div>
       <div class="graduate-info" :class="{ 'show': isHovered }">
-        <h3 class="name">{{ name }}</h3>
-        <p class="major">{{ major }}</p>
-        <p class="mentor" v-if="mentor">指导教师: {{ mentor }}</p>
+        <h3 class="name">{{ isEnglish ? name.en : name.zh }}</h3>
+        <p class="destination">{{ isEnglish ? destination.en : destination.zh }}</p>
       </div>
     </div>
   </div>
@@ -30,16 +29,19 @@ import { ref } from 'vue'
 
 const props = defineProps({
   name: {
-    type: String,
+    type: Object,
     required: true
   },
-  major: {
-    type: String,
-    default: ''
+  destination: {
+    type: Object,
+    default: () => ({
+      zh: '',
+      en: ''
+    })
   },
-  mentor: {
-    type: String,
-    default: ''
+  isEnglish: {
+    type: Boolean,
+    default: false
   },
   avatar: {
     type: String,
@@ -62,16 +64,15 @@ const handleImageError = (e) => {
 <style scoped>
 .graduate-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   cursor: pointer;
+  border: 2px solid #000000;
   
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
   }
 }
 
