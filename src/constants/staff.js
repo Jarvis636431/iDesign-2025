@@ -37,7 +37,7 @@ export const staffGroups = [
           zh: "李擎炜",
           en: "Qingwei LI",
         },
-        avatar: `${baseURL}assets/images/staff/teachers/liqingwei.jpg`,
+        avatar: `${baseURL}assets/images/staff/teachers/liqingwei.jpeg`,
         role: {
           zh: "年展实验指导，文宣指导",
           en: "Annual exhibition experiment guidance, publicity guidance",
@@ -145,7 +145,7 @@ export const staffGroups = [
           zh: "崔智彧",
           en: "Zhiyu CUI",
         },
-        avatar: `${baseURL}assets/images/staff/publicity/cuizhiyu.jpg`,
+        avatar: `${baseURL}assets/images/staff/curations/cuizhiyu.jpg`,
         role: {
           zh: "信息收集，辅助策展",
           en: "Information collection, assisting curation",
@@ -397,7 +397,7 @@ export const staffGroups = [
           zh: "付宇轩",
           en: "Yuxuan FU",
         },
-        avatar: `${baseURL}assets/images/staff/liaisons/fuyuxuan.jpg`,
+        avatar: `${baseURL}assets/images/staff/liasons/fuyuxuan.jpg`,
         role: {
           zh: "布鲁内尔大学对接人",
           en: "Liaison with Brunel",
@@ -409,7 +409,7 @@ export const staffGroups = [
           zh: "江长林",
           en: "Changlin JIANG",
         },
-        avatar: `${baseURL}assets/images/staff/liaisons/jiangcahnglin.jpeg`,
+        avatar: `${baseURL}assets/images/staff/liasons/jiangchanglin.jpeg`,
         role: {
           zh: "工业设计21级对接人",
           en: "Liaison for '21 ID",
@@ -421,7 +421,7 @@ export const staffGroups = [
           zh: "龚东跃",
           en: "Dongyue GONG",
         },
-        avatar: `${baseURL}assets/images/staff/liaisons/gongdongyue.jpg`,
+        avatar: `${baseURL}assets/images/staff/liasons/gongdongyue.jpg`,
         role: {
           zh: "工业设计23级对接人",
           en: "Liaison for '23 ID",

@@ -105,7 +105,7 @@ const easeInOutCubic = (x) => {
           <div v-for="member in rectangle.members" 
                :key="member.id"
                class="member-card">
-            <img :src="`/assets/images/staff/${member.avatar}`" 
+            <img :src="`${member.avatar}`" 
                  :alt="member.name.zh"
                  class="member-avatar" />
             <div class="member-info">
@@ -139,9 +139,7 @@ const easeInOutCubic = (x) => {
   left: 100vw;
   width: 160px; /* 照片宽度 + 边距 */
   height: auto; /* 自适应内容高度 */
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  background-color: #fff0ca;
   padding: 1.2rem;
   transition: all 0.3s ease-out;
   overflow: visible; /* 改为 visible */
@@ -156,7 +154,7 @@ const easeInOutCubic = (x) => {
 }
 
 .team-rectangle h3 {
-  color: #ffffff;
+  color: #333333;
   font-size: 1.2rem;
   margin-bottom: 1rem;
   text-align: center;
@@ -176,7 +174,6 @@ const easeInOutCubic = (x) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 1rem;
   transition: all 0.3s ease;
@@ -199,7 +196,7 @@ const easeInOutCubic = (x) => {
 }
 
 .member-info {
-  color: #ffffff;
+  color: #333333;
   width: 100%;
 }
 
