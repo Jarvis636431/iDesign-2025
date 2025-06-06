@@ -238,16 +238,60 @@ const generateShareCard = () => {
     ctx.font = "bold 16px Arial, sans-serif";
     ctx.fillText("天津大学第11届设计年展", cardX + 60, cardY + 35);
 
-    // 绘制展厅图标位置 (圆形占位)
-    ctx.fillStyle = hallColor.value || "#2FA3B0";
-    ctx.beginPath();
-    ctx.arc(cardX + 35, cardY + 30, 20, 0, 2 * Math.PI);
-    ctx.fill();
-
     // 绘制三个点
     ctx.fillStyle = "#999999";
     ctx.font = "20px Arial";
     ctx.fillText("⋯", cardX + cardWidth - 30, cardY + 35);
+
+    let iconLoaded = false;
+    let mainImageLoaded = false;
+
+    const checkComplete = () => {
+      if (iconLoaded && mainImageLoaded) {
+        drawBottomContent();
+        resolve();
+      }
+    };
+
+    // 绘制头部图标 (使用固定的PNG图片)
+    const iconImg = new Image();
+    // 移除crossOrigin，因为是本地图片
+    iconImg.onload = () => {
+      console.log("头部图片加载成功:", iconImg.src);
+      // 绘制固定的PNG图片 (保持原始比例)
+      ctx.drawImage(iconImg, cardX + 15, cardY + 10, 40, 40);
+
+      iconLoaded = true;
+      checkComplete();
+    };
+    iconImg.onerror = (error) => {
+      console.error("头部图片加载失败:", error);
+      // 图片加载失败，绘制圆形占位符和文字标识
+      ctx.fillStyle = hallColor.value || "#2FA3B0";
+      ctx.beginPath();
+      ctx.arc(cardX + 35, cardY + 30, 20, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // 添加文字标识，确认这个区域被绘制了
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "12px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("LOGO", cardX + 35, cardY + 35);
+      ctx.textAlign = "left";
+
+      iconLoaded = true;
+      checkComplete();
+    };
+    // 尝试多种路径格式
+    const possiblePaths = [
+      "/assets/images/avatar-border.png",
+      "./assets/images/avatar-border.png",
+      window.location.origin + "/assets/images/avatar-border.png",
+      import.meta.env.BASE_URL + "assets/images/avatar-border.png",
+    ];
+
+    iconImg.src = possiblePaths[0]; // 先尝试第一个路径
+    console.log("尝试加载头部图片:", iconImg.src);
 
     // 绘制图片区域
     const imageY = cardY + 60;
@@ -255,22 +299,27 @@ const generateShareCard = () => {
 
     if (exhibitInfo.value.imageUrl) {
       const img = new Image();
-      img.crossOrigin = "anonymous";
+      // 只对外部图片设置crossOrigin
+      if (exhibitInfo.value.imageUrl.startsWith("http")) {
+        img.crossOrigin = "anonymous";
+      }
       img.onload = () => {
+        console.log("主图片加载成功");
         ctx.drawImage(img, cardX, imageY, cardWidth, imageHeight);
-        drawBottomContent();
-        resolve();
+        mainImageLoaded = true;
+        checkComplete();
       };
-      img.onerror = () => {
+      img.onerror = (error) => {
+        console.error("主图片加载失败:", error);
         drawImagePlaceholder();
-        drawBottomContent();
-        resolve();
+        mainImageLoaded = true;
+        checkComplete();
       };
       img.src = exhibitInfo.value.imageUrl;
     } else {
       drawImagePlaceholder();
-      drawBottomContent();
-      resolve();
+      mainImageLoaded = true;
+      checkComplete();
     }
 
     function drawImagePlaceholder() {
