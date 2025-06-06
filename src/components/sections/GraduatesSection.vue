@@ -132,35 +132,25 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- 卡片外面的五行文字 -->
-        <div class="bottom-text" v-if="selectedGraduate">
-          <div class="text-line">
-            {{ isEnglish ? "Wind from the south" : "南方来风" }}
-          </div>
-          <div class="text-line">
-            {{
-              isEnglish
-                ? "Neither fierce nor clamorous, yet silently nourishing all things"
-                : "不烈不喧 却润物无声"
-            }}
-          </div>
-          <div class="text-line">
-            {{
-              isEnglish
-                ? "It carries direction, temperature and rhythm"
-                : "它携带着方向、温度与节奏"
-            }}
-          </div>
-          <div class="text-line">
-            {{ isEnglish ? "Awakening dormant seeds" : "唤醒沉潜的种子" }}
-          </div>
-          <div class="text-line">
-            {{
-              isEnglish
-                ? "And propelling the growth of all things"
-                : "也推动万物的生长"
-            }}
-          </div>
+        <!-- 卡片外面的文字 -->
+        <div
+          class="bottom-text"
+          :class="{ 'english-text': isEnglish }"
+          v-if="selectedGraduate"
+        >
+          <template v-if="isEnglish">
+            <!-- 英文两行诗歌 -->
+            <div class="text-line">A Southern breeze, so soft and low,</div>
+            <div class="text-line">Awakens seeds, helps all things grow.</div>
+          </template>
+          <template v-else>
+            <!-- 中文五行文字 -->
+            <div class="text-line">南方来风</div>
+            <div class="text-line">不烈不喧 却润物无声</div>
+            <div class="text-line">它携带着方向、温度与节奏</div>
+            <div class="text-line">唤醒沉潜的种子</div>
+            <div class="text-line">也推动万物的生长</div>
+          </template>
         </div>
       </div>
 
@@ -334,7 +324,24 @@ onUnmounted(() => {
 
 .bottom-text .text-line {
   font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 苹方字体 */
-  font-weight: bold; /* 加粗 */
+  font-weight: bold; /* 中文加粗 */
+  font-size: 16px;
+  color: #333;
+  line-height: 1.8;
+}
+
+/* 英文状态下使用苹方字体但不加粗 */
+.bottom-text.english-text .text-line {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 英文也使用苹方字体 */
+  font-size: 16px;
+  color: #333;
+  line-height: 1.8;
+}
+
+/* 英文状态下也使用苹方字体 */
+.bottom-text.english-text .text-line {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 英文也使用苹方字体 */
+  font-weight: bold;
   font-size: 16px;
   color: #333;
   line-height: 1.8;
