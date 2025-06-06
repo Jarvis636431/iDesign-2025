@@ -184,7 +184,7 @@ onUnmounted(() => {
                 class="guide-text-line"
                 :class="{ 'english-text': isEnglish }"
               >
-                {{ isEnglish ? "A journey of wind" : "既是风的旅程" }}
+                {{ isEnglish ? "Wind's journey" : "既是风的旅程" }}
               </div>
               <div
                 class="guide-text-line"
@@ -192,7 +192,7 @@ onUnmounted(() => {
               >
                 {{
                   isEnglish
-                    ? "And the evolutionary traces of thought and design"
+                    ? "design's evolving stride"
                     : "亦是思维与设计的演化足迹"
                 }}
               </div>
@@ -200,13 +200,13 @@ onUnmounted(() => {
                 class="guide-text-line"
                 :class="{ 'english-text': isEnglish }"
               >
-                {{ isEnglish ? "Whether wandering" : "或穿行" }}
+                {{ isEnglish ? "Or pause and hear" : "或穿行" }}
               </div>
               <div
                 class="guide-text-line"
                 :class="{ 'english-text': isEnglish }"
               >
-                {{ isEnglish ? "Or pausing" : "或驻足" }}
+                {{ isEnglish ? "if you so please" : "或驻足" }}
               </div>
               <div
                 class="guide-text-line"
@@ -214,7 +214,7 @@ onUnmounted(() => {
               >
                 {{
                   isEnglish
-                    ? "You may quietly listen to the stories of works growing"
+                    ? "Each growing tale upon the breeze."
                     : "您可静听作品的生长故事"
                 }}
               </div>
@@ -241,33 +241,33 @@ onUnmounted(() => {
               {{ isEnglish ? "We Believe" : "我们相信" }}
             </div>
             <div class="belief-content">
-              <div class="belief-line">
-                {{ isEnglish ? "Truly powerful design" : "真正有力量的设计" }}
-              </div>
-              <div class="belief-line">
-                {{ isEnglish ? "Is not born from noise" : "非因声势" }}
-              </div>
-              <div class="belief-line">
-                <template v-if="isEnglish">
-                  But in the
-                  <span class="highlight-yellow">reverence of wind</span>
-                </template>
-                <template v-else>
+              <template v-if="isEnglish">
+                <!-- 英文四行诗歌 -->
+                <div class="belief-line english-line-1">
+                  True design's strength, not loud acclaim,
+                </div>
+                <div class="belief-line english-line-2">
+                  But wind's keen sense, and growth's true flame.
+                </div>
+                <div class="belief-line english-line-3">
+                  Not mimicry's art, so quickly past,
+                </div>
+                <div class="belief-line english-line-4">
+                  But self-aware growth, meant to last.
+                </div>
+              </template>
+              <template v-else>
+                <!-- 中文原有内容 -->
+                <div class="belief-line">真正有力量的设计</div>
+                <div class="belief-line">非因声势</div>
+                <div class="belief-line">
                   而在<span class="highlight-yellow">风的敬畏</span>
-                </template>
-              </div>
-              <div class="belief-line">
-                {{ isEnglish ? "Not mere imitation" : "不唯模仿" }}
-              </div>
-              <div class="belief-line">
-                <template v-if="isEnglish">
-                  But in the
-                  <span class="highlight-yellow">awakening of growth</span>
-                </template>
-                <template v-else>
+                </div>
+                <div class="belief-line">不唯模仿</div>
+                <div class="belief-line">
                   而在<span class="highlight-yellow">生长自觉</span>
-                </template>
-              </div>
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -944,15 +944,16 @@ onUnmounted(() => {
 
 .belief-section {
   text-align: center; /* 文字居中对齐 */
-  max-width: 600px;
+  max-width: 1000px;
 }
 
 .belief-header {
   font-size: 1.8rem;
   color: white;
+  margin-top: -2rem; /* 向上挪移 */
   margin-bottom: 3rem;
   opacity: 0.9;
-  font-weight: 300;
+  font-weight: bold;
   font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 使用苹方字体 */
 }
 
@@ -975,6 +976,32 @@ onUnmounted(() => {
 .highlight-yellow {
   color: #ffe29a;
   font-weight: bold;
+}
+
+/* 英文诗歌行颜色设置 */
+.english-line-1,
+.english-line-3 {
+  color: white; /* 第一行和第三行为白色 */
+}
+
+.english-line-2,
+.english-line-4 {
+  color: #ffe29a; /* 第二行和第四行为黄色 */
+}
+
+/* 英文状态下的样式调整 */
+.english-line-1,
+.english-line-2,
+.english-line-3,
+.english-line-4 {
+  font-family: "Futura Heavy", "Futura", "Arial Black", sans-serif; /* 使用Futura Heavy字体 */
+  font-weight: 900; /* 设置字重为Heavy */
+  line-height: 1.6; /* 调整行高 */
+}
+
+/* 最后一行不需要下边距 */
+.english-line-4 {
+  margin-bottom: 0;
 }
 
 /* 第五部分：蒲公英主题展示 */
