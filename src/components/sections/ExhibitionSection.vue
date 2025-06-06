@@ -26,10 +26,11 @@ const customCursor = computed(() => {
 
 // 处理文本换行
 const formatText = (text) => {
+  // 中英文都使用 | 作为分隔符
   return text
-    .split("。")
+    .split("|")
     .filter(Boolean)
-    .map((sentence) => sentence + "。");
+    .map((line) => line.trim());
 };
 
 // 切换到下一个展厅
