@@ -7,6 +7,7 @@ import ExhibitionSection from "../components/sections/ExhibitionSection.vue";
 import GraduatesSection from "../components/sections/GraduatesSection.vue";
 import TeamSection from "../components/sections/TeamSection.vue";
 import TransitionSlide from "../components/slides/TransitionSlide.vue";
+import TransitionSlideBetweenExhibitionAndGraduates from "../components/slides/TransitionSlideBetweenExhibitionAndGraduates.vue";
 
 const isEnglish = ref(false);
 const currentSection = ref("home");
@@ -116,6 +117,11 @@ onMounted(() => {
         />
         <ExhibitionSection
           id="exhibition"
+          class="content-section"
+          :is-english="isEnglish"
+        />
+        <TransitionSlideBetweenExhibitionAndGraduates
+          id="transition-between-exhibition-and-graduates"
           class="content-section"
           :is-english="isEnglish"
         />
