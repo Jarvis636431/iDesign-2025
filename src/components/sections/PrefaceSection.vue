@@ -1,9 +1,66 @@
 <script setup>
+import { ref, computed, onMounted, onUnmounted } from "vue";
+
 const props = defineProps({
   isEnglish: {
     type: Boolean,
     default: false,
   },
+});
+
+// 第三部分的引用
+const part3Ref = ref(null);
+
+// 鼠标位置
+const cursorX = ref(0);
+const cursorY = ref(0);
+const showCursor = ref(false);
+
+// 圆盘半径
+const circleRadius = 150;
+
+// 计算clip-path样式
+const clipPathStyle = computed(() => {
+  if (!showCursor.value) return "circle(0px at 50% 50%)";
+  return `circle(${circleRadius}px at ${cursorX.value}px ${cursorY.value}px)`;
+});
+
+// 鼠标移动处理
+const handleMouseMove = (event) => {
+  if (!part3Ref.value) return;
+
+  const rect = part3Ref.value.getBoundingClientRect();
+  cursorX.value = event.clientX - rect.left;
+  cursorY.value = event.clientY - rect.top;
+};
+
+// 鼠标进入第三部分
+const handleMouseEnter = () => {
+  showCursor.value = true;
+  document.body.style.cursor = "none"; // 隐藏默认光标
+};
+
+// 鼠标离开第三部分
+const handleMouseLeave = () => {
+  showCursor.value = false;
+  document.body.style.cursor = "auto"; // 恢复默认光标
+};
+
+onMounted(() => {
+  if (part3Ref.value) {
+    part3Ref.value.addEventListener("mousemove", handleMouseMove);
+    part3Ref.value.addEventListener("mouseenter", handleMouseEnter);
+    part3Ref.value.addEventListener("mouseleave", handleMouseLeave);
+  }
+});
+
+onUnmounted(() => {
+  if (part3Ref.value) {
+    part3Ref.value.removeEventListener("mousemove", handleMouseMove);
+    part3Ref.value.removeEventListener("mouseenter", handleMouseEnter);
+    part3Ref.value.removeEventListener("mouseleave", handleMouseLeave);
+  }
+  document.body.style.cursor = "auto"; // 确保恢复光标
 });
 </script>
 
@@ -60,7 +117,7 @@ const props = defineProps({
       </div>
 
       <!-- 第三部分：logo和引导文字 -->
-      <div class="section-part part-3">
+      <div class="section-part part-3" ref="part3Ref">
         <div class="logo-section">
           <!-- 背景logo -->
           <div class="logo-container">
@@ -71,7 +128,7 @@ const props = defineProps({
             />
           </div>
 
-          <!-- 中间文字 -->
+          <!-- 中间文字 - 正常层 -->
           <div class="guide-text-container">
             <div class="guide-text-line">
               {{ isEnglish ? "You are about to enter" : "您即将步入" }}
@@ -83,6 +140,44 @@ const props = defineProps({
               {{ isEnglish ? "Five Exhibition Areas" : "五方展区" }}
             </div>
           </div>
+
+          <!-- 隐藏层 - 圆盘内显示的内容 -->
+          <div class="hidden-layer" :style="{ clipPath: clipPathStyle }">
+            <!-- 白色圆形背景 -->
+            <div class="white-circle-bg"></div>
+
+            <!-- color-logo -->
+            <div class="logo-container">
+              <img
+                src="/assets/images/logos/color-logo.svg"
+                alt="Color Logo"
+                class="color-logo"
+              />
+            </div>
+
+            <!-- 中间文字 -->
+            <div class="guide-text-container hidden-text">
+              <div class="guide-text-line">
+                {{ isEnglish ? "您即将步入" : "您即将步入" }}
+              </div>
+              <div class="guide-text-line forest-text">
+                {{ isEnglish ? "风中之林" : "风中之林" }}
+              </div>
+              <div class="guide-text-line">
+                {{ isEnglish ? "五方展区" : "五方展区" }}
+              </div>
+            </div>
+          </div>
+
+          <!-- 自定义光标 -->
+          <div
+            class="custom-cursor"
+            :style="{
+              left: cursorX + 'px',
+              top: cursorY + 'px',
+              opacity: showCursor ? 1 : 0,
+            }"
+          ></div>
         </div>
       </div>
 
@@ -348,6 +443,72 @@ const props = defineProps({
   margin-bottom: 0;
 }
 
+/* 隐藏层样式 */
+.hidden-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* 白色圆形背景 */
+.white-circle-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+/* 隐藏层中的color-logo样式 */
+.color-logo {
+  max-width: 100%;
+  max-height: 100vh;
+  width: auto;
+  height: auto;
+  opacity: 1;
+  object-fit: contain;
+  z-index: 2;
+  position: relative;
+}
+
+/* 隐藏层中的文字样式 */
+.hidden-text {
+  z-index: 3;
+  position: relative;
+}
+
+.hidden-text .guide-text-line {
+  color: #333333; /* 深色文字，适合白色背景 */
+  text-shadow: none;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.hidden-text .forest-text {
+  color: #ffe29a !important; /* 风中之林保持黄色 */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* 自定义光标样式 */
+.custom-cursor {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border: 2px solid #333333;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.2s ease;
+}
+
 /* 特殊样式：风中之林 */
 .forest-text {
   font-family: "slidefu", sans-serif !important;
@@ -545,6 +706,15 @@ const props = defineProps({
 
   .forest-text {
     font-size: 72px !important; /* 移动端"风中之林"字体大小 */
+  }
+
+  /* 移动端禁用圆盘效果 */
+  .hidden-layer {
+    display: none;
+  }
+
+  .custom-cursor {
+    display: none;
   }
 
   .image-text-combo {
