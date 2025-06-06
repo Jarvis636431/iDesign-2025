@@ -146,6 +146,16 @@ const enterExhibition = (hall) => {
       </transition-group>
     </div>
 
+    <!-- 左下角展厅Icon -->
+    <div class="hall-icon-area">
+      <img
+        :key="activeHall.icon"
+        :src="activeHall.icon"
+        :alt="isEnglish ? activeHall.enName : activeHall.name"
+        class="hall-icon"
+      />
+    </div>
+
     <!-- 右下角描述 -->
     <div class="hall-description" :style="{ color: activeHall.color }">
       <div class="hall-subtitle" :style="{ color: activeHall.color }">
@@ -267,6 +277,25 @@ const enterExhibition = (hall) => {
 .slide-fade-reverse-leave-to {
   opacity: 0;
   transform: translateY(100%);
+}
+
+/* 左下角展厅Icon */
+.hall-icon-area {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  z-index: 2;
+}
+
+.hall-icon {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.hall-icon:hover {
+  transform: scale(1.1);
 }
 
 .hall-description {
