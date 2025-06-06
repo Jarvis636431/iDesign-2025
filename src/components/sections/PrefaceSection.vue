@@ -143,10 +143,10 @@ onUnmounted(() => {
 
           <!-- 隐藏层 - 圆盘内显示的内容 -->
           <div class="hidden-layer" :style="{ clipPath: clipPathStyle }">
-            <!-- 白色圆形背景 -->
-            <div class="white-circle-bg"></div>
+            <!-- 1. 大白色圆盘背景 (最底层) -->
+            <div class="large-white-circle"></div>
 
-            <!-- color-logo -->
+            <!-- 2. color-logo (第二层) -->
             <div class="logo-container">
               <img
                 src="/assets/images/logos/color-logo.svg"
@@ -155,17 +155,16 @@ onUnmounted(() => {
               />
             </div>
 
-            <!-- 中间文字 -->
+            <!-- 3. 小白色圆盘 (第三层) -->
+            <div class="small-white-circle"></div>
+
+            <!-- 4. 文字 (最顶层) -->
             <div class="guide-text-container hidden-text">
-              <div class="guide-text-line">
-                {{ isEnglish ? "您即将步入" : "您即将步入" }}
-              </div>
-              <div class="guide-text-line forest-text">
-                {{ isEnglish ? "风中之林" : "风中之林" }}
-              </div>
-              <div class="guide-text-line">
-                {{ isEnglish ? "五方展区" : "五方展区" }}
-              </div>
+              <div class="guide-text-line">既是风的旅程</div>
+              <div class="guide-text-line">亦是思维与设计的演化足迹</div>
+              <div class="guide-text-line">或穿行</div>
+              <div class="guide-text-line">或驻足</div>
+              <div class="guide-text-line">您可静听作品的生长故事</div>
             </div>
           </div>
 
@@ -454,19 +453,6 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* 白色圆形背景 */
-.white-circle-bg {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100vw;
-  height: 100vw;
-  background: #ffffff;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-}
-
 /* 隐藏层中的color-logo样式 */
 .color-logo {
   max-width: 152%; /* 放大color-logo */
@@ -480,16 +466,59 @@ onUnmounted(() => {
   margin-top: -6%; /* 向上移动10% */
 }
 
-/* 隐藏层中的文字样式 */
-.hidden-text {
+/* 1. 大白色圆盘背景 (z-index: 1) */
+.large-white-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 100vw;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+/* 2. color-logo 保持原有z-index: 2 */
+
+/* 3. 小白色圆盘 (z-index: 3) */
+.small-white-circle {
+  position: absolute;
+  top: 50%;
+  left: 53.8%; /* 向右移动 */
+  width: 500px;
+  height: 500px;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
   z-index: 3;
-  position: relative;
+}
+
+/* 4. 文字样式 (z-index: 4) */
+.hidden-text {
+  position: absolute;
+  top: 50%;
+  left: 46%; /* 与小圆盘保持一致 */
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 350px;
+  height: 350px;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 .hidden-text .guide-text-line {
   color: #333333; /* 深色文字，适合白色背景 */
   text-shadow: none;
-  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 统一使用苹方字体 */
+  text-align: center; /* 文字居中 */
+  margin-bottom: 0.5rem; /* 减少行间距以适应更多行 */
+  font-size: 1.4rem; /* 调整字体大小以适应更多行文字 */
+  line-height: 1.3; /* 调整行高 */
 }
 
 /* 自定义光标样式 */
