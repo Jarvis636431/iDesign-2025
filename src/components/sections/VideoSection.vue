@@ -114,6 +114,9 @@ onMounted(() => {
   top: -20px;
   background-color: #000; /* 添加黑色背景，视频加载时显示 */
   object-fit: contain; /* 确保视频比例正确 */
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="%23052a1b"/><polygon points="25,22 25,38 37,30" fill="none" stroke="%23FFE29A" stroke-width="2"/></svg>')
+      30 30,
+    pointer;
 }
 
 /* 视频容器 */
@@ -122,6 +125,8 @@ onMounted(() => {
   width: 100%;
   max-width: 1000px; /* 与视频播放器保持一致 */
 }
+
+/* 自定义视频光标已在 .video-player 中设置 */
 
 /* 加载状态 */
 .video-loading {
