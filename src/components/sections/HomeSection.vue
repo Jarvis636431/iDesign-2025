@@ -3,8 +3,9 @@
     <img src="/assets/images/logos/main.png" alt="Main Logo" class="main-logo" />
     <img src="/assets/images/colorful-backimg.png" alt="Colorful Background" class="colorful-backimg" />
     <div class="text-content">
-      <p class="chinese-text">天津大学2025年度<br>第11届设计年展</p>
-      <p class="english-text">2025 the 11th<br>annual Design Exhibition<br>of Tianjing University</p>
+      <p class="chinese-text-1">天津大学2025年度</p>
+      <p class="chinese-text-2">第11届设计年展</p>
+      <p class="english-text">2025 the 11th Annual Design Exhibition<br>of Tianjing University</p>
     </div>
   </section>
 </template>
@@ -41,18 +42,32 @@
 .text-content {
   position: absolute;
   right: 20px; /* 距离右侧的距离 */
-  top: 50%; /* 垂直居中 */
+  top: 46%; /* 垂直居中 */
   transform: translateY(-50%); /* 垂直居中 */
   text-align: right; /* 文本右对齐 */
+  opacity: 0; /* 初始透明度为 0 */
+  animation: fadeIn 1s forwards 5s; /* 延迟 5 秒后开始淡入 */
 }
 
-.chinese-text {
-  font-size: 1.5rem;
-  margin-bottom: 1rem; /* 与英文文本的间距 */
+.chinese-text-1{
+  font-size: 48px; /* 第一行中文字号 */
+  font-family: 'mfxihei', sans-serif; /* 使用 mfxihei 字体 */
+  color: white; /* 设置为白色 */
+  line-height: 1.2; /* 减小行距 */
+}
+
+.chinese-text-2{
+  font-size: 80px; /* 第二行中文字号 */
+  font-family: 'mfxihei', sans-serif; /* 使用 mfxihei 字体 */
+  color: white; 
+  line-height: 1.2; /* 减小行距 */
 }
 
 .english-text {
-  font-size: 1.2rem;
+  font-size: 38px; /* 英文字号 */
+  color: white; /* 设置为白色 */
+  font-family: 'futura', sans-serif; /* 使用 futura 字体 */
+  line-height: 1.2; /* 减小行距 */
 }
 
 @keyframes fadeInAndMove {
@@ -77,6 +92,15 @@
   }
   100% {
     right: 0%; /* 到达 0% 的位置 */
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }
 
