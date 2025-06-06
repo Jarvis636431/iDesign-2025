@@ -681,7 +681,7 @@ onUnmounted(() => {
   position: absolute;
   bottom: 0;
   right: 0;
-  padding-right: 60rem;
+  padding-right: 60rem; /* 中文状态下的右边距 */
   padding-bottom: 3rem;
   display: flex;
   flex-direction: row; /* 中文竖直文字横向排列 */
@@ -695,7 +695,7 @@ onUnmounted(() => {
   flex-direction: column; /* 英文水平文字纵向排列 */
   max-width: 600px; /* 限制最大宽度 */
   text-align: right; /* 右对齐 */
-  margin-right: 30rem;
+  padding-right: 30rem; /* 英文状态下恢复原来的右边距 */
 }
 
 /* 竖直文字样式 - 默认中文竖直排列 */
@@ -704,7 +704,7 @@ onUnmounted(() => {
   text-orientation: upright; /* 文字保持正立 */
   color: white;
   font-size: 2.2rem;
-  font-weight: 300;
+  font-weight: bold;
   line-height: 1.2;
   letter-spacing: 0.5em;
   white-space: nowrap; /* 防止换行 */
