@@ -280,14 +280,14 @@ onMounted(() => {
   width: 200vw;
 }
 
-:deep(#preface){
-  width: 500vw;
+:deep(#preface) {
+  width: 600vw;
 }
 
 :deep(#graduates) {
   width: 120vw;
 }
-:deep(#exhibition){
+:deep(#exhibition) {
   width: 100vw;
 }
 
@@ -333,11 +333,8 @@ h2 {
   transform: translateY(-2px);
 }
 
-
 /* 特殊处理过渡区域宽度 */
 :deep(#story) {
   width: 150vw;
 }
-
-
 </style>
