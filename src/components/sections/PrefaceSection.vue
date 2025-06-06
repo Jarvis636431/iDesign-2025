@@ -285,43 +285,41 @@ onUnmounted(() => {
             />
 
             <!-- 中心文字内容 -->
-            <div class="center-text-content">
-              <!-- 第一部分：今天 (靠上) -->
-              <div class="text-part-1">
-                {{ isEnglish ? "Today" : "今天" }}
+            <div
+              class="center-text-content"
+              :class="{ 'english-layout': isEnglish }"
+            >
+              <!-- 第一部分：今天/Now (靠上) -->
+              <div class="text-part-1" :class="{ 'english-text': isEnglish }">
+                {{ isEnglish ? "Now" : "今天" }}
               </div>
 
-              <!-- 第二部分：风已致，新苗起 (居中，最大字号，黄色) -->
-              <div class="text-part-2">
-                {{
-                  isEnglish
-                    ? "Wind Arrives, New Sprouts Rise"
-                    : "风已致，新苗起"
-                }}
+              <!-- 第二部分：中间两行 (居中，最大字号，黄色) -->
+              <div class="text-part-2" :class="{ 'english-text': isEnglish }">
+                <template v-if="isEnglish">
+                  The Wind is Here<br />
+                  New shoots Aspire
+                </template>
+                <template v-else> 风已致，新苗起 </template>
               </div>
 
-              <!-- 第三部分：四行文字 (靠下) -->
-              <div class="text-part-3">
-                <div class="text-line">
-                  {{
-                    isEnglish
-                      ? "We sincerely invite you to feel together"
-                      : "诚邀您一同感受这"
-                  }}
-                </div>
-                <div class="text-line highlight">
-                  {{ isEnglish ? '"Wind in the Forest"' : '"林中之风"' }}
-                </div>
-                <div class="text-line">
-                  {{ isEnglish ? "Witness" : "见证" }}
-                </div>
-                <div class="text-line">
-                  {{
-                    isEnglish
-                      ? "The sprouting and aspiration of new designers"
-                      : "新设计人的萌发与远望"
-                  }}
-                </div>
+              <!-- 第三部分：下方三行文字 (靠下) -->
+              <div class="text-part-3" :class="{ 'english-text': isEnglish }">
+                <template v-if="isEnglish">
+                  <div class="text-line">
+                    Come feel the "Wind in Forest" fire.
+                  </div>
+                  <div class="text-line">With us behold, a vision bright,</div>
+                  <div class="text-line">
+                    New talent dawning, pure and light.
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="text-line">诚邀您一同感受这</div>
+                  <div class="text-line highlight">"林中之风"</div>
+                  <div class="text-line">见证</div>
+                  <div class="text-line">新设计人的萌发与远望</div>
+                </template>
               </div>
             </div>
           </div>
@@ -1039,7 +1037,7 @@ onUnmounted(() => {
   transform: translate(-50%, -50%);
   z-index: 2;
   text-align: center;
-  width: 600px;
+  width: 700px;
   height: 400px;
   display: flex;
   flex-direction: column;
@@ -1050,8 +1048,9 @@ onUnmounted(() => {
 .text-part-1 {
   font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 2.5rem;
+  font-weight: bold;
   color: white;
-  margin-bottom: 6rem;
+  margin-bottom: 5.5rem;
 }
 
 /* 第二部分：风已致，新苗起 (居中，最大字号，黄色) */
@@ -1061,7 +1060,7 @@ onUnmounted(() => {
   color: #ffe29a;
   font-weight: bold;
   align-self: center;
-  margin-bottom: 5rem;
+  margin-bottom: 4rem;
 }
 
 /* 第三部分：四行文字 (靠下) */
@@ -1074,6 +1073,22 @@ onUnmounted(() => {
   font-size: 1.8rem;
   color: white;
   font-weight: bold;
+}
+
+/* 第五部分英文状态下的Futura Heavy字体设置 */
+.text-part-1.english-text {
+  font-family: "Futura Heavy", "Futura", "Arial Black", sans-serif;
+  font-weight: 900; /* Heavy字重 */
+}
+
+.text-part-2.english-text {
+  font-family: "Futura Heavy", "Futura", "Arial Black", sans-serif;
+  font-weight: 900; /* Heavy字重 */
+}
+
+.text-part-3.english-text .text-line {
+  font-family: "Futura Heavy", "Futura", "Arial Black", sans-serif;
+  font-weight: 900; /* Heavy字重 */
 }
 
 /* 文字周围的蒲公英 */
