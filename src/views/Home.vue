@@ -270,7 +270,7 @@ onMounted(() => {
 /* 确保每个section都能完整显示 */
 :deep(.content-section) {
   flex-shrink: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   position: relative;
 }
@@ -282,6 +282,9 @@ onMounted(() => {
 
 :deep(#graduates) {
   width: 120vw;
+}
+:deep(#exhibition){
+  width: 100vw;
 }
 
 :deep(#video) {
@@ -331,4 +334,6 @@ h2 {
 :deep(#story) {
   width: 150vw;
 }
+
+
 </style>
