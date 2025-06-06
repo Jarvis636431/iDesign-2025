@@ -9,7 +9,6 @@ const props = defineProps({
 
 <template>
   <section class="content-section" id="video">
-    <h2>{{ isEnglish ? "Video" : "宣传片" }}</h2>
     <div class="section-content">
       <video controls class="video-player">
         <source src="/assets/videos/preface.mp4" type="video/mp4" />

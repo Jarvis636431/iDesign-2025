@@ -220,39 +220,151 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- 第五部分：图片和文字组合 -->
+      <!-- 第五部分：蒲公英主题展示 -->
       <div class="section-part part-5">
-        <div class="image-text-combo">
-          <div class="image-section">
+        <div class="dandelion-section">
+          <!-- 中心蒲公英背景图片 -->
+          <div class="center-dandelion">
             <img
-              src="/assets/images/colorful-backimg.png"
-              alt="Design Inspiration"
-              class="feature-image"
+              src="/assets/images/dandelion-background.png"
+              alt="Dandelion Background"
+              class="dandelion-bg"
             />
-          </div>
-          <div class="text-section">
-            <h3 class="section-title">
-              {{ isEnglish ? "Our Vision" : "我们的愿景" }}
-            </h3>
-            <p class="vision-text">
-              {{
-                isEnglish
-                  ? "To cultivate the next generation of designers who will shape the future through innovative thinking and creative solutions."
-                  : "培养下一代设计师，他们将通过创新思维和创意解决方案塑造未来。"
-              }}
-            </p>
-            <div class="highlight-stats">
-              <div class="stat-item">
-                <span class="stat-number">11</span>
-                <span class="stat-label">{{ isEnglish ? "Years" : "届" }}</span>
+
+            <!-- 中心文字内容 -->
+            <div class="center-text-content">
+              <!-- 第一部分：今天 (靠上) -->
+              <div class="text-part-1">
+                {{ isEnglish ? "Today" : "今天" }}
               </div>
-              <div class="stat-item">
-                <span class="stat-number">2025</span>
-                <span class="stat-label">{{
-                  isEnglish ? "Exhibition" : "年展"
-                }}</span>
+
+              <!-- 第二部分：风已致，新苗起 (居中，最大字号，黄色) -->
+              <div class="text-part-2">
+                {{
+                  isEnglish
+                    ? "Wind Arrives, New Sprouts Rise"
+                    : "风已致，新苗起"
+                }}
+              </div>
+
+              <!-- 第三部分：四行文字 (靠下) -->
+              <div class="text-part-3">
+                <div class="text-line">
+                  {{
+                    isEnglish
+                      ? "We sincerely invite you to feel together"
+                      : "诚邀您一同感受这"
+                  }}
+                </div>
+                <div class="text-line highlight">
+                  {{ isEnglish ? '"Wind in the Forest"' : '"林中之风"' }}
+                </div>
+                <div class="text-line">
+                  {{ isEnglish ? "Witness" : "见证" }}
+                </div>
+                <div class="text-line">
+                  {{
+                    isEnglish
+                      ? "The sprouting and aspiration of new designers"
+                      : "新设计人的萌发与远望"
+                  }}
+                </div>
               </div>
             </div>
+          </div>
+
+          <!-- 文字周围的蒲公英 -->
+          <div class="floating-dandelions">
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-1"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-2"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-3"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-4"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-5"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-6"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-7"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-8"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-9"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-10"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-11"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-12"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-13"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-14"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-15"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-16"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-17"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-18"
+              alt="Dandelion"
+            />
           </div>
         </div>
       </div>
@@ -262,7 +374,7 @@ onUnmounted(() => {
 
 <style scoped>
 .content-section {
-  width: 750vw !important; /* 扩展到750vw (150+250+150+100+100) */
+  width: 950vw !important; /* 扩展到950vw (150+250+150+100+300) */
   height: 100vh;
   position: relative;
   background: #052a1b;
@@ -306,7 +418,7 @@ onUnmounted(() => {
 }
 
 .part-5 {
-  width: 100vw; /* 第五部分：100vw */
+  width: 300vw; /* 第五部分：300vw */
 }
 
 /* 第一部分：鼠标图片 */
@@ -581,8 +693,7 @@ onUnmounted(() => {
   font-size: 2.2rem;
   color: white;
   line-height: 1.4;
-  font-weight: 300;
-  opacity: 0.95;
+  font-weight: bold;
   text-align: center;
   font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 使用苹方字体 */
 }
@@ -590,78 +701,195 @@ onUnmounted(() => {
 /* 特定文字的黄色高亮 */
 .highlight-yellow {
   color: #ffe29a;
+  font-weight: bold;
 }
 
-/* 第五部分：图片和文字组合 */
+/* 第五部分：蒲公英主题展示 */
 .part-5 {
   background: #052a1b;
 }
 
-.image-text-combo {
-  display: flex;
-  align-items: center;
-  max-width: 1200px;
-  gap: 4rem;
-  padding: 3rem;
-}
-
-.image-section {
-  flex: 1;
-}
-
-.feature-image {
+.dandelion-section {
   width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 中心蒲公英背景 */
+.center-dandelion {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.dandelion-bg {
+  width: 600px;
   height: auto;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  opacity: 0.8;
 }
 
-.feature-image:hover {
-  transform: scale(1.02);
-}
-
-.text-section {
-  flex: 1;
-  color: white; /* 改为白色以适应深绿背景 */
-}
-
-.section-title {
-  font-size: 2.5rem;
-  color: #ffe29a; /* 改为黄色以保持一致性 */
-  margin-bottom: 1.5rem;
-  font-weight: bold;
-}
-
-.vision-text {
-  font-size: 1.3rem;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  color: white; /* 改为白色 */
-}
-
-.highlight-stats {
-  display: flex;
-  gap: 3rem;
-}
-
-.stat-item {
+/* 中心文字内容 */
+.center-text-content {
+  position: absolute;
+  top: 50%;
+  left: 48%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
   text-align: center;
+  width: 600px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.stat-number {
-  display: block;
-  font-size: 3rem;
+/* 第一部分：今天 (靠上) */
+.text-part-1 {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 2.5rem;
+  color: white;
+  margin-bottom: 6rem;
+}
+
+/* 第二部分：风已致，新苗起 (居中，最大字号，黄色) */
+.text-part-2 {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 4rem;
+  color: #ffe29a;
   font-weight: bold;
-  color: #2fa3b0;
-  line-height: 1;
+  align-self: center;
+  margin-bottom: 6rem;
 }
 
-.stat-label {
-  display: block;
-  font-size: 1.1rem;
-  color: white; /* 改为白色 */
-  margin-top: 0.5rem;
+/* 第三部分：四行文字 (靠下) */
+.text-part-3 {
+  align-self: center;
+}
+
+.text-part-3 .text-line {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.8rem;
+  color: white;
+  margin-bottom: 0.8rem;
+  font-weight: bold;
+}
+
+/* 文字周围的蒲公英 */
+.floating-dandelions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200vw; /* 矩形区域宽度 */
+  height: 100vh; /* 矩形区域高度 */
+  transform: translate(-50%, -50%);
+  z-index: 0;
+}
+
+.floating-dandelion {
+  position: absolute;
+  transition: transform 0.3s ease;
+  transform: rotate(-15deg); /* 统一倾斜角度 */
+}
+
+.floating-dandelion:hover {
+  transform: rotate(-15deg) scale(1.1); /* 悬停时保持角度 */
+}
+
+/* 18个蒲公英在文字周围矩形区域内的随机分布 */
+.dandelion-1 {
+  top: 10%;
+  left: 15%;
+  width: 45px;
+}
+.dandelion-2 {
+  top: 25%;
+  left: 8%;
+  width: 60px;
+}
+.dandelion-3 {
+  top: 40%;
+  left: 12%;
+  width: 35px;
+}
+.dandelion-4 {
+  top: 60%;
+  left: 18%;
+  width: 55px;
+}
+.dandelion-5 {
+  top: 75%;
+  left: 10%;
+  width: 40px;
+}
+.dandelion-6 {
+  top: 85%;
+  left: 20%;
+  width: 50px;
+}
+
+.dandelion-7 {
+  top: 8%;
+  right: 12%;
+  width: 42px;
+}
+.dandelion-8 {
+  top: 22%;
+  right: 18%;
+  width: 58px;
+}
+.dandelion-9 {
+  top: 35%;
+  right: 8%;
+  width: 38px;
+}
+.dandelion-10 {
+  top: 55%;
+  right: 15%;
+  width: 52px;
+}
+.dandelion-11 {
+  top: 70%;
+  right: 10%;
+  width: 46px;
+}
+.dandelion-12 {
+  top: 88%;
+  right: 22%;
+  width: 48px;
+}
+
+.dandelion-13 {
+  top: 5%;
+  left: 45%;
+  width: 36px;
+}
+.dandelion-14 {
+  top: 15%;
+  left: 65%;
+  width: 54px;
+}
+.dandelion-15 {
+  bottom: 20%;
+  left: 40%;
+  width: 44px;
+}
+.dandelion-16 {
+  bottom: 8%;
+  left: 60%;
+  width: 50px;
+}
+.dandelion-17 {
+  top: 30%;
+  left: 75%;
+  width: 41px;
+}
+.dandelion-18 {
+  bottom: 35%;
+  right: 45%;
+  width: 47px;
 }
 
 /* 响应式设计 */
