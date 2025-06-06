@@ -147,14 +147,17 @@ onUnmounted(() => {
 
           <!-- 中间文字 - 正常层 -->
           <div class="guide-text-container">
-            <div class="guide-text-line">
-              {{ isEnglish ? "You are about to enter" : "您即将步入" }}
+            <div class="guide-text-line" :class="{ 'english-text': isEnglish }">
+              {{ isEnglish ? "step inside the" : "您即将步入" }}
             </div>
-            <div class="guide-text-line forest-text">
-              {{ isEnglish ? "Forest in the Wind" : "风中之林" }}
+            <div
+              class="guide-text-line forest-text"
+              :class="{ 'english-text': isEnglish }"
+            >
+              {{ isEnglish ? "Forest in Wind" : "风中之林" }}
             </div>
-            <div class="guide-text-line">
-              {{ isEnglish ? "Five Exhibition Areas" : "五方展区" }}
+            <div class="guide-text-line" :class="{ 'english-text': isEnglish }">
+              {{ isEnglish ? "exhibition" : "五方展区" }}
             </div>
           </div>
 
@@ -177,23 +180,38 @@ onUnmounted(() => {
 
             <!-- 4. 文字 (最顶层) -->
             <div class="guide-text-container hidden-text">
-              <div class="guide-text-line">
+              <div
+                class="guide-text-line"
+                :class="{ 'english-text': isEnglish }"
+              >
                 {{ isEnglish ? "A journey of wind" : "既是风的旅程" }}
               </div>
-              <div class="guide-text-line">
+              <div
+                class="guide-text-line"
+                :class="{ 'english-text': isEnglish }"
+              >
                 {{
                   isEnglish
                     ? "And the evolutionary traces of thought and design"
                     : "亦是思维与设计的演化足迹"
                 }}
               </div>
-              <div class="guide-text-line">
+              <div
+                class="guide-text-line"
+                :class="{ 'english-text': isEnglish }"
+              >
                 {{ isEnglish ? "Whether wandering" : "或穿行" }}
               </div>
-              <div class="guide-text-line">
+              <div
+                class="guide-text-line"
+                :class="{ 'english-text': isEnglish }"
+              >
                 {{ isEnglish ? "Or pausing" : "或驻足" }}
               </div>
-              <div class="guide-text-line">
+              <div
+                class="guide-text-line"
+                :class="{ 'english-text': isEnglish }"
+              >
                 {{
                   isEnglish
                     ? "You may quietly listen to the stories of works growing"
@@ -519,6 +537,15 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* 加载Voyage字体 */
+@font-face {
+  font-family: "Voyage";
+  src: url("assets/fonts/Voyage.otf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 .content-section {
   width: 950vw !important; /* 扩展到950vw (150+250+150+100+300) */
   height: 100vh;
@@ -775,14 +802,20 @@ onUnmounted(() => {
 }
 
 .guide-text-line {
-  font-size: 2.8rem;
-  font-weight: 300;
+  font-size: 2.2rem;
+  font-weight: bold;
   line-height: 1.6;
   margin-bottom: 1.5rem;
   opacity: 0.95;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.1em; /* 中文默认字间距 */
   font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 使用苹方字体 */
+  transition: letter-spacing 0.3s ease;
+}
+
+/* 英文状态下的guide-text-line样式 */
+.guide-text-line.english-text {
+  letter-spacing: 0.02em; /* 英文字间距更小 */
 }
 
 .guide-text-line:last-child {
@@ -880,12 +913,17 @@ onUnmounted(() => {
   transition: opacity 0.2s ease;
 }
 
-/* 特殊样式：风中之林 */
+/* 特殊样式：风中之林 - 中文默认 */
 .forest-text {
   font-family: "slidefu", sans-serif !important;
   font-size: 144px !important;
   color: #ffe29a !important; /* 设置为黄色 */
-  margin-bottom: 2rem !important; /* 增加下边距 */
+  margin-bottom: 3rem !important; /* 增加下边距 */
+}
+
+/* 英文状态下的forest-text样式 */
+.forest-text.english-text {
+  font-family: "Voyage", "slidefu", sans-serif !important; /* 英文使用Voyage字体 */
 }
 
 /* 第四部分：纯文字展示 */
