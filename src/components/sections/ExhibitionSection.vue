@@ -16,6 +16,7 @@ const activeHall = computed(() => halls[activeHallIndex.value]);
 const touchStartY = ref(0);
 const isSwiping = ref(false);
 const router = useRouter();
+const isLoading = ref(false); // 加载状态
 
 // 动态光标样式
 const customCursor = computed(() => {
@@ -95,24 +96,33 @@ const handleWheel = (event) => {
 
 // 进入展厅
 const enterExhibition = (hall) => {
-  axios
-    .get("http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists", {
-      params: { per_page: 1, current_page: 1, category_id: hall.id },
-    })
-    .then((res) => {
-      let firstExhibitId = null;
-      if (res.data && res.data.data && res.data.data.length > 0) {
-        firstExhibitId = res.data.data[0].id;
-      }
-      // 跳转到information页面，带上展厅id和展品id
-      router.push(
-        `/2025/information/${firstExhibitId || ""}?hallId=${hall.id}`
-      );
-    })
-    .catch(() => {
-      // 请求失败也跳转，只带hallId
-      router.push(`/2025/information/?hallId=${hall.id}`);
-    });
+  // 显示加载状态
+  isLoading.value = true;
+
+  // 2秒后执行跳转
+  setTimeout(() => {
+    axios
+      .get("http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists", {
+        params: { per_page: 1, current_page: 1, category_id: hall.id },
+      })
+      .then((res) => {
+        let firstExhibitId = null;
+        if (res.data && res.data.data && res.data.data.length > 0) {
+          firstExhibitId = res.data.data[0].id;
+        }
+        // 跳转到information页面，带上展厅id和展品id
+        router.push(
+          `/2025/information/${firstExhibitId || ""}?hallId=${hall.id}`
+        );
+      })
+      .catch(() => {
+        // 请求失败也跳转，只带hallId
+        router.push(`/2025/information/?hallId=${hall.id}`);
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  }, 2000);
 };
 </script>
 
@@ -172,6 +182,36 @@ const enterExhibition = (hall) => {
         >
           {{ sentence }}
         </p>
+      </div>
+    </div>
+
+    <!-- 加载状态遮罩 -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loading-content">
+        <!-- 展厅Icon -->
+        <div class="loading-icon">
+          <img
+            :src="activeHall.icon"
+            :alt="isEnglish ? activeHall.enName : activeHall.name"
+            class="loading-hall-icon"
+          />
+          <!-- Loading文字 -->
+          <div class="loading-text">Loading...</div>
+        </div>
+        <!-- 展厅描述 -->
+        <div class="loading-description" :style="{ color: activeHall.color }">
+          <div class="loading-desc-text">
+            <p
+              v-for="(sentence, index) in formatText(
+                isEnglish ? activeHall.enDesc : activeHall.desc
+              )"
+              :key="index"
+              class="loading-desc-line"
+            >
+              {{ sentence }}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -321,5 +361,89 @@ const enterExhibition = (hall) => {
 
 .text-line {
   line-height: 1.4; /* 添加行高控制 */
+}
+
+/* 加载状态遮罩 */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1); /* 半透明白色背景 */
+  backdrop-filter: blur(20px); /* 毛玻璃效果 */
+  -webkit-backdrop-filter: blur(20px); /* Safari兼容 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2rem;
+}
+
+.loading-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.loading-hall-icon {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.2));
+}
+
+.loading-text {
+  font-size: 1.2rem;
+  color: #666;
+  font-weight: normal;
+  letter-spacing: 0.1em;
+}
+
+.loading-description {
+  max-width: 600px;
+  margin-top: 6rem; /* 增加上边距，让描述更靠下 */
+}
+
+.loading-desc-text {
+  max-width: 800px;
+  text-align: center;
+}
+
+.loading-desc-line {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 0.8rem;
+  opacity: 0.9;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 </style>
