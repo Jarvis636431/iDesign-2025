@@ -37,6 +37,7 @@ const handleSelectGraduate = (graduate, event) => {
     <div class="graduates-layout">
       <!-- 左侧内容区域 -->
       <div class="left-content">
+        <!-- 白色卡片 -->
         <div class="graduate-info" v-if="selectedGraduate">
           <div class="card-layout">
             <div class="card-left">
@@ -75,14 +76,45 @@ const handleSelectGraduate = (graduate, event) => {
                   class="portrait"
                 />
               </div>
-              <div class="quote">风已至<br><span>新苗起</span></div>
+              <div class="quote">风已至<br /><span>新苗起</span></div>
             </div>
+          </div>
+        </div>
+
+        <!-- 卡片外面的五行文字 -->
+        <div class="bottom-text" v-if="selectedGraduate">
+          <div class="text-line">
+            {{ isEnglish ? "Wind from the south" : "南方来风" }}
+          </div>
+          <div class="text-line">
+            {{
+              isEnglish
+                ? "Neither fierce nor clamorous, yet silently nourishing all things"
+                : "不烈不喧 却润物无声"
+            }}
+          </div>
+          <div class="text-line">
+            {{
+              isEnglish
+                ? "It carries direction, temperature and rhythm"
+                : "它携带着方向、温度与节奏"
+            }}
+          </div>
+          <div class="text-line">
+            {{ isEnglish ? "Awakening dormant seeds" : "唤醒沉潜的种子" }}
+          </div>
+          <div class="text-line">
+            {{
+              isEnglish
+                ? "And propelling the growth of all things"
+                : "也推动万物的生长"
+            }}
           </div>
         </div>
       </div>
 
       <!-- 右侧头像列表容器 -->
-       
+
       <div class="avatars-container">
         <div class="avatars-list">
           <GraduateCard
@@ -139,8 +171,14 @@ const handleSelectGraduate = (graduate, event) => {
   left: 40%;
   transform: translateX(-50%);
   width: 1000px;
-  padding: 48px;
-  background: #ffffff;
+  top: 10%; /* 将整个内容区域上移 */
+  /* 移除背景和padding，因为现在文字在卡片外面 */
+}
+
+.graduate-info {
+  width: 100%;
+  padding: 40px;
+  background: #ffffff; /* 白色背景只应用于卡片 */
 }
 
 .graduate-info {
@@ -158,22 +196,22 @@ const handleSelectGraduate = (graduate, event) => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 500px;
+  min-height: 450px; /* 从500px减少到400px，减少100px高度 */
 }
 
 .section-title {
   font-size: 28px;
   color: #000;
-  margin: 0 0 32px 0;
+  margin: 0 0 10px 0;
 }
 
 .thoughts-section {
   font-size: 18px;
-  line-height: 2;
+  line-height: 1.8; /* 从2减少到1.8，减少行高 */
   color: #333;
   white-space: pre-line;
   flex: 1;
-  margin: 32px 0;
+  margin: 24px 0; /* 从32px减少到24px，减少上下边距 */
 }
 
 .bottom-info {
@@ -199,13 +237,13 @@ const handleSelectGraduate = (graduate, event) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  width: 320px;
+  gap: 16px; /* 从20px减少到16px，减少间距 */
+  width: 280px; /* 从320px减少到280px，与头像宽度一致 */
 }
 
 .portrait-wrapper {
-  width: 320px;
-  height: 320px;
+  width: 280px; /* 从320px减少到280px */
+  height: 280px; /* 从320px减少到280px */
   overflow: hidden;
 }
 
@@ -228,6 +266,20 @@ const handleSelectGraduate = (graduate, event) => {
   margin-left: 100px;
 }
 
+/* 卡片外面的五行文字 */
+.bottom-text {
+  margin-top: 10px; /* 与白色卡片的间距 */
+  width: 100%;
+}
+
+.bottom-text .text-line {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 苹方字体 */
+  font-weight: bold; /* 加粗 */
+  font-size: 16px;
+  color: #333;
+  line-height: 1.8;
+}
+
 .box-container {
   width: 200px;
   right: 15vw;
@@ -246,7 +298,6 @@ const handleSelectGraduate = (graduate, event) => {
   background: #ffffff;
   z-index: 2;
 }
-
 
 .avatars-list {
   width: 100%;
