@@ -33,6 +33,7 @@ const handleSelectGraduate = (graduate, event) => {
 
 <template>
   <section class="content-section" id="graduates">
+    <img class="bg-image" src="/assets/images/backimage.png" alt="背景" />
     <div class="graduates-layout">
       <!-- 左侧内容区域 -->
       <div class="left-content">
@@ -74,13 +75,14 @@ const handleSelectGraduate = (graduate, event) => {
                   class="portrait"
                 />
               </div>
-              <div class="quote">风已至 新苗起</div>
+              <div class="quote">风已至<br><span>新苗起</span></div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 右侧头像列表容器 -->
+       
       <div class="avatars-container">
         <div class="avatars-list">
           <GraduateCard
@@ -109,6 +111,17 @@ const handleSelectGraduate = (graduate, event) => {
   align-items: center;
   background: #fff0ca;
   overflow: hidden;
+}
+
+.bg-image {
+  position: absolute;
+  top: 0;
+  left: 29%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .graduates-layout {
@@ -206,6 +219,22 @@ const handleSelectGraduate = (graduate, event) => {
   font-size: 16px;
   color: #666;
   text-align: center;
+  line-height: 1.5;
+  justify-content: end;
+}
+
+.quote br + span {
+  display: inline-block;
+  margin-left: 100px;
+}
+
+.box-container {
+  width: 200px;
+  right: 15vw;
+  height: 100vh;
+  background: #052a1b;
+  position: absolute;
+  z-index: 1;
 }
 
 .avatars-container {
@@ -215,7 +244,9 @@ const handleSelectGraduate = (graduate, event) => {
   right: 15vw;
   overflow: hidden;
   background: #ffffff;
+  z-index: 2;
 }
+
 
 .avatars-list {
   width: 100%;
@@ -267,5 +298,16 @@ const handleSelectGraduate = (graduate, event) => {
 
 .avatars-container:hover .avatars-list {
   animation-play-state: paused;
+}
+
+.right-rect-bg {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 150px;
+  height: 100vh;
+  background: #052a1b;
+  z-index: 1000;
+  pointer-events: none;
 }
 </style>
