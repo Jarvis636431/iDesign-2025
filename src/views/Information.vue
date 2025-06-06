@@ -1,74 +1,80 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import CustomCarousel from '@/components/slides/CustomCarousel.vue' // Import CustomCarousel
-import AuthorCards from '@/components/exhibition/AuthorCards.vue'
-import { halls as hallConfigs } from '@/constants/halls'
-import axios from 'axios'
-import { exhibitModels } from '@/constants/exhibitModels'
+import { ref, computed, watch, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import CustomCarousel from "@/components/slides/CustomCarousel.vue"; // Import CustomCarousel
+import AuthorCards from "@/components/exhibition/AuthorCards.vue";
+import { halls as hallConfigs } from "@/constants/halls";
+import axios from "axios";
+import { exhibitModels } from "@/constants/exhibitModels";
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
 const carouselRef = ref(null); // Add carouselRef
+const showShareModal = ref(false); // 分享弹窗状态
 
-const hallId = computed(() => parseInt(route.query.hallId))
-const currentId = computed(() => parseInt(route.params.id))
-const hallInfo = computed(() => hallConfigs.find(h => h.id === hallId.value))
-const hallColor = computed(() => hallInfo.value?.color || '#2FA3B0')
+const hallId = computed(() => parseInt(route.query.hallId));
+const currentId = computed(() => parseInt(route.params.id));
+const hallInfo = computed(() => hallConfigs.find((h) => h.id === hallId.value));
+const hallColor = computed(() => hallInfo.value?.color || "#2FA3B0");
 
-const exhibits = ref([])
-const loading = ref(false)
-const error = ref('')
+const exhibits = ref([]);
+const loading = ref(false);
+const error = ref("");
 
 // 获取展厅所有展品
 async function fetchExhibits() {
-  if (!hallId.value) return
-  loading.value = true
-  error.value = ''
+  if (!hallId.value) return;
+  loading.value = true;
+  error.value = "";
   try {
-    const res = await axios.get('http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists', {
-      params: { per_page: 9999, current_page: 1, category_id: hallId.value }
-    })
-    exhibits.value = res.data?.data || []
+    const res = await axios.get(
+      "http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists",
+      {
+        params: { per_page: 9999, current_page: 1, category_id: hallId.value },
+      }
+    );
+    exhibits.value = res.data?.data || [];
   } catch (e) {
-    error.value = '展品数据加载失败'
-    exhibits.value = []
+    error.value = "展品数据加载失败";
+    exhibits.value = [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
-onMounted(fetchExhibits)
-watch(hallId, fetchExhibits)
+onMounted(fetchExhibits);
+watch(hallId, fetchExhibits);
 
 const exhibitInfo = computed(() => {
-  if (!currentId.value || !Array.isArray(exhibits.value)) return null
+  if (!currentId.value || !Array.isArray(exhibits.value)) return null;
   // id 强制转为数字，避免类型不一致导致找不到
-  const item = exhibits.value.find(e => Number(e.id) === Number(currentId.value))
-  if (!item) return null
+  const item = exhibits.value.find(
+    (e) => Number(e.id) === Number(currentId.value)
+  );
+  if (!item) return null;
   // 优先展示视频，没有视频再展示图片，兼容对象数组
-  let imageUrl = ''
-  let videoUrl = ''
+  let imageUrl = "";
+  let videoUrl = "";
   if (item.more) {
     if (item.more.files && item.more.files.length > 0) {
-      const file = item.more.files[0]
-      videoUrl = fullUrl(file.url)
+      const file = item.more.files[0];
+      videoUrl = fullUrl(file.url);
     } else if (item.more.photos && item.more.photos.length > 0) {
-      const photo = item.more.photos[0]
-      imageUrl = fullUrl(photo.url)
+      const photo = item.more.photos[0];
+      imageUrl = fullUrl(photo.url);
     } else if (item.more.thumbnail) {
-      imageUrl = fullUrl(item.more.thumbnail)
+      imageUrl = fullUrl(item.more.thumbnail);
     }
   }
   // 处理所有作者
-  let authors = []
+  let authors = [];
   if (Array.isArray(item.more?.authors)) {
-    authors = item.more.authors.map(author => ({
+    authors = item.more.authors.map((author) => ({
       zh_names: author.zh_names,
-      grade: author.grade || '未知年级',
-      avatar: author.url ? fullUrl(author.url) : null // 作者头像URL需要通过fullUrl处理
-    }))
+      grade: author.grade || "未知年级",
+      avatar: author.url ? fullUrl(author.url) : null, // 作者头像URL需要通过fullUrl处理
+    }));
   }
   return {
     title: item.post_title,
@@ -77,66 +83,75 @@ const exhibitInfo = computed(() => {
     videoUrl,
     details: {
       authors,
-      teacher: item.tutors_zh || '',
-      year: '',
-      medium: ''
-    }
-  }
-})
+      teacher: item.tutors_zh || "",
+      year: "",
+      medium: "",
+    },
+  };
+});
 
 const modelFile = computed(() => {
-  if (!currentId.value) return ''
-  const file = exhibitModels[currentId.value]
+  if (!currentId.value) return "";
+  const file = exhibitModels[currentId.value];
   // 适配 Vite base 配置，确保开发和生产都能加载模型
-  return file ? import.meta.env.BASE_URL + 'assets/models/' + file : ''
-})
+  return file ? import.meta.env.BASE_URL + "assets/models/" + file : "";
+});
 
 function fullUrl(path) {
-  if (!path) return ''
-  return path.startsWith('http') ? path : `http://idesign.tju.edu.cn/upload/${path.replace(/^\//, '')}`
+  if (!path) return "";
+  return path.startsWith("http")
+    ? path
+    : `http://idesign.tju.edu.cn/upload/${path.replace(/^\//, "")}`;
 }
 
 const goToExhibit = (direction) => {
-  if (!exhibits.value.length) return
-  const idx = exhibits.value.findIndex(e => e.id === currentId.value)
-  let newIdx
-  if (direction === 'next') {
-    newIdx = idx < exhibits.value.length - 1 ? idx + 1 : 0
+  if (!exhibits.value.length) return;
+  const idx = exhibits.value.findIndex((e) => e.id === currentId.value);
+  let newIdx;
+  if (direction === "next") {
+    newIdx = idx < exhibits.value.length - 1 ? idx + 1 : 0;
   } else {
-    newIdx = idx > 0 ? idx - 1 : exhibits.value.length - 1
+    newIdx = idx > 0 ? idx - 1 : exhibits.value.length - 1;
   }
-  const nextId = exhibits.value[newIdx]?.id
-  router.push(`/2025/information/${nextId}?hallId=${hallId.value}`)
-}
+  const nextId = exhibits.value[newIdx]?.id;
+  router.push(`/2025/information/${nextId}?hallId=${hallId.value}`);
+};
 
 // const currentSlide = ref(0) // Remove old currentSlide
 
 const exhibitSlides = computed(() => {
-  const slides = []
+  const slides = [];
   // 1. 模型
-  const file = exhibitModels[currentId.value]
+  const file = exhibitModels[currentId.value];
   if (file) {
-    slides.push({ type: 'model', src: 'assets/models/' + file })
+    slides.push({ type: "model", src: "assets/models/" + file });
   }
   // 2. 所有视频
-  const item = exhibits.value.find(e => Number(e.id) === Number(currentId.value))
-  if (item && item.more && Array.isArray(item.more.files) && item.more.files.length > 0) {
-    item.more.files.forEach(f => {
-      if (f.url) slides.push({ type: 'video', src: fullUrl(f.url) })
-    })
+  const item = exhibits.value.find(
+    (e) => Number(e.id) === Number(currentId.value)
+  );
+  if (
+    item &&
+    item.more &&
+    Array.isArray(item.more.files) &&
+    item.more.files.length > 0
+  ) {
+    item.more.files.forEach((f) => {
+      if (f.url) slides.push({ type: "video", src: fullUrl(f.url) });
+    });
   }
   // 3. 所有图片
   if (item && item.more) {
     if (Array.isArray(item.more.photos) && item.more.photos.length > 0) {
-      item.more.photos.forEach(photo => {
-        if (photo.url) slides.push({ type: 'image', src: fullUrl(photo.url) })
-      })
+      item.more.photos.forEach((photo) => {
+        if (photo.url) slides.push({ type: "image", src: fullUrl(photo.url) });
+      });
     } else if (item.more.thumbnail) {
-      slides.push({ type: 'image', src: fullUrl(item.more.thumbnail) })
+      slides.push({ type: "image", src: fullUrl(item.more.thumbnail) });
     }
   }
-  return slides
-})
+  return slides;
+});
 
 // Remove old prevSlide and nextSlide methods
 // function prevSlide() {
@@ -151,8 +166,192 @@ const exhibitSlides = computed(() => {
 
 // 返回home页面并定位到exhibitionsection
 const goToHome = () => {
-  router.push('/2025#exhibition')
-}
+  router.push("/2025#exhibition");
+};
+
+// 分享功能
+const shareExhibit = () => {
+  if (!exhibitInfo.value) return;
+  showShareModal.value = true;
+};
+
+// 关闭分享弹窗
+const closeShareModal = () => {
+  showShareModal.value = false;
+};
+
+// 复制链接
+const copyLink = async () => {
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+    alert("链接已复制到剪贴板！");
+  } catch (error) {
+    prompt("请复制以下链接进行分享：", window.location.href);
+  }
+};
+
+// 下载分享卡片
+const downloadShareCard = async () => {
+  await generateShareCard();
+  const canvas = document.getElementById("shareCanvas");
+  if (canvas) {
+    const link = document.createElement("a");
+    link.download = `${exhibitInfo.value.title}-分享卡片.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+};
+
+// 生成分享卡片
+const generateShareCard = () => {
+  return new Promise((resolve) => {
+    if (!exhibitInfo.value) {
+      resolve();
+      return;
+    }
+
+    const canvas = document.getElementById("shareCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // 设置画布尺寸 (类似手机屏幕比例)
+    canvas.width = 400;
+    canvas.height = 600;
+
+    // 绘制背景
+    ctx.fillStyle = "#f5e6e8";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 绘制卡片背景
+    ctx.fillStyle = "#ffffff";
+    const cardX = 20;
+    const cardY = 20;
+    const cardWidth = canvas.width - 40;
+    const cardHeight = canvas.height - 40;
+
+    // 绘制圆角矩形
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 16);
+    ctx.fill();
+
+    // 绘制头部区域
+    ctx.fillStyle = "#333333";
+    ctx.font = "bold 16px Arial, sans-serif";
+    ctx.fillText("天津大学第11届设计年展", cardX + 60, cardY + 35);
+
+    // 绘制展厅图标位置 (圆形占位)
+    ctx.fillStyle = hallColor.value || "#2FA3B0";
+    ctx.beginPath();
+    ctx.arc(cardX + 35, cardY + 30, 20, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // 绘制三个点
+    ctx.fillStyle = "#999999";
+    ctx.font = "20px Arial";
+    ctx.fillText("⋯", cardX + cardWidth - 30, cardY + 35);
+
+    // 绘制图片区域
+    const imageY = cardY + 60;
+    const imageHeight = 200;
+
+    if (exhibitInfo.value.imageUrl) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        ctx.drawImage(img, cardX, imageY, cardWidth, imageHeight);
+        drawBottomContent();
+        resolve();
+      };
+      img.onerror = () => {
+        drawImagePlaceholder();
+        drawBottomContent();
+        resolve();
+      };
+      img.src = exhibitInfo.value.imageUrl;
+    } else {
+      drawImagePlaceholder();
+      drawBottomContent();
+      resolve();
+    }
+
+    function drawImagePlaceholder() {
+      ctx.fillStyle = "#f0f0f0";
+      ctx.fillRect(cardX, imageY, cardWidth, imageHeight);
+
+      ctx.fillStyle = "#666666";
+      ctx.font = "16px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        exhibitInfo.value.title,
+        cardX + cardWidth / 2,
+        imageY + imageHeight / 2
+      );
+      ctx.textAlign = "left";
+    }
+
+    function drawBottomContent() {
+      const bottomY = imageY + imageHeight + 20;
+
+      // 绘制图标行
+      ctx.font = "20px Arial";
+      ctx.fillText("❤️", cardX + 20, bottomY + 20);
+      ctx.fillText("💬", cardX + 60, bottomY + 20);
+      ctx.fillText("📤", cardX + 100, bottomY + 20);
+      ctx.fillText("🔖", cardX + cardWidth - 40, bottomY + 20);
+
+      // 绘制作品标题
+      ctx.fillStyle = "#333333";
+      ctx.font = "bold 16px Arial";
+      ctx.fillText(exhibitInfo.value.title, cardX + 20, bottomY + 50);
+
+      // 绘制标签
+      ctx.fillStyle = "#4a90e2";
+      ctx.font = "14px Arial";
+      const tags = `#${
+        hallInfo.value?.name || ""
+      } #${exhibitInfo.value.details.authors
+        .map((a) => a.zh_names)
+        .join(" #")}`;
+      ctx.fillText(tags, cardX + 20, bottomY + 75);
+
+      // 绘制描述
+      ctx.fillStyle = "#333333";
+      ctx.font = "12px Arial";
+      const description = exhibitInfo.value.description;
+      const lines = wrapText(ctx, description, cardWidth - 40);
+      lines.slice(0, 3).forEach((line, index) => {
+        ctx.fillText(line, cardX + 20, bottomY + 100 + index * 18);
+      });
+
+      // 绘制底部信息
+      ctx.fillStyle = "#999999";
+      ctx.font = "11px Arial";
+      ctx.fillText("1分钟", cardX + 20, bottomY + 170);
+      ctx.fillText("查看翻译", cardX + cardWidth - 60, bottomY + 170);
+    }
+  });
+};
+
+// 文字换行辅助函数
+const wrapText = (ctx, text, maxWidth) => {
+  const words = text.split("");
+  const lines = [];
+  let currentLine = "";
+
+  for (let i = 0; i < words.length; i++) {
+    const testLine = currentLine + words[i];
+    const metrics = ctx.measureText(testLine);
+    const testWidth = metrics.width;
+
+    if (testWidth > maxWidth && i > 0) {
+      lines.push(currentLine);
+      currentLine = words[i];
+    } else {
+      currentLine = testLine;
+    }
+  }
+  lines.push(currentLine);
+  return lines;
+};
 </script>
 
 <template>
@@ -162,16 +361,30 @@ const goToHome = () => {
     <div v-if="loading">展品加载中...</div>
     <div v-else-if="error">{{ error }}</div>
     <div v-else-if="!exhibitInfo">
-      <div style="text-align:center;padding:4rem;font-size:1.5rem;color:#888;">无效的展品ID</div>
+      <div
+        style="
+          text-align: center;
+          padding: 4rem;
+          font-size: 1.5rem;
+          color: #888;
+        "
+      >
+        无效的展品ID
+      </div>
     </div>
     <div v-else class="navigation-container">
       <button class="nav-button prev" @click="goToExhibit('prev')">
         <svg viewBox="0 0 24 24" class="arrow-icon">
-          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
         </svg>
       </button>
       <div class="exhibit-container">
-        <img v-if="hallInfo && hallInfo.border" class="border-image" :src="hallInfo.border" alt="边框" />
+        <img
+          v-if="hallInfo && hallInfo.border"
+          class="border-image"
+          :src="hallInfo.border"
+          alt="边框"
+        />
         <div class="exhibit-content">
           <div class="exhibit-image-wrapper">
             <div class="exhibit-image-inner">
@@ -180,22 +393,35 @@ const goToHome = () => {
                 :slides="exhibitSlides"
                 :hallColor="hallColor"
                 ref="carouselRef"
-                style="width:100%; height:100%;"
+                style="width: 100%; height: 100%"
               />
             </div>
           </div>
           <div class="exhibit-details">
             <div class="hall-info">
-              <img v-if="hallInfo && hallInfo.icon" class="hall-icon" :src="hallInfo.icon" alt="icon" />
+              <img
+                v-if="hallInfo && hallInfo.icon"
+                class="hall-icon"
+                :src="hallInfo.icon"
+                alt="icon"
+              />
               <span class="hall-text-group">
-                <span class="hall-text" :style="{ color: hallColor }">{{ hallInfo?.name || '' }}</span>
-                <span class="hall-subtext" :style="{ color: hallColor }">{{ hallInfo?.enName || '' }}</span>
+                <span class="hall-text" :style="{ color: hallColor }">{{
+                  hallInfo?.name || ""
+                }}</span>
+                <span class="hall-subtext" :style="{ color: hallColor }">{{
+                  hallInfo?.enName || ""
+                }}</span>
               </span>
             </div>
             <div class="desc-section">
               <div class="desc-header">
                 <span class="desc-title">{{ exhibitInfo.title }}</span>
-                <button class="share-btn" :style="{ backgroundColor: hallColor }">
+                <button
+                  class="share-btn"
+                  :style="{ backgroundColor: hallColor }"
+                  @click="shareExhibit"
+                >
                   <img src="/assets/images/icons/share.png" alt="分享" />
                 </button>
               </div>
@@ -204,14 +430,16 @@ const goToHome = () => {
               </div>
               <div class="desc-footer">
                 <div class="authors-section">
-                  <AuthorCards 
+                  <AuthorCards
                     :authors="exhibitInfo.details.authors || []"
                     :hallColor="hallColor"
                   />
                 </div>
                 <div class="teacher-section">
                   <div class="section-label">指导教师</div>
-                  <div class="teacher-name">{{ exhibitInfo.details.teacher || '无' }}</div>
+                  <div class="teacher-name">
+                    {{ exhibitInfo.details.teacher || "无" }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -220,9 +448,98 @@ const goToHome = () => {
       </div>
       <button class="nav-button next" @click="goToExhibit('next')">
         <svg viewBox="0 0 24 24" class="arrow-icon">
-          <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+          <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" />
         </svg>
       </button>
+    </div>
+
+    <!-- 分享弹窗 -->
+    <div
+      v-if="showShareModal"
+      class="share-modal-overlay"
+      @click="closeShareModal"
+    >
+      <div class="share-modal" @click.stop>
+        <!-- 分享卡片 -->
+        <div class="share-card">
+          <!-- 卡片头部 -->
+          <div class="share-card-header">
+            <div class="share-card-logo">
+              <img
+                v-if="hallInfo && hallInfo.icon"
+                :src="hallInfo.icon"
+                alt="展厅图标"
+              />
+            </div>
+            <div class="share-card-title">
+              <div class="share-card-main-title">天津大学第11届设计年展</div>
+              <div class="share-card-dots">⋯</div>
+            </div>
+          </div>
+
+          <!-- 卡片图片区域 -->
+          <div class="share-card-image">
+            <img
+              v-if="exhibitInfo.imageUrl"
+              :src="exhibitInfo.imageUrl"
+              alt="作品图片"
+            />
+            <div v-else class="share-card-image-placeholder">
+              <span>{{ exhibitInfo.title }}</span>
+            </div>
+          </div>
+
+          <!-- 卡片底部信息 -->
+          <div class="share-card-footer">
+            <div class="share-card-icons">
+              <div class="share-icon">❤️</div>
+              <div class="share-icon">💬</div>
+              <div class="share-icon">📤</div>
+              <div class="share-icon bookmark">🔖</div>
+            </div>
+
+            <div class="share-card-info">
+              <div class="share-card-work-title">
+                <strong>{{ exhibitInfo.title }}</strong>
+                <span class="share-card-tags">
+                  #{{ hallInfo?.name || "" }}
+                  <span
+                    v-for="author in exhibitInfo.details.authors"
+                    :key="author.zh_names"
+                  >
+                    #{{ author.zh_names }}
+                  </span>
+                </span>
+              </div>
+
+              <div class="share-card-description">
+                {{ exhibitInfo.description }}
+              </div>
+
+              <div class="share-card-meta">
+                <span class="share-card-time">1分钟</span>
+                <span class="share-card-translate">查看翻译</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="share-actions">
+          <button
+            class="share-action-btn download-btn"
+            @click="downloadShareCard"
+          >
+            📥 下载照片
+          </button>
+          <button class="share-action-btn copy-btn" @click="copyLink">
+            🔗 复制链接
+          </button>
+        </div>
+
+        <!-- 隐藏的Canvas用于生成图片 -->
+        <canvas id="shareCanvas" style="display: none"></canvas>
+      </div>
     </div>
   </div>
 </template>
@@ -242,7 +559,7 @@ const goToHome = () => {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: url('/assets/images/background.jpg') no-repeat center center;
+  background: url("/assets/images/background.jpg") no-repeat center center;
   background-size: cover;
   filter: blur(16px);
   pointer-events: none;
@@ -263,7 +580,7 @@ const goToHome = () => {
   background: white;
   border-radius: 50px;
   max-width: 1300px; /* 增加最大宽度，从 1100px 改为 1300px */
-  width: 80vw;  /* 增加宽度比例，从 70vw 改为 80vw */
+  width: 80vw; /* 增加宽度比例，从 70vw 改为 80vw */
   min-width: 900px; /* 增加最小宽度，从 800px 改为 900px */
   min-height: 680px; /* 增加最小高度，从 600px 改为 680px */
   margin: 0 auto;
@@ -332,7 +649,7 @@ const goToHome = () => {
   justify-content: center;
   background: #f8f8f8;
   border-radius: 32px;
-  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.08);
   width: 580px; /* 增加宽度，从 480px 改为 580px */
   height: 580px; /* 增加高度，从 480px 改为 580px */
   min-width: 360px; /* 增加最小宽度，从 320px 改为 360px */
@@ -364,14 +681,14 @@ const goToHome = () => {
   aspect-ratio: 1/1;
   border-radius: 24px;
   background: #f8f8f8;
-  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.06);
   cursor: pointer;
   transition: box-shadow 0.2s;
 }
 
 .exhibit-main-image:hover,
 .exhibit-main-video:hover {
-  box-shadow: 0 4px 24px 0 rgba(47,163,176,0.18);
+  box-shadow: 0 4px 24px 0 rgba(47, 163, 176, 0.18);
 }
 
 .exhibit-image-empty {
@@ -608,5 +925,219 @@ const goToHome = () => {
   font-size: 1.2rem;
   cursor: pointer;
   z-index: 10;
+}
+
+/* 分享弹窗样式 */
+.share-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.share-modal {
+  background: transparent;
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.share-card {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.share-card-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  gap: 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.share-card-logo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.share-card-title {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.share-card-main-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.share-card-dots {
+  font-size: 1.2rem;
+  color: #666;
+  cursor: pointer;
+}
+
+.share-card-image {
+  width: 100%;
+  height: 300px;
+  background: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.share-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.share-card-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+  color: #666;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.share-card-footer {
+  padding: 1rem;
+}
+
+.share-card-icons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.share-icon {
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.share-icon:hover {
+  transform: scale(1.1);
+}
+
+.share-icon.bookmark {
+  margin-left: auto;
+}
+
+.share-card-work-title {
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.share-card-work-title strong {
+  font-size: 1rem;
+  color: #333;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.share-card-tags {
+  font-size: 0.9rem;
+  color: #4a90e2;
+  font-weight: normal;
+}
+
+.share-card-description {
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.5;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.share-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.share-card-translate {
+  color: #4a90e2;
+  cursor: pointer;
+}
+
+.share-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.share-action-btn {
+  flex: 1;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.download-btn {
+  background: #4a90e2;
+  color: white;
+}
+
+.download-btn:hover {
+  background: #357abd;
+  transform: translateY(-2px);
+}
+
+.copy-btn {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.copy-btn:hover {
+  background: #e0e0e0;
+  transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 </style>
