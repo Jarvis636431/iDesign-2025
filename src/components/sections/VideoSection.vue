@@ -15,7 +15,7 @@ const videoError = ref(false);
 // 计算属性：视频描述文字
 const videoDescription = computed(() => {
   if (props.isEnglish) {
-    return "Wind rises in the forest, recording the sound of design growth<br />In the twilight and wind whispers, witness the footprints of a generation's dreams<br />Every frame is a moment of new sprouts breaking through the soil<br />Every segment of footage is a ring of growth";
+    return "The wind stirs the forest, <br />echoing the quiet growth of design.<br />In glimmers and whispers, <br />we witness a generation dreaming into being. Every frame, a seed breaking<br />through the earth. Every scene, a ring in the tree of time.";
   } else {
     return "风起林间，记录设计生长的声音<br />在微光与风语中，看见一代人的筑梦足迹<br />每一帧，都是新苗破土的片刻<br />每一段影像，都是成长的年轮";
   }
@@ -181,5 +181,6 @@ onMounted(() => {
   text-align: left;
   color: #ffffff;
   line-height: 1.6;
+  font-weight: 600; /* semibold字重 */
 }
 </style>
