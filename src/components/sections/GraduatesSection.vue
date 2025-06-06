@@ -357,7 +357,9 @@ onUnmounted(() => {
   overflow: hidden;
   background: #ffffff;
   z-index: 2;
-  cursor: pointer; /* 提示可交互 */
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="%232FA3B0"/><polygon points="24,22 36,22 30,16" fill="none" stroke="%23ffffff" stroke-width="2"/><polygon points="24,38 36,38 30,44" fill="none" stroke="%23ffffff" stroke-width="2"/></svg>')
+      30 30,
+    pointer;
 }
 
 .avatars-list {

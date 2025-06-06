@@ -1,60 +1,60 @@
 <template>
-  <div 
-    class="graduate-card" 
+  <div
+    class="graduate-card"
     :style="{ '--color': color }"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
   >
     <div class="photo-container">
-      <img 
-        v-if="avatar" 
-        :src="avatar" 
-        :alt="name" 
+      <img
+        v-if="avatar"
+        :src="avatar"
+        :alt="name"
         class="avatar"
         @error="handleImageError"
       />
       <div v-else class="avatar-placeholder">
-        {{ name ? name.charAt(0) : '?' }}
+        {{ name ? name.charAt(0) : "?" }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref } from "vue";
 
 const props = defineProps({
   name: {
     type: Object,
-    required: true
+    required: true,
   },
   destination: {
     type: Object,
     default: () => ({
-      zh: '',
-      en: ''
-    })
+      zh: "",
+      en: "",
+    }),
   },
   isEnglish: {
     type: Boolean,
-    default: false
+    default: false,
   },
   avatar: {
     type: String,
-    default: ''
+    default: "",
   },
   color: {
     type: String,
-    default: '#2FA3B0'
-  }
-})
+    default: "#2FA3B0",
+  },
+});
 
-const isHovered = ref(false)
+const isHovered = ref(false);
 
 const handleImageError = (e) => {
-  e.target.style.display = 'none'
-  e.target.nextElementSibling.style.display = 'flex'
-}
+  e.target.style.display = "none";
+  e.target.nextElementSibling.style.display = "flex";
+};
 </script>
 
 <style scoped>
@@ -63,7 +63,9 @@ const handleImageError = (e) => {
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
-  cursor: pointer;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="%232FA3B0"/><polygon points="24,22 36,22 30,16" fill="none" stroke="%23ffffff" stroke-width="2"/><polygon points="24,38 36,38 30,44" fill="none" stroke="%23ffffff" stroke-width="2"/></svg>')
+      30 30,
+    pointer;
 }
 
 .photo-container {
