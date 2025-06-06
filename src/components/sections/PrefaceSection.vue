@@ -693,6 +693,7 @@ onUnmounted(() => {
   flex-direction: column; /* 英文水平文字纵向排列 */
   max-width: 600px; /* 限制最大宽度 */
   text-align: right; /* 右对齐 */
+  margin-right: 30rem;
 }
 
 /* 竖直文字样式 - 默认中文竖直排列 */
