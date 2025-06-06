@@ -70,7 +70,18 @@ onUnmounted(() => {
       <!-- 第一部分：鼠标图片展示 -->
       <div class="section-part part-1">
         <div class="mouse-container">
-          <img src="/assets/images/mouse.png" alt="Mouse" class="mouse-image" />
+          <!-- 黄色底色背景 -->
+          <div class="yellow-background">
+            <img
+              src="/assets/images/mouse.png"
+              alt="Mouse"
+              class="mouse-image"
+            />
+            <!-- 文字说明 -->
+            <div class="mouse-text">
+              {{ isEnglish ? "Scroll" : "滚动滚轮" }}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -83,13 +94,19 @@ onUnmounted(() => {
               {{ isEnglish ? "Wind from the South" : "南方来风" }}
             </div>
             <div class="vertical-text">
-              {{ isEnglish ? "Wings for New Sprouts" : "不烈不喧却润物无声" }}
+              {{
+                isEnglish
+                  ? "Neither fierce nor clamorous, yet silently nourishing"
+                  : "不烈不喧却润物无声"
+              }}
             </div>
             <div class="vertical-text">
-              {{ isEnglish ? "A Symphony of Design" : "它唤醒沉潜的种子" }}
+              {{ isEnglish ? "It awakens dormant seeds" : "它唤醒沉潜的种子" }}
             </div>
             <div class="vertical-text">
-              {{ isEnglish ? "A Symphony of Design" : "催动万物生长" }}
+              {{
+                isEnglish ? "And propels all things to grow" : "催动万物生长"
+              }}
             </div>
           </div>
 
@@ -97,20 +114,30 @@ onUnmounted(() => {
           <div class="text-bottom-right">
             <div class="vertical-text">
               {{
-                isEnglish ? "Every design tells a story" : "第十一届设计年展"
+                isEnglish ? "The 11th Design Exhibition" : "第十一届设计年展"
               }}
             </div>
             <div class="vertical-text">
-              {{ isEnglish ? "of growth and dreams" : "亦是新十年的序章" }}
+              {{
+                isEnglish
+                  ? "Is also the prelude to a new decade"
+                  : "亦是新十年的序章"
+              }}
             </div>
             <div class="vertical-text">
-              {{ isEnglish ? "of growth and dreams" : "十年之后" }}
+              {{ isEnglish ? "Ten years later" : "十年之后" }}
             </div>
             <div class="vertical-text">
-              {{ isEnglish ? "of growth and dreams" : "我们回望教育历程" }}
+              {{
+                isEnglish
+                  ? "We look back on our educational journey"
+                  : "我们回望教育历程"
+              }}
             </div>
             <div class="vertical-text">
-              {{ isEnglish ? "of growth and dreams" : "更怀想未来图景" }}
+              {{
+                isEnglish ? "And envision future landscapes" : "更怀想未来图景"
+              }}
             </div>
           </div>
         </div>
@@ -160,11 +187,29 @@ onUnmounted(() => {
 
             <!-- 4. 文字 (最顶层) -->
             <div class="guide-text-container hidden-text">
-              <div class="guide-text-line">既是风的旅程</div>
-              <div class="guide-text-line">亦是思维与设计的演化足迹</div>
-              <div class="guide-text-line">或穿行</div>
-              <div class="guide-text-line">或驻足</div>
-              <div class="guide-text-line">您可静听作品的生长故事</div>
+              <div class="guide-text-line">
+                {{ isEnglish ? "A journey of wind" : "既是风的旅程" }}
+              </div>
+              <div class="guide-text-line">
+                {{
+                  isEnglish
+                    ? "And the evolutionary traces of thought and design"
+                    : "亦是思维与设计的演化足迹"
+                }}
+              </div>
+              <div class="guide-text-line">
+                {{ isEnglish ? "Whether wandering" : "或穿行" }}
+              </div>
+              <div class="guide-text-line">
+                {{ isEnglish ? "Or pausing" : "或驻足" }}
+              </div>
+              <div class="guide-text-line">
+                {{
+                  isEnglish
+                    ? "You may quietly listen to the stories of works growing"
+                    : "您可静听作品的生长故事"
+                }}
+              </div>
             </div>
           </div>
 
@@ -546,7 +591,7 @@ onUnmounted(() => {
 }
 
 .mouse-image {
-  width: 120px;
+  width: 30px; /* 从120px缩小到80px */
   height: auto;
   opacity: 0.9;
   transition: transform 0.3s ease;
@@ -554,6 +599,55 @@ onUnmounted(() => {
 
 .mouse-image:hover {
   transform: scale(1.1);
+}
+
+/* 黄色背景容器 */
+.yellow-background {
+  background-color: #ffe29a; /* 黄色背景 */
+  border-radius: 50%; /* 改为圆形 */
+  width: 90px; /* 设置固定宽度 */
+  height: 90px; /* 设置固定高度，与宽度相等形成圆形 */
+  display: flex;
+  gap: 0.3rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.yellow-background:hover {
+  transform: translateY(-5px); /* 悬停时轻微上移 */
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15); /* 悬停时加深阴影 */
+}
+
+/* 鼠标文字样式 */
+.mouse-text {
+  font-size: 1rem; /* 减小字体以适应圆形容器 */
+  font-weight: bold;
+  color: #052a1b; /* 深色文字，在黄色背景上清晰可见 */
+  text-align: center;
+}
+
+/* 中文字体 */
+.mouse-text:not([lang="en"]) {
+  font-family: "MFXiHei", "PingFang SC", -apple-system, BlinkMacSystemFont,
+    sans-serif;
+}
+
+/* 英文字体 */
+.mouse-text[lang="en"] {
+  font-family: "Futura", "Arial", sans-serif;
+}
+
+/* 根据语言动态设置字体 */
+[lang="zh"] .mouse-text {
+  font-family: "MFXiHei", "PingFang SC", -apple-system, BlinkMacSystemFont,
+    sans-serif;
+}
+
+[lang="en"] .mouse-text {
+  font-family: "Futura", "Arial", sans-serif;
 }
 
 /* 第二部分：文字和背景图 (250vw宽度) */
