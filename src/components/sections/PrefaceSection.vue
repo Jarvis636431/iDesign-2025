@@ -287,6 +287,7 @@ const props = defineProps({
   line-height: 1.2;
   letter-spacing: 0.5em;
   white-space: nowrap; /* 防止换行 */
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 使用苹方字体 */
 }
 
 /* 第三部分：logo和引导文字 */
@@ -340,6 +341,7 @@ const props = defineProps({
   opacity: 0.95;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   letter-spacing: 0.1em;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 使用苹方字体 */
 }
 
 .guide-text-line:last-child {
@@ -350,6 +352,8 @@ const props = defineProps({
 .forest-text {
   font-family: "slidefu", sans-serif !important;
   font-size: 144px !important;
+  color: #ffe29a !important; /* 设置为黄色 */
+  margin-bottom: 2rem !important; /* 增加下边距 */
 }
 
 /* 第四部分：纯文字展示 */
@@ -379,6 +383,7 @@ const props = defineProps({
   margin-bottom: 3rem;
   opacity: 0.9;
   font-weight: 300;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 使用苹方字体 */
 }
 
 .belief-content {
@@ -394,6 +399,7 @@ const props = defineProps({
   font-weight: 300;
   opacity: 0.95;
   text-align: center;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 使用苹方字体 */
 }
 
 /* 特定文字的黄色高亮 */
@@ -504,12 +510,14 @@ const props = defineProps({
 
   .belief-line {
     font-size: 1.8rem; /* 移动端字体稍小 */
+    font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 移动端也使用苹方字体 */
   }
 
   .vertical-text {
     font-size: 1.8rem; /* 移动端字体稍小 */
     writing-mode: horizontal-tb; /* 移动端改为水平排列 */
     text-orientation: mixed;
+    font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 移动端也使用苹方字体 */
   }
 
   .text-top-left,
@@ -532,6 +540,7 @@ const props = defineProps({
   .guide-text-line {
     font-size: 2rem; /* 移动端字体稍小 */
     margin-bottom: 1rem;
+    font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 移动端也使用苹方字体 */
   }
 
   .forest-text {
