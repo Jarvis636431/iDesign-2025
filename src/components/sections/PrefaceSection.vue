@@ -89,56 +89,46 @@ onUnmounted(() => {
       <div class="section-part part-2">
         <div class="text-with-bg">
           <!-- 左上角文字 -->
-          <div class="text-top-left">
-            <div class="vertical-text">
-              {{ isEnglish ? "Wind from the South" : "南方来风" }}
+          <div
+            class="text-top-left"
+            :class="{ 'horizontal-layout': isEnglish }"
+          >
+            <div
+              class="vertical-text english-poem"
+              :class="{ 'horizontal-text': isEnglish }"
+              v-if="isEnglish"
+            >
+              A Southern breeze, so soft and low,<br />
+              Awakens seeds, helps all things grow.
             </div>
-            <div class="vertical-text">
-              {{
-                isEnglish
-                  ? "Neither fierce nor clamorous, yet silently nourishing"
-                  : "不烈不喧却润物无声"
-              }}
-            </div>
-            <div class="vertical-text">
-              {{ isEnglish ? "It awakens dormant seeds" : "它唤醒沉潜的种子" }}
-            </div>
-            <div class="vertical-text">
-              {{
-                isEnglish ? "And propels all things to grow" : "催动万物生长"
-              }}
-            </div>
+            <template v-else>
+              <div class="vertical-text">南方来风</div>
+              <div class="vertical-text">不烈不喧却润物无声</div>
+              <div class="vertical-text">它唤醒沉潜的种子</div>
+              <div class="vertical-text">催动万物生长</div>
+            </template>
           </div>
 
           <!-- 右下角文字 -->
-          <div class="text-bottom-right">
-            <div class="vertical-text">
-              {{
-                isEnglish ? "The 11th Design Exhibition" : "第十一届设计年展"
-              }}
+          <div
+            class="text-bottom-right"
+            :class="{ 'horizontal-layout': isEnglish }"
+          >
+            <div
+              class="vertical-text english-poem"
+              :class="{ 'horizontal-text': isEnglish }"
+              v-if="isEnglish"
+            >
+              A Southern breeze, so soft and low,<br />
+              Awakens seeds, helps all things grow.
             </div>
-            <div class="vertical-text">
-              {{
-                isEnglish
-                  ? "Is also the prelude to a new decade"
-                  : "亦是新十年的序章"
-              }}
-            </div>
-            <div class="vertical-text">
-              {{ isEnglish ? "Ten years later" : "十年之后" }}
-            </div>
-            <div class="vertical-text">
-              {{
-                isEnglish
-                  ? "We look back on our educational journey"
-                  : "我们回望教育历程"
-              }}
-            </div>
-            <div class="vertical-text">
-              {{
-                isEnglish ? "And envision future landscapes" : "更怀想未来图景"
-              }}
-            </div>
+            <template v-else>
+              <div class="vertical-text">第十一届设计年展</div>
+              <div class="vertical-text">亦是新十年的序章</div>
+              <div class="vertical-text">十年之后</div>
+              <div class="vertical-text">我们回望教育历程</div>
+              <div class="vertical-text">更怀想未来图景</div>
+            </template>
           </div>
         </div>
       </div>
@@ -666,7 +656,7 @@ onUnmounted(() => {
   background: rgba(5, 42, 27, 0.7); /* 半透明遮罩 */
 }
 
-/* 左上角文字容器 */
+/* 左上角文字容器 - 默认中文布局 */
 .text-top-left {
   position: absolute;
   top: 0;
@@ -674,10 +664,18 @@ onUnmounted(() => {
   padding-left: 30rem;
   padding-top: 3rem;
   display: flex;
+  flex-direction: row; /* 中文竖直文字横向排列 */
   gap: 2rem;
+  transition: all 0.3s ease;
 }
 
-/* 右下角文字容器 */
+/* 英文状态下的左上角布局 */
+.text-top-left.horizontal-layout {
+  flex-direction: column; /* 英文水平文字纵向排列 */
+  max-width: 600px; /* 限制最大宽度 */
+}
+
+/* 右下角文字容器 - 默认中文布局 */
 .text-bottom-right {
   position: absolute;
   bottom: 0;
@@ -685,10 +683,19 @@ onUnmounted(() => {
   padding-right: 60rem;
   padding-bottom: 3rem;
   display: flex;
+  flex-direction: row; /* 中文竖直文字横向排列 */
   gap: 2rem;
+  transition: all 0.3s ease;
 }
 
-/* 竖直文字样式 */
+/* 英文状态下的右下角布局 */
+.text-bottom-right.horizontal-layout {
+  flex-direction: column; /* 英文水平文字纵向排列 */
+  max-width: 600px; /* 限制最大宽度 */
+  text-align: right; /* 右对齐 */
+}
+
+/* 竖直文字样式 - 默认中文竖直排列 */
 .vertical-text {
   writing-mode: vertical-rl; /* 竖直排列，从右到左 */
   text-orientation: upright; /* 文字保持正立 */
@@ -699,6 +706,26 @@ onUnmounted(() => {
   letter-spacing: 0.5em;
   white-space: nowrap; /* 防止换行 */
   font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 使用苹方字体 */
+  transition: all 0.3s ease; /* 添加过渡动画 */
+}
+
+/* 英文状态下的水平排列 */
+.horizontal-text {
+  writing-mode: horizontal-tb; /* 水平排列 */
+  text-orientation: mixed; /* 文字正常方向 */
+  font-family: "Futura", "Arial", sans-serif; /* 英文字体 */
+  letter-spacing: 0.1em; /* 英文字母间距调整 */
+  margin-bottom: 1rem; /* 英文状态下添加下边距 */
+}
+
+/* 英文诗歌专用样式 */
+.english-poem.horizontal-text {
+  font-family: "Futura Heavy", "Futura", "Arial Black", sans-serif; /* Futura Heavy字体 */
+  font-weight: 900; /* 确保字体粗细 */
+  font-size: 2.5rem; /* 稍微增大字体 */
+  line-height: 1.4; /* 调整行高 */
+  letter-spacing: 0.05em; /* 调整字母间距 */
+  text-align: left; /* 左对齐 */
 }
 
 /* 第三部分：logo和引导文字 */
