@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { graduates } from "../../constants/graduates";
 import GraduateCard from "../graduates/GraduateCard.vue";
 
@@ -11,6 +11,9 @@ const props = defineProps({
 });
 
 const selectedGraduate = ref(graduates[0]);
+const isHovering = ref(false);
+const avatarsListRef = ref(null);
+const avatarsContainerRef = ref(null);
 
 const handleSelectGraduate = (graduate, event) => {
   selectedGraduate.value = graduate;
@@ -29,6 +32,54 @@ const handleSelectGraduate = (graduate, event) => {
     behavior: "smooth",
   });
 };
+
+// 处理鼠标悬停
+const handleMouseEnter = () => {
+  isHovering.value = true;
+  if (avatarsListRef.value) {
+    // 暂停动画，启用滚动
+    avatarsListRef.value.style.animationPlayState = "paused";
+  }
+};
+
+const handleMouseLeave = () => {
+  isHovering.value = false;
+  if (avatarsListRef.value) {
+    // 恢复动画
+    avatarsListRef.value.style.animationPlayState = "running";
+  }
+};
+
+// 处理滚轮事件
+const handleWheel = (event) => {
+  if (isHovering.value && avatarsListRef.value) {
+    event.preventDefault(); // 阻止页面滚动
+    event.stopPropagation(); // 阻止事件冒泡
+
+    // 获取当前滚动位置
+    const currentScrollTop = avatarsListRef.value.scrollTop || 0;
+    const scrollDelta = event.deltaY;
+
+    // 手动滚动
+    avatarsListRef.value.scrollTop = currentScrollTop + scrollDelta;
+  }
+};
+
+onMounted(() => {
+  // 添加滚轮事件监听
+  if (avatarsContainerRef.value) {
+    avatarsContainerRef.value.addEventListener("wheel", handleWheel, {
+      passive: false,
+    });
+  }
+});
+
+onUnmounted(() => {
+  // 清理事件监听
+  if (avatarsContainerRef.value) {
+    avatarsContainerRef.value.removeEventListener("wheel", handleWheel);
+  }
+});
 </script>
 
 <template>
@@ -115,8 +166,17 @@ const handleSelectGraduate = (graduate, event) => {
 
       <!-- 右侧头像列表容器 -->
 
-      <div class="avatars-container">
-        <div class="avatars-list">
+      <div
+        ref="avatarsContainerRef"
+        class="avatars-container"
+        @mouseenter="handleMouseEnter"
+        @mouseleave="handleMouseLeave"
+      >
+        <div
+          ref="avatarsListRef"
+          class="avatars-list"
+          :class="{ 'manual-scroll': isHovering }"
+        >
           <GraduateCard
             v-for="graduate in [...graduates, ...graduates]"
             :key="graduate.id + Math.random()"
@@ -297,6 +357,7 @@ const handleSelectGraduate = (graduate, event) => {
   overflow: hidden;
   background: #ffffff;
   z-index: 2;
+  cursor: pointer; /* 提示可交互 */
 }
 
 .avatars-list {
@@ -307,9 +368,17 @@ const handleSelectGraduate = (graduate, event) => {
   padding: 15px;
   position: relative;
   animation: scroll 40s linear infinite;
+  height: 100%;
+  overflow-y: auto; /* 允许垂直滚动 */
 
   &::-webkit-scrollbar {
     display: none;
+  }
+
+  /* 手动滚动模式 */
+  &.manual-scroll {
+    animation-play-state: paused;
+    overflow-y: auto;
   }
 
   :deep(.graduate-card) {
@@ -347,9 +416,7 @@ const handleSelectGraduate = (graduate, event) => {
   }
 }
 
-.avatars-container:hover .avatars-list {
-  animation-play-state: paused;
-}
+/* 悬停控制现在由JavaScript处理 */
 
 .right-rect-bg {
   position: fixed;
