@@ -1,6 +1,6 @@
 <template>
   <section class="content-section" id="home">
-    <h1>天津大学设计学院<br>2025届毕业设计展</h1>
+    <img src="/assets/images/logos/main.png" alt="Main Logo" class="main-logo" />
   </section>
 </template>
 
@@ -15,7 +15,32 @@
   align-items: center;
   padding: 2rem;
   position: relative;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: white;
+}
+
+.main-logo {
+  opacity: 0;
+  animation: fadeInAndMove 2.5s forwards;
+  width: 800px;
+  height: auto;
+  position: absolute;
+  transform: rotate(-45deg);
+}
+
+@keyframes fadeInAndMove {
+  0% {
+    opacity: 0;
+    transform: translateX(0) rotate(-45deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(0) rotate(-45deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-90%) rotate(0deg);
+    animation-timing-function: ease-in-out;
+  }
 }
 
 h1 {

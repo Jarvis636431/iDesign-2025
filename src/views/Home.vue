@@ -284,6 +284,10 @@ onMounted(() => {
   width: 120vw;
 }
 
+:deep(#video) {
+  width: 150vw;
+}
+
 h1 {
   color: #333;
   font-size: 3.5rem;
@@ -322,18 +326,6 @@ h2 {
   transform: translateY(-2px);
 }
 
-/* 为每个section添加不同的背景色或背景图 */
-#home {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-#preface {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e0eafc 100%);
-}
-
-#video {
-  background: linear-gradient(135deg, #f5f7fa 0%, #d4e6f1 100%);
-}
 
 /* 特殊处理过渡区域宽度 */
 :deep(#story) {
