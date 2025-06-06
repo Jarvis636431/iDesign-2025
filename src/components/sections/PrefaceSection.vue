@@ -665,6 +665,7 @@ onUnmounted(() => {
   padding-top: 3rem;
   display: flex;
   flex-direction: row; /* 中文竖直文字横向排列 */
+  align-items: flex-start; /* 向上对齐 */
   gap: 2rem;
   transition: all 0.3s ease;
 }
@@ -684,6 +685,7 @@ onUnmounted(() => {
   padding-bottom: 3rem;
   display: flex;
   flex-direction: row; /* 中文竖直文字横向排列 */
+  align-items: flex-end; /* 向下对齐 */
   gap: 2rem;
   transition: all 0.3s ease;
 }
