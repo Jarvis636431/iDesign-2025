@@ -17,7 +17,7 @@ const cursorY = ref(0);
 const showCursor = ref(false);
 
 // 圆盘半径
-const circleRadius = 100;
+const circleRadius = 75;
 
 // 计算clip-path样式
 const clipPathStyle = computed(() => {
@@ -469,14 +469,15 @@ onUnmounted(() => {
 
 /* 隐藏层中的color-logo样式 */
 .color-logo {
-  max-width: 80%; /* 放大color-logo */
-  max-height: 90vh; /* 放大color-logo */
+  max-width: 152%; /* 放大color-logo */
+  max-height: 152vh; /* 放大color-logo */
   width: auto;
   height: auto;
   opacity: 1;
   object-fit: contain;
   z-index: 2;
   position: relative;
+  margin-top: -6%; /* 向上移动10% */
 }
 
 /* 隐藏层中的文字样式 */
@@ -491,17 +492,11 @@ onUnmounted(() => {
   font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.hidden-text .forest-text {
-  color: #ffe29a !important; /* 风中之林保持黄色 */
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-}
-
 /* 自定义光标样式 */
 .custom-cursor {
   position: absolute;
-  width: 300px;
-  height: 300px;
-  border: 2px solid #333333;
+  width: 10px; /* 调小光标尺寸 */
+  height: 150px; /* 调小光标尺寸 */
   border-radius: 50%;
   pointer-events: none;
   z-index: 4;
