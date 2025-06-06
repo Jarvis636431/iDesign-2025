@@ -17,7 +17,7 @@ const cursorY = ref(0);
 const showCursor = ref(false);
 
 // 圆盘半径
-const circleRadius = 150;
+const circleRadius = 100;
 
 // 计算clip-path样式
 const clipPathStyle = computed(() => {
@@ -460,7 +460,7 @@ onUnmounted(() => {
   top: 50%;
   left: 50%;
   width: 100vw;
-  height: 100vh;
+  height: 100vw;
   background: #ffffff;
   border-radius: 50%;
   transform: translate(-50%, -50%);
@@ -469,8 +469,8 @@ onUnmounted(() => {
 
 /* 隐藏层中的color-logo样式 */
 .color-logo {
-  max-width: 100%;
-  max-height: 100vh;
+  max-width: 80%; /* 放大color-logo */
+  max-height: 90vh; /* 放大color-logo */
   width: auto;
   height: auto;
   opacity: 1;
