@@ -292,7 +292,7 @@ onMounted(() => {
 }
 
 :deep(#video) {
-  width: 150vw;
+  width: 200vw;
 }
 
 h1 {

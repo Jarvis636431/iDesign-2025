@@ -275,7 +275,6 @@ onUnmounted(() => {
 
           <!-- 精选蒲公英分布 -->
           <div class="floating-dandelions">
-            <!-- 减少到24个蒲公英，避免遮挡文字和背景 -->
             <img
               src="/assets/images/dandelion.png"
               class="floating-dandelion dandelion-1"
