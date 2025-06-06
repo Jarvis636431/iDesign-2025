@@ -69,17 +69,25 @@ const props = defineProps({
                 {{ isEnglish ? "Is not born from noise" : "非因声势" }}
               </div>
               <div class="belief-line">
-                {{
-                  isEnglish ? "But in the reverence of wind" : "而在风的敬畏"
-                }}
+                <template v-if="isEnglish">
+                  But in the
+                  <span class="highlight-yellow">reverence of wind</span>
+                </template>
+                <template v-else>
+                  而在<span class="highlight-yellow">风的敬畏</span>
+                </template>
               </div>
               <div class="belief-line">
                 {{ isEnglish ? "Not mere imitation" : "不唯模仿" }}
               </div>
               <div class="belief-line">
-                {{
-                  isEnglish ? "But in the awakening of growth" : "而在生长自觉"
-                }}
+                <template v-if="isEnglish">
+                  But in the
+                  <span class="highlight-yellow">awakening of growth</span>
+                </template>
+                <template v-else>
+                  而在<span class="highlight-yellow">生长自觉</span>
+                </template>
               </div>
             </div>
           </div>
@@ -178,7 +186,6 @@ const props = defineProps({
 /* 第一部分：鼠标图片 */
 .part-1 {
   background: #052a1b;
-  border: 2px solid #4a9d6f; /* 临时边框，用于调试 */
 }
 
 .mouse-container {
@@ -200,13 +207,13 @@ const props = defineProps({
   transform: scale(1.1);
 }
 
-/* 第二部分：文字和背景图 (200vw宽度) */
+/* 第二部分：文字和背景图 (250vw宽度) */
 .part-2 {
   background-image: url("/assets/images/backimg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border: 2px solid #2fa3b0; /* 临时边框，用于调试 */
+  background-color: #052a1b; /* 统一背景色 */
 }
 
 .text-with-bg {
@@ -251,8 +258,7 @@ const props = defineProps({
 
 /* 第三部分：待定区域 */
 .part-3 {
-  background: linear-gradient(135deg, #1a4d3a, #052a1b);
-  border: 2px solid #ff6b6b; /* 临时边框，用于调试 */
+  background: #052a1b;
 }
 
 .placeholder-content {
@@ -274,24 +280,23 @@ const props = defineProps({
 
 /* 第四部分：纯文字展示 */
 .part-4 {
-  background: #052a1b; /* 深绿色背景，与图片一致 */
+  background: #052a1b;
   color: white;
-  border: 2px solid #ffa500; /* 临时边框，用于调试 */
 }
 
 .text-only-content {
   width: 100%;
   height: 100%;
   display: flex;
-  justify-content: flex-end; /* 右对齐 */
+  justify-content: center; /* 居中对齐 */
   align-items: center;
   padding: 3rem;
+  padding-right: 20%; /* 整体向右偏移 */
 }
 
 .belief-section {
-  text-align: right; /* 右对齐文字 */
+  text-align: center; /* 文字居中对齐 */
   max-width: 600px;
-  margin-right: 5%; /* 距离右边缘一定距离 */
 }
 
 .belief-header {
@@ -314,13 +319,17 @@ const props = defineProps({
   line-height: 1.4;
   font-weight: 300;
   opacity: 0.95;
-  text-align: right;
+  text-align: center;
+}
+
+/* 特定文字的黄色高亮 */
+.highlight-yellow {
+  color: #ffe29a;
 }
 
 /* 第五部分：图片和文字组合 */
 .part-5 {
-  background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-  border: 2px solid #9c27b0; /* 临时边框，用于调试 */
+  background: #052a1b;
 }
 
 .image-text-combo {
@@ -349,12 +358,12 @@ const props = defineProps({
 
 .text-section {
   flex: 1;
-  color: #333;
+  color: white; /* 改为白色以适应深绿背景 */
 }
 
 .section-title {
   font-size: 2.5rem;
-  color: #2fa3b0;
+  color: #ffe29a; /* 改为黄色以保持一致性 */
   margin-bottom: 1.5rem;
   font-weight: bold;
 }
@@ -363,7 +372,7 @@ const props = defineProps({
   font-size: 1.3rem;
   line-height: 1.6;
   margin-bottom: 2rem;
-  color: #555;
+  color: white; /* 改为白色 */
 }
 
 .highlight-stats {
@@ -386,7 +395,7 @@ const props = defineProps({
 .stat-label {
   display: block;
   font-size: 1.1rem;
-  color: #666;
+  color: white; /* 改为白色 */
   margin-top: 0.5rem;
 }
 
@@ -411,9 +420,12 @@ const props = defineProps({
     height: 100vh;
   }
 
+  .text-only-content {
+    padding-right: 3rem; /* 移动端减少右偏移 */
+  }
+
   .belief-section {
-    text-align: center; /* 移动端居中对齐 */
-    margin-right: 0;
+    text-align: center; /* 移动端保持居中对齐 */
   }
 
   .belief-line {
