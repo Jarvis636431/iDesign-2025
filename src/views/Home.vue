@@ -72,14 +72,14 @@ onMounted(() => {
           :class="{ active: currentSection === 'video' }"
           @click="scrollToSection('video')"
         >
-          {{ isEnglish ? "Video" : "宣传片" }}
+          {{ isEnglish ? "Promotional Video" : "宣传片" }}
         </div>
         <div
           class="nav-item"
           :class="{ active: currentSection === 'exhibition' }"
           @click="scrollToSection('exhibition')"
         >
-          {{ isEnglish ? "Exhibition" : "虚拟展厅" }}
+          {{ isEnglish ? "Virtual Exhibition" : "虚拟展厅" }}
         </div>
         <div
           class="nav-item"
@@ -93,7 +93,7 @@ onMounted(() => {
           :class="{ active: currentSection === 'team' }"
           @click="scrollToSection('team')"
         >
-          {{ isEnglish ? "Team" : "年展组" }}
+          {{ isEnglish ? "Exhibition Planner" : "年展组" }}
         </div>
       </div>
       <div class="language-switch" @click="toggleLanguage">
@@ -192,11 +192,15 @@ onMounted(() => {
   justify-content: center;
   color: #333;
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 0.85rem; /* 减小字体以适应英文 */
   transition: all 0.3s ease;
   cursor: pointer;
-  padding: 0.8rem 0;
+  padding: 0.8rem 0.1rem; /* 增加少量左右内边距 */
   position: relative;
+  text-align: center; /* 确保文本居中 */
+  line-height: 1.2; /* 调整行高 */
+  word-break: break-word; /* 允许单词内换行 */
+  hyphens: auto; /* 自动连字符 */
 }
 
 .nav-item:hover {
