@@ -540,7 +540,7 @@ onUnmounted(() => {
 /* 加载Voyage字体 */
 @font-face {
   font-family: "Voyage";
-  src: url("assets/fonts/Voyage.otf") format("truetype");
+  src: url("assets/fonts/Voyage.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
