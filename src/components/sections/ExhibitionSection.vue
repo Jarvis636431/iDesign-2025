@@ -1,139 +1,164 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { halls } from '../../constants/halls'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { ref, computed } from "vue";
+import { halls } from "../../constants/halls";
+import { useRouter } from "vue-router";
+import axios from "axios";
 
 const props = defineProps({
   isEnglish: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const activeHallIndex = ref(0)
-const activeHall = computed(() => halls[activeHallIndex.value])
-const touchStartY = ref(0)
-const isSwiping = ref(false)
-const router = useRouter()
+const activeHallIndex = ref(0);
+const activeHall = computed(() => halls[activeHallIndex.value]);
+const touchStartY = ref(0);
+const isSwiping = ref(false);
+const router = useRouter();
+
+// 动态光标样式
+const customCursor = computed(() => {
+  const backgroundColor = activeHall.value.color.replace("#", "%23"); // URL编码展厅颜色作为底色
+  const triangleColor = "%23FFE29A"; // 三角形保持黄色
+  return `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="${backgroundColor}"/><polygon points="25,22 25,38 37,30" fill="none" stroke="${triangleColor}" stroke-width="2"/></svg>') 30 30, pointer`;
+});
 
 // 处理文本换行
 const formatText = (text) => {
-  return text.split('。').filter(Boolean).map(sentence => sentence + '。')
-}
+  return text
+    .split("。")
+    .filter(Boolean)
+    .map((sentence) => sentence + "。");
+};
 
 // 切换到下一个展厅
 const nextHall = () => {
-  activeHallIndex.value = (activeHallIndex.value + 1) % halls.length
-}
+  activeHallIndex.value = (activeHallIndex.value + 1) % halls.length;
+};
 
 // 切换到上一个展厅
 const prevHall = () => {
-  activeHallIndex.value = (activeHallIndex.value - 1 + halls.length) % halls.length
-}
+  activeHallIndex.value =
+    (activeHallIndex.value - 1 + halls.length) % halls.length;
+};
 
 // 触摸事件处理
 const handleTouchStart = (event) => {
-  touchStartY.value = event.touches[0].clientY
-  isSwiping.value = true
-}
+  touchStartY.value = event.touches[0].clientY;
+  isSwiping.value = true;
+};
 
 const handleTouchMove = (event) => {
-  if (!isSwiping.value) return
-  event.preventDefault() // 防止页面滚动
-}
+  if (!isSwiping.value) return;
+  event.preventDefault(); // 防止页面滚动
+};
 
 const handleTouchEnd = (event) => {
-  if (!isSwiping.value) return
-  
-  const touchEndY = event.changedTouches[0].clientY
-  const deltaY = touchEndY - touchStartY.value
-  
+  if (!isSwiping.value) return;
+
+  const touchEndY = event.changedTouches[0].clientY;
+  const deltaY = touchEndY - touchStartY.value;
+
   // 只有滑动距离超过50像素才触发切换
   if (Math.abs(deltaY) > 50) {
     if (deltaY > 0) {
       // 向下滑动时，设置反向动画
-      document.querySelector('.logo-container').classList.add('reverse')
-      prevHall()
+      document.querySelector(".logo-container").classList.add("reverse");
+      prevHall();
     } else {
       // 向上滑动时，移除反向动画
-      document.querySelector('.logo-container').classList.remove('reverse')
-      nextHall()
+      document.querySelector(".logo-container").classList.remove("reverse");
+      nextHall();
     }
   }
-  
-  isSwiping.value = false
-}
+
+  isSwiping.value = false;
+};
 
 // 触摸板事件处理
 const handleWheel = (event) => {
   // 确保是触摸板事件
-  if (Math.abs(event.deltaY) < 50) return
-  
+  if (Math.abs(event.deltaY) < 50) return;
+
   if (event.deltaY > 0) {
-    document.querySelector('.logo-container').classList.remove('reverse')
-    nextHall()
+    document.querySelector(".logo-container").classList.remove("reverse");
+    nextHall();
   } else {
-    document.querySelector('.logo-container').classList.add('reverse')
-    prevHall()
+    document.querySelector(".logo-container").classList.add("reverse");
+    prevHall();
   }
-  
-  event.preventDefault()
-}
+
+  event.preventDefault();
+};
 
 // 进入展厅
 const enterExhibition = (hall) => {
-  axios.get('http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists', {
-    params: { per_page: 1, current_page: 1, category_id: hall.id }
-  }).then(res => {
-    let firstExhibitId = null
-    if (res.data && res.data.data && res.data.data.length > 0) {
-      firstExhibitId = res.data.data[0].id
-    }
-    // 跳转到information页面，带上展厅id和展品id
-    router.push(`/2025/information/${firstExhibitId || ''}?hallId=${hall.id}`)
-  }).catch(() => {
-    // 请求失败也跳转，只带hallId
-    router.push(`/2025/information/?hallId=${hall.id}`)
-  })
-}
+  axios
+    .get("http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists", {
+      params: { per_page: 1, current_page: 1, category_id: hall.id },
+    })
+    .then((res) => {
+      let firstExhibitId = null;
+      if (res.data && res.data.data && res.data.data.length > 0) {
+        firstExhibitId = res.data.data[0].id;
+      }
+      // 跳转到information页面，带上展厅id和展品id
+      router.push(
+        `/2025/information/${firstExhibitId || ""}?hallId=${hall.id}`
+      );
+    })
+    .catch(() => {
+      // 请求失败也跳转，只带hallId
+      router.push(`/2025/information/?hallId=${hall.id}`);
+    });
+};
 </script>
 
 <template>
-  <section 
-    class="exhibition-section" 
+  <section
+    class="exhibition-section"
     id="exhibition"
     @touchstart="handleTouchStart"
     @touchmove="handleTouchMove"
     @touchend="handleTouchEnd"
     @wheel.passive="handleWheel"
-    :style="{ backgroundColor: activeHall.backgroundColor }">
-    
+    :style="{ backgroundColor: activeHall.backgroundColor }"
+  >
     <!-- 左上角标题 -->
     <div class="hall-title-area">
-      <h2 class="hall-title" :style="{color:activeHall.color}" >{{ isEnglish ? activeHall.enName : activeHall.name }}</h2>
+      <h2 class="hall-title" :style="{ color: activeHall.color }">
+        {{ isEnglish ? activeHall.enName : activeHall.name }}
+      </h2>
     </div>
 
     <!-- 展厅Logo -->
     <div class="hall-logo-area">
       <transition-group name="slide-fade" tag="div" class="logo-container">
-        <img :key="activeHall.logo" 
-             :src="activeHall.logo" 
-             :alt="isEnglish ? activeHall.enName : activeHall.name"
-             class="hall-logo"
-             @click="enterExhibition(activeHall)">
+        <img
+          :key="activeHall.logo"
+          :src="activeHall.logo"
+          :alt="isEnglish ? activeHall.enName : activeHall.name"
+          class="hall-logo"
+          :style="{ cursor: customCursor }"
+          @click="enterExhibition(activeHall)"
+        />
       </transition-group>
     </div>
 
     <!-- 右下角描述 -->
-    <div class="hall-description" :style="{color:activeHall.color}">
-      <div class="hall-subtitle" :style="{color:activeHall.color}">
+    <div class="hall-description" :style="{ color: activeHall.color }">
+      <div class="hall-subtitle" :style="{ color: activeHall.color }">
         {{ isEnglish ? activeHall.enSubTitle : activeHall.subTitle }}
       </div>
-      <div class="hall-text" :style="{color:activeHall.color}">
-        <p v-for="(sentence, index) in formatText(isEnglish ? activeHall.enDesc : activeHall.desc)" 
-           :key="index"
-           class="text-line">
+      <div class="hall-text" :style="{ color: activeHall.color }">
+        <p
+          v-for="(sentence, index) in formatText(
+            isEnglish ? activeHall.enDesc : activeHall.desc
+          )"
+          :key="index"
+          class="text-line"
+        >
           {{ sentence }}
         </p>
       </div>
@@ -172,7 +197,7 @@ const enterExhibition = (hall) => {
   font-weight: normal;
   font-style: normal;
   font-display: swap;
-}   
+}
 
 .hall-logo-area {
   position: absolute;
@@ -184,12 +209,8 @@ const enterExhibition = (hall) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: grab;
   overflow: hidden;
-}
-
-.hall-logo-area:active {
-  cursor: grabbing;
+  /* 移除了cursor设置，现在使用动态光标 */
 }
 
 .logo-container {
@@ -269,6 +290,6 @@ const enterExhibition = (hall) => {
 }
 
 .text-line {
-  line-height: 1.4;  /* 添加行高控制 */
+  line-height: 1.4; /* 添加行高控制 */
 }
 </style>
