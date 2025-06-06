@@ -57,26 +57,31 @@ const props = defineProps({
       <!-- 第四部分：纯文字展示 -->
       <div class="section-part part-4">
         <div class="text-only-content">
-          <div class="quote-section">
-            <blockquote class="main-quote">
-              {{
-                isEnglish
-                  ? '"Design is not just what it looks like and feels like. Design is how it works."'
-                  : "「设计不仅仅是外观和感觉，设计是它如何工作。」"
-              }}
-            </blockquote>
-            <cite class="quote-author">
-              {{ isEnglish ? "— Steve Jobs" : "— 史蒂夫·乔布斯" }}
-            </cite>
-          </div>
-          <div class="philosophy-text">
-            <p>
-              {{
-                isEnglish
-                  ? "In the realm of design, we explore the intersection of art and function, where every line, color, and form serves a purpose beyond aesthetics."
-                  : "在设计的领域里，我们探索艺术与功能的交汇点，每一条线、每一种颜色、每一个形式都承载着超越美学的意义。"
-              }}
-            </p>
+          <div class="belief-section">
+            <div class="belief-header">
+              {{ isEnglish ? "We Believe" : "我们相信" }}
+            </div>
+            <div class="belief-content">
+              <div class="belief-line">
+                {{ isEnglish ? "Truly powerful design" : "真正有力量的设计" }}
+              </div>
+              <div class="belief-line">
+                {{ isEnglish ? "Is not born from noise" : "非因声势" }}
+              </div>
+              <div class="belief-line">
+                {{
+                  isEnglish ? "But in the reverence of wind" : "而在风的敬畏"
+                }}
+              </div>
+              <div class="belief-line">
+                {{ isEnglish ? "Not mere imitation" : "不唯模仿" }}
+              </div>
+              <div class="belief-line">
+                {{
+                  isEnglish ? "But in the awakening of growth" : "而在生长自觉"
+                }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -123,7 +128,7 @@ const props = defineProps({
 
 <style scoped>
 .content-section {
-  width: 600vw !important; /* 扩展到600vw */
+  width: 650vw !important; /* 扩展到650vw */
   height: 100vh;
   position: relative;
   background: #052a1b;
@@ -155,7 +160,7 @@ const props = defineProps({
 }
 
 .part-2 {
-  width: 200vw; /* 第二部分：200vw */
+  width: 250vw; /* 第二部分：250vw */
 }
 
 .part-3 {
@@ -269,45 +274,47 @@ const props = defineProps({
 
 /* 第四部分：纯文字展示 */
 .part-4 {
-  background: #ffffff;
-  color: #333;
+  background: #052a1b; /* 深绿色背景，与图片一致 */
+  color: white;
   border: 2px solid #ffa500; /* 临时边框，用于调试 */
 }
 
 .text-only-content {
-  max-width: 800px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: flex-end; /* 右对齐 */
+  align-items: center;
   padding: 3rem;
-  text-align: center;
 }
 
-.quote-section {
+.belief-section {
+  text-align: right; /* 右对齐文字 */
+  max-width: 600px;
+  margin-right: 5%; /* 距离右边缘一定距离 */
+}
+
+.belief-header {
+  font-size: 1.8rem;
+  color: white;
   margin-bottom: 3rem;
+  opacity: 0.9;
+  font-weight: 300;
 }
 
-.main-quote {
-  font-size: 2rem;
-  font-style: italic;
+.belief-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.belief-line {
+  font-size: 2.2rem;
+  color: white;
   line-height: 1.4;
-  margin-bottom: 1rem;
-  color: #2fa3b0;
-  border-left: 4px solid #2fa3b0;
-  padding-left: 2rem;
-  text-align: left;
-}
-
-.quote-author {
-  font-size: 1.2rem;
-  color: #666;
-  display: block;
+  font-weight: 300;
+  opacity: 0.95;
   text-align: right;
-  margin-top: 1rem;
-}
-
-.philosophy-text {
-  font-size: 1.3rem;
-  line-height: 1.8;
-  color: #555;
-  text-align: justify;
 }
 
 /* 第五部分：图片和文字组合 */
@@ -402,6 +409,15 @@ const props = defineProps({
   .part-5 {
     width: 100vw; /* 移动端所有部分都是100vw */
     height: 100vh;
+  }
+
+  .belief-section {
+    text-align: center; /* 移动端居中对齐 */
+    margin-right: 0;
+  }
+
+  .belief-line {
+    font-size: 1.8rem; /* 移动端字体稍小 */
   }
 
   .main-title {
