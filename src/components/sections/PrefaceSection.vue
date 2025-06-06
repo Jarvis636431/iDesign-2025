@@ -20,20 +20,41 @@ const props = defineProps({
       <!-- 第二部分：文字和背景图 -->
       <div class="section-part part-2">
         <div class="text-with-bg">
-          <div class="text-overlay">
-            <h2 class="main-title">
-              {{ isEnglish ? "Wind from the South" : "有风自南" }}
-            </h2>
-            <h3 class="sub-title">
-              {{ isEnglish ? "Wings for New Sprouts" : "翼彼新苗" }}
-            </h3>
-            <p class="description">
+          <!-- 左上角文字 -->
+          <div class="text-top-left">
+            <div class="vertical-text">
+              {{ isEnglish ? "Wind from the South" : "南方来风" }}
+            </div>
+            <div class="vertical-text">
+              {{ isEnglish ? "Wings for New Sprouts" : "不烈不喧却润物无声" }}
+            </div>
+            <div class="vertical-text">
+              {{ isEnglish ? "A Symphony of Design" : "它唤醒沉潜的种子" }}
+            </div>
+            <div class="vertical-text">
+              {{ isEnglish ? "A Symphony of Design" : "催动万物生长" }}
+            </div>
+          </div>
+
+          <!-- 右下角文字 -->
+          <div class="text-bottom-right">
+            <div class="vertical-text">
               {{
-                isEnglish
-                  ? "Every design tells a story of growth and dreams, where creativity meets innovation in the journey of learning."
-                  : "每一个设计，都诉说着成长与梦想的故事，在学习的旅程中，创意与创新相遇。"
+                isEnglish ? "Every design tells a story" : "第十一届设计年展"
               }}
-            </p>
+            </div>
+            <div class="vertical-text">
+              {{ isEnglish ? "of growth and dreams" : "亦是新十年的序章" }}
+            </div>
+            <div class="vertical-text">
+              {{ isEnglish ? "of growth and dreams" : "十年之后" }}
+            </div>
+            <div class="vertical-text">
+              {{ isEnglish ? "of growth and dreams" : "我们回望教育历程" }}
+            </div>
+            <div class="vertical-text">
+              {{ isEnglish ? "of growth and dreams" : "更怀想未来图景" }}
+            </div>
           </div>
         </div>
       </div>
@@ -219,41 +240,42 @@ const props = defineProps({
 .text-with-bg {
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
   background: rgba(5, 42, 27, 0.7); /* 半透明遮罩 */
 }
 
-.text-overlay {
-  text-align: center;
+/* 左上角文字容器 */
+.text-top-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding-left: 30rem;
+  padding-top: 3rem;
+  display: flex;
+  gap: 2rem;
+}
+
+/* 右下角文字容器 */
+.text-bottom-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding-right: 60rem;
+  padding-bottom: 3rem;
+  display: flex;
+  gap: 2rem;
+}
+
+/* 竖直文字样式 */
+.vertical-text {
+  writing-mode: vertical-rl; /* 竖直排列，从右到左 */
+  text-orientation: upright; /* 文字保持正立 */
   color: white;
-  max-width: 1000px; /* 增加最大宽度以利用200vw空间 */
-  padding: 3rem;
-}
-
-.main-title {
-  font-size: 4.5rem; /* 增大字体以适应更大空间 */
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  letter-spacing: 0.1em; /* 增加字间距 */
-}
-
-.sub-title {
-  font-size: 2.5rem; /* 增大字体 */
-  margin-bottom: 3rem;
-  opacity: 0.9;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  letter-spacing: 0.05em;
-}
-
-.description {
-  font-size: 1.4rem; /* 增大字体 */
-  line-height: 1.8;
-  opacity: 0.8;
-  max-width: 800px; /* 限制描述文字的宽度以保持可读性 */
-  margin: 0 auto;
+  font-size: 2.2rem;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: 0.5em;
+  white-space: nowrap; /* 防止换行 */
 }
 
 /* 第三部分：待定区域 */
@@ -432,17 +454,23 @@ const props = defineProps({
     font-size: 1.8rem; /* 移动端字体稍小 */
   }
 
-  .main-title {
-    font-size: 2.5rem;
+  .vertical-text {
+    font-size: 1.8rem; /* 移动端字体稍小 */
+    writing-mode: horizontal-tb; /* 移动端改为水平排列 */
+    text-orientation: mixed;
   }
 
-  .sub-title {
-    font-size: 1.5rem;
+  .text-top-left,
+  .text-bottom-right {
+    padding: 2rem; /* 移动端减少padding */
   }
 
-  .text-overlay {
-    max-width: 90%;
-    padding: 2rem;
+  .text-top-left {
+    flex-direction: column; /* 移动端垂直排列 */
+  }
+
+  .text-bottom-right {
+    flex-direction: column; /* 移动端垂直排列 */
   }
 
   .image-text-combo {
