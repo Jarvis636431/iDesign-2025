@@ -148,10 +148,16 @@ const exhibitSlides = computed(() => {
 //   currentSlide.value = (currentSlide.value + 1) % exhibitSlides.value.length
 // }
 // watch([exhibits, currentId], () => { currentSlide.value = 0 }) // Remove old watcher
+
+// 返回home页面并定位到exhibitionsection
+const goToHome = () => {
+  router.push('/2025#exhibition')
+}
 </script>
 
 <template>
   <div class="information-page">
+    <button class="back-button" @click="goToHome">返回</button>
     <div class="background-blur"></div>
     <div v-if="loading">展品加载中...</div>
     <div v-else-if="error">{{ error }}</div>
@@ -159,7 +165,6 @@ const exhibitSlides = computed(() => {
       <div style="text-align:center;padding:4rem;font-size:1.5rem;color:#888;">无效的展品ID</div>
     </div>
     <div v-else class="navigation-container">
-
       <button class="nav-button prev" @click="goToExhibit('prev')">
         <svg viewBox="0 0 24 24" class="arrow-icon">
           <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
@@ -591,5 +596,17 @@ const exhibitSlides = computed(() => {
     max-width: 28px;
     max-height: 28px;
   }
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  z-index: 10;
 }
 </style>

@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { halls } from '../../constants/halls'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const props = defineProps({
   isEnglish: {
@@ -13,6 +15,7 @@ const activeHallIndex = ref(0)
 const activeHall = computed(() => halls[activeHallIndex.value])
 const touchStartY = ref(0)
 const isSwiping = ref(false)
+const router = useRouter()
 
 // 处理文本换行
 const formatText = (text) => {
@@ -77,6 +80,23 @@ const handleWheel = (event) => {
   
   event.preventDefault()
 }
+
+// 进入展厅
+const enterExhibition = (hall) => {
+  axios.get('http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists', {
+    params: { per_page: 1, current_page: 1, category_id: hall.id }
+  }).then(res => {
+    let firstExhibitId = null
+    if (res.data && res.data.data && res.data.data.length > 0) {
+      firstExhibitId = res.data.data[0].id
+    }
+    // 跳转到information页面，带上展厅id和展品id
+    router.push(`/2025/information/${firstExhibitId || ''}?hallId=${hall.id}`)
+  }).catch(() => {
+    // 请求失败也跳转，只带hallId
+    router.push(`/2025/information/?hallId=${hall.id}`)
+  })
+}
 </script>
 
 <template>
@@ -100,7 +120,8 @@ const handleWheel = (event) => {
         <img :key="activeHall.logo" 
              :src="activeHall.logo" 
              :alt="isEnglish ? activeHall.enName : activeHall.name"
-             class="hall-logo">
+             class="hall-logo"
+             @click="enterExhibition(activeHall)">
       </transition-group>
     </div>
 
@@ -117,7 +138,6 @@ const handleWheel = (event) => {
         </p>
       </div>
     </div>
-    
   </section>
 </template>
 
@@ -125,7 +145,7 @@ const handleWheel = (event) => {
 .exhibition-section {
   position: relative;
   height: 100vh;
-  width: 100%;
+  width: calc(100%-90px);
   overflow: hidden;
   background-color: transparent;
   touch-action: none; /* 防止触摸设备上的默认滚动行为 */
@@ -154,84 +174,18 @@ const handleWheel = (event) => {
   font-display: swap;
 }   
 
-.carousel-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.carousel-button {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  background: transparent;
-  border: none;
-  font-size: 48px;
-  cursor: pointer;
-  padding: 20px;
-  z-index: 2;
-  opacity: 0.6;
-  transition: opacity 0.3s;
-}
-
-.carousel-button:hover {
-  opacity: 1;
-}
-
-.carousel-button.prev {
-  top: 20px;
-}
-
-.carousel-button.next {
-  bottom: 20px;
-}
-
-.carousel-indicators {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-}
-
-.indicator-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: all 0.3s ease;
-}
-
-.indicator-dot.active {
-  transform: scale(1.2);
-}
-
-/* 过渡动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
 .hall-logo-area {
   position: absolute;
-  width: 70%;
+  right: 50px; /* 留出一些间距 */
+  top: 45%;
+  transform: translateY(-50%);
+  width: 65%;
   height: 70vh;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: grab;
-  overflow: hidden;  /* 确保动画不会溢出 */
+  overflow: hidden;
 }
 
 .hall-logo-area:active {
@@ -297,7 +251,7 @@ const handleWheel = (event) => {
 .hall-description {
   position: absolute;
   bottom: 30px;
-  right: 30px;
+  right: 50px;
   max-width: 1000px;
   padding: 20px;
   text-align: right; /* 添加右对齐 */
