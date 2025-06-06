@@ -273,8 +273,9 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- 文字周围的蒲公英 -->
+          <!-- 精选蒲公英分布 -->
           <div class="floating-dandelions">
+            <!-- 减少到24个蒲公英，避免遮挡文字和背景 -->
             <img
               src="/assets/images/dandelion.png"
               class="floating-dandelion dandelion-1"
@@ -363,6 +364,117 @@ onUnmounted(() => {
             <img
               src="/assets/images/dandelion.png"
               class="floating-dandelion dandelion-18"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-19"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-20"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-21"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-22"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-23"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-24"
+              alt="Dandelion"
+            />
+            <!-- 新增16个蒲公英，总计40个 -->
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-25"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-26"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-27"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-28"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-29"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-30"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-31"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-32"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-33"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-34"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-35"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-36"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-37"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-38"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-39"
+              alt="Dandelion"
+            />
+            <img
+              src="/assets/images/dandelion.png"
+              class="floating-dandelion dandelion-40"
               alt="Dandelion"
             />
           </div>
@@ -761,7 +873,7 @@ onUnmounted(() => {
   color: #ffe29a;
   font-weight: bold;
   align-self: center;
-  margin-bottom: 6rem;
+  margin-bottom: 5rem;
 }
 
 /* 第三部分：四行文字 (靠下) */
@@ -773,7 +885,6 @@ onUnmounted(() => {
   font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 1.8rem;
   color: white;
-  margin-bottom: 0.8rem;
   font-weight: bold;
 }
 
@@ -798,98 +909,213 @@ onUnmounted(() => {
   transform: rotate(-15deg) scale(1.1); /* 悬停时保持角度 */
 }
 
-/* 18个蒲公英在文字周围矩形区域内的随机分布 */
+/* 40个蒲公英 - 100px左右尺寸，只避开文字区域 */
+/* 左侧区域 (1-10) */
 .dandelion-1 {
-  top: 10%;
-  left: 15%;
-  width: 45px;
+  top: 8%;
+  left: 5%;
+  width: 95px;
 }
 .dandelion-2 {
   top: 25%;
-  left: 8%;
-  width: 60px;
+  left: 3%;
+  width: 105px;
 }
 .dandelion-3 {
-  top: 40%;
-  left: 12%;
-  width: 35px;
+  top: 45%;
+  left: 8%;
+  width: 90px;
 }
 .dandelion-4 {
-  top: 60%;
-  left: 18%;
-  width: 55px;
+  top: 65%;
+  left: 5%;
+  width: 110px;
 }
 .dandelion-5 {
-  top: 75%;
+  top: 85%;
   left: 10%;
-  width: 40px;
+  width: 100px;
 }
 .dandelion-6 {
-  top: 85%;
-  left: 20%;
-  width: 50px;
+  top: 12%;
+  left: 15%;
+  width: 95px;
 }
-
 .dandelion-7 {
-  top: 8%;
-  right: 12%;
-  width: 42px;
+  top: 35%;
+  left: 18%;
+  width: 105px;
 }
 .dandelion-8 {
-  top: 22%;
-  right: 18%;
-  width: 58px;
+  top: 75%;
+  left: 20%;
+  width: 90px;
 }
 .dandelion-9 {
-  top: 35%;
-  right: 8%;
-  width: 38px;
+  top: 55%;
+  left: 12%;
+  width: 100px;
 }
 .dandelion-10 {
-  top: 55%;
-  right: 15%;
-  width: 52px;
+  top: 92%;
+  left: 18%;
+  width: 95px;
 }
+
+/* 左中区域 (11-20) - 避开文字中心区域 */
 .dandelion-11 {
-  top: 70%;
-  right: 10%;
-  width: 46px;
+  top: 5%;
+  left: 25%;
+  width: 105px;
 }
 .dandelion-12 {
   top: 88%;
-  right: 22%;
-  width: 48px;
+  left: 28%;
+  width: 90px;
 }
-
 .dandelion-13 {
-  top: 5%;
-  left: 45%;
-  width: 36px;
+  top: 15%;
+  left: 32%;
+  width: 100px;
 }
 .dandelion-14 {
-  top: 15%;
-  left: 65%;
-  width: 54px;
+  top: 72%;
+  left: 30%;
+  width: 95px;
 }
 .dandelion-15 {
-  bottom: 20%;
-  left: 40%;
-  width: 44px;
+  top: 3%;
+  left: 35%;
+  width: 105px;
 }
 .dandelion-16 {
-  bottom: 8%;
-  left: 60%;
-  width: 50px;
+  top: 95%;
+  left: 38%;
+  width: 90px;
 }
 .dandelion-17 {
-  top: 30%;
-  left: 75%;
-  width: 41px;
+  top: 22%;
+  left: 25%;
+  width: 100px;
 }
 .dandelion-18 {
-  bottom: 35%;
-  right: 45%;
-  width: 47px;
+  top: 62%;
+  left: 35%;
+  width: 95px;
+}
+.dandelion-19 {
+  top: 42%;
+  left: 28%;
+  width: 105px;
+}
+.dandelion-20 {
+  top: 82%;
+  left: 32%;
+  width: 90px;
+}
+
+/* 右中区域 (21-30) - 避开文字中心区域 */
+.dandelion-21 {
+  top: 8%;
+  left: 68%;
+  width: 100px;
+}
+.dandelion-22 {
+  top: 85%;
+  left: 70%;
+  width: 95px;
+}
+.dandelion-23 {
+  top: 18%;
+  left: 72%;
+  width: 105px;
+}
+.dandelion-24 {
+  top: 65%;
+  left: 68%;
+  width: 90px;
+}
+.dandelion-25 {
+  top: 2%;
+  left: 65%;
+  width: 100px;
+}
+.dandelion-26 {
+  top: 92%;
+  left: 72%;
+  width: 95px;
+}
+.dandelion-27 {
+  top: 28%;
+  left: 65%;
+  width: 105px;
+}
+.dandelion-28 {
+  top: 48%;
+  left: 70%;
+  width: 90px;
+}
+.dandelion-29 {
+  top: 75%;
+  left: 65%;
+  width: 100px;
+}
+.dandelion-30 {
+  top: 38%;
+  left: 72%;
+  width: 95px;
+}
+
+/* 右侧区域 (31-40) */
+.dandelion-31 {
+  top: 12%;
+  left: 78%;
+  width: 105px;
+}
+.dandelion-32 {
+  top: 32%;
+  left: 75%;
+  width: 90px;
+}
+.dandelion-33 {
+  top: 52%;
+  left: 80%;
+  width: 100px;
+}
+.dandelion-34 {
+  top: 75%;
+  left: 78%;
+  width: 95px;
+}
+.dandelion-35 {
+  top: 5%;
+  left: 85%;
+  width: 105px;
+}
+.dandelion-36 {
+  top: 28%;
+  left: 88%;
+  width: 90px;
+}
+.dandelion-37 {
+  top: 48%;
+  left: 85%;
+  width: 100px;
+}
+.dandelion-38 {
+  top: 68%;
+  left: 82%;
+  width: 95px;
+}
+.dandelion-39 {
+  top: 88%;
+  left: 85%;
+  width: 105px;
+}
+.dandelion-40 {
+  top: 15%;
+  left: 82%;
+  width: 90px;
 }
 
 /* 响应式设计 */
