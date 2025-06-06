@@ -281,7 +281,7 @@ onMounted(() => {
 }
 
 :deep(#preface) {
-  width: 650vw;
+  width: 750vw;
 }
 
 :deep(#graduates) {

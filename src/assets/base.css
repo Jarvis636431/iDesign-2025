@@ -1,3 +1,12 @@
+/* 字体定义 */
+@font-face {
+  font-family: 'slidefu';
+  src: url('/assets/fonts/Slidefu-Regular-2.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
   --vt-c-white: #ffffff;

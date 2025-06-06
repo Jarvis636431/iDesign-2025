@@ -59,18 +59,29 @@ const props = defineProps({
         </div>
       </div>
 
-      <!-- 第三部分：待定区域 -->
+      <!-- 第三部分：logo和引导文字 -->
       <div class="section-part part-3">
-        <div class="placeholder-content">
-          <div class="placeholder-text">
-            <h3>{{ isEnglish ? "Coming Soon" : "敬请期待" }}</h3>
-            <p>
-              {{
-                isEnglish
-                  ? "This section is under development"
-                  : "此区域正在开发中"
-              }}
-            </p>
+        <div class="logo-section">
+          <!-- 背景logo -->
+          <div class="logo-container">
+            <img
+              src="/assets/images/logos/grey-logo.svg"
+              alt="Logo"
+              class="grey-logo"
+            />
+          </div>
+
+          <!-- 中间文字 -->
+          <div class="guide-text-container">
+            <div class="guide-text-line">
+              {{ isEnglish ? "You are about to enter" : "您即将步入" }}
+            </div>
+            <div class="guide-text-line forest-text">
+              {{ isEnglish ? "Forest in the Wind" : "风中之林" }}
+            </div>
+            <div class="guide-text-line">
+              {{ isEnglish ? "Five Exhibition Areas" : "五方展区" }}
+            </div>
           </div>
         </div>
       </div>
@@ -157,7 +168,7 @@ const props = defineProps({
 
 <style scoped>
 .content-section {
-  width: 650vw !important; /* 扩展到650vw */
+  width: 750vw !important; /* 扩展到750vw (150+250+150+100+100) */
   height: 100vh;
   position: relative;
   background: #052a1b;
@@ -185,7 +196,7 @@ const props = defineProps({
 
 /* 各部分的具体宽度设置 */
 .part-1 {
-  width: 100vw; /* 第一部分：100vw */
+  width: 150vw; /* 第一部分：150vw */
 }
 
 .part-2 {
@@ -193,7 +204,7 @@ const props = defineProps({
 }
 
 .part-3 {
-  width: 100vw; /* 第三部分：100vw */
+  width: 150vw; /* 第三部分：150vw */
 }
 
 .part-4 {
@@ -278,26 +289,67 @@ const props = defineProps({
   white-space: nowrap; /* 防止换行 */
 }
 
-/* 第三部分：待定区域 */
+/* 第三部分：logo和引导文字 */
 .part-3 {
   background: #052a1b;
 }
 
-.placeholder-content {
+.logo-section {
+  width: 100%;
+  height: 100vh; /* 明确设置高度 */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible; /* 确保不会裁剪内容 */
+}
+
+.logo-container {
+  position: absolute;
+  width: 100%;
+  height: 100vh; /* 明确设置为100vh */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  overflow: visible; /* 确保内容不会被裁剪 */
+}
+
+.grey-logo {
+  max-width: 100%;
+  max-height: 100vh; /* 限制最大高度，确保不会被截断 */
+  width: auto;
+  height: auto;
+  opacity: 0.3; /* 让logo作为背景，透明度较低 */
+  object-fit: contain; /* 保持比例，完整显示 */
+}
+
+.guide-text-container {
+  position: relative;
+  z-index: 2;
   text-align: center;
   color: white;
-  opacity: 0.7;
+  margin-left: 8%; /* 向右挪移一点 */
 }
 
-.placeholder-text h3 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  color: #4a9d6f;
+.guide-text-line {
+  font-size: 2.8rem;
+  font-weight: 300;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  opacity: 0.95;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.1em;
 }
 
-.placeholder-text p {
-  font-size: 1.2rem;
-  opacity: 0.8;
+.guide-text-line:last-child {
+  margin-bottom: 0;
+}
+
+/* 特殊样式：风中之林 */
+.forest-text {
+  font-family: "slidefu", sans-serif !important;
+  font-size: 144px !important;
 }
 
 /* 第四部分：纯文字展示 */
@@ -471,6 +523,19 @@ const props = defineProps({
 
   .text-bottom-right {
     flex-direction: column; /* 移动端垂直排列 */
+  }
+
+  .grey-logo {
+    width: 80%; /* 移动端logo稍大一些 */
+  }
+
+  .guide-text-line {
+    font-size: 2rem; /* 移动端字体稍小 */
+    margin-bottom: 1rem;
+  }
+
+  .forest-text {
+    font-size: 72px !important; /* 移动端"风中之林"字体大小 */
   }
 
   .image-text-combo {
