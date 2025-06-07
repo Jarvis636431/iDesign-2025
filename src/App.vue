@@ -1,14 +1,88 @@
 <script setup>
-// 组件导入将在这里添加
+import { onMounted, onUnmounted, ref } from "vue";
+
+// 全局滚轮转换功能
+let wheelHandler = null;
+const wheelEnabled = ref(false);
+
+onMounted(() => {
+  // 立即修复光标问题
+  document.body.style.cursor = "auto";
+  document.documentElement.style.cursor = "auto";
+
+  // 等待DOM完全加载
+  setTimeout(() => {
+    // 查找滚动容器
+    const scrollContainer = document.querySelector(".scroll-container");
+
+    if (!scrollContainer) {
+      console.warn("未找到滚动容器，滚轮转换无法设置");
+      return;
+    }
+
+    // 设置全局滚轮转换
+    wheelHandler = (e) => {
+      // 检查是否在需要排除的元素内
+      const target = e.target;
+      const isInModal = target.closest(
+        ".modal, .popup, .dropdown, .n-modal, .share-modal-overlay"
+      );
+      const isInVerticalScroll = target.closest(
+        ".vertical-scroll, .allow-vertical"
+      );
+
+      // 如果在弹窗或明确需要垂直滚动的区域，不转换
+      if (isInModal || isInVerticalScroll) {
+        return;
+      }
+
+      // 防止默认滚动
+      e.preventDefault();
+
+      // 获取滚动增量并转换为水平滚动
+      const delta = e.deltaY;
+      scrollContainer.scrollLeft += delta * 1.5;
+    };
+
+    // 添加全局滚轮监听
+    document.addEventListener("wheel", wheelHandler, { passive: false });
+    wheelEnabled.value = true;
+  }, 1000); // 延迟确保DOM完全加载
+});
+
+onUnmounted(() => {
+  // 清理事件监听
+  if (wheelHandler) {
+    document.removeEventListener("wheel", wheelHandler);
+    wheelEnabled.value = false;
+  }
+});
 </script>
 
 <template>
-    <main class="exhibition-content">
-      <router-view></router-view>
-    </main>
+  <main class="exhibition-content">
+    <router-view></router-view>
+  </main>
 </template>
 
-<style scoped>
+<style>
+/* 全局光标修复 */
+html,
+body,
+* {
+  cursor: auto !important;
+}
+
+/* 交互元素的光标 */
+button,
+a,
+.nav-item,
+.language-switch,
+[role="button"],
+.clickable {
+  cursor: pointer !important;
+}
+
 /* 确保整个应用占满视口 */
 :root {
   height: 100%;
@@ -21,5 +95,6 @@
   background-color: #f5f5f5;
   display: flex;
   flex-direction: column;
+  cursor: auto !important;
 }
 </style>

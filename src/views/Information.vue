@@ -505,7 +505,7 @@ const wrapText = (ctx, text, maxWidth) => {
     <!-- 分享弹窗 -->
     <div
       v-if="showShareModal"
-      class="share-modal-overlay"
+      class="share-modal-overlay modal"
       @click="closeShareModal"
     >
       <div class="share-modal" @click.stop>

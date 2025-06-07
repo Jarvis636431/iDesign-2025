@@ -10,11 +10,17 @@ const props = defineProps({
 
 // 第三部分的引用
 const part3Ref = ref(null);
+// 第二部分的引用
+const part2Ref = ref(null);
 
 // 鼠标位置
 const cursorX = ref(0);
 const cursorY = ref(0);
 const showCursor = ref(false);
+
+// 视差滚动相关
+const scrollY = ref(0);
+const part2ScrollOffset = ref(0);
 
 // 圆盘半径
 const circleRadius = 75;
@@ -46,12 +52,48 @@ const handleMouseLeave = () => {
   document.body.style.cursor = "auto"; // 恢复默认光标
 };
 
+// 滚动处理函数
+const handleScroll = () => {
+  scrollY.value = window.scrollY;
+
+  if (part2Ref.value) {
+    const rect = part2Ref.value.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+
+    // 计算第二部分在视窗中的位置
+    const elementTop = rect.top;
+    const elementHeight = rect.height;
+
+    // 当元素在视窗中时计算视差偏移
+    if (elementTop < windowHeight && elementTop + elementHeight > 0) {
+      // 视差因子：文字移动速度是背景的0.5倍（更慢）
+      const parallaxFactor = 0.5;
+      const scrollProgress =
+        (windowHeight - elementTop) / (windowHeight + elementHeight);
+      part2ScrollOffset.value = scrollProgress * 100 * (1 - parallaxFactor);
+    }
+  }
+};
+
+// 计算文字的transform样式
+const textTransformStyle = computed(() => {
+  return {
+    transform: `translateY(${part2ScrollOffset.value}px)`,
+    transition: "transform 0.1s ease-out",
+  };
+});
+
 onMounted(() => {
   if (part3Ref.value) {
     part3Ref.value.addEventListener("mousemove", handleMouseMove);
     part3Ref.value.addEventListener("mouseenter", handleMouseEnter);
     part3Ref.value.addEventListener("mouseleave", handleMouseLeave);
   }
+
+  // 添加滚动监听
+  window.addEventListener("scroll", handleScroll);
+  // 初始计算一次
+  handleScroll();
 });
 
 onUnmounted(() => {
@@ -60,6 +102,9 @@ onUnmounted(() => {
     part3Ref.value.removeEventListener("mouseenter", handleMouseEnter);
     part3Ref.value.removeEventListener("mouseleave", handleMouseLeave);
   }
+
+  // 移除滚动监听
+  window.removeEventListener("scroll", handleScroll);
   document.body.style.cursor = "auto"; // 确保恢复光标
 });
 </script>
@@ -86,12 +131,13 @@ onUnmounted(() => {
       </div>
 
       <!-- 第二部分：文字和背景图 -->
-      <div class="section-part part-2">
+      <div class="section-part part-2" ref="part2Ref">
         <div class="text-with-bg">
           <!-- 左上角文字 -->
           <div
-            class="text-top-left"
+            class="text-top-left parallax-text"
             :class="{ 'horizontal-layout': isEnglish }"
+            :style="textTransformStyle"
           >
             <div
               class="vertical-text english-poem"
@@ -111,8 +157,9 @@ onUnmounted(() => {
 
           <!-- 右下角文字 -->
           <div
-            class="text-bottom-right"
+            class="text-bottom-right parallax-text"
             :class="{ 'horizontal-layout': isEnglish }"
+            :style="textTransformStyle"
           >
             <div
               class="vertical-text english-poem"
@@ -1410,5 +1457,24 @@ onUnmounted(() => {
   .highlight-stats {
     justify-content: center;
   }
+
+  /* 移动端禁用视差效果 */
+  .parallax-text {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* 视差滚动样式 */
+.parallax-text {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+/* 确保第二部分有相对定位 */
+.part-2 {
+  position: relative;
+  overflow: hidden;
 }
 </style>

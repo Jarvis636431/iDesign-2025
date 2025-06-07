@@ -1,7 +1,11 @@
 <template>
   <div class="slide transition-slide">
     <div class="transition-content">
-      <h2 :class="{ 'english-text': isEnglish }">
+      <h2
+        :class="{ 'english-text': isEnglish }"
+        :style="textTransformStyle"
+        class="skew-text"
+      >
         {{ isEnglish ? "Balmy Breeze, New Growth" : "有风自南，翼彼新苗" }}
       </h2>
       <div class="rotating-image">
@@ -40,7 +44,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, ref, computed } from "vue";
 
 const props = defineProps({
   isEnglish: {
@@ -49,14 +53,73 @@ const props = defineProps({
   },
 });
 
+// 水平滚动相关状态
+const isScrolling = ref(false);
+const scrollVelocity = ref(0);
+const lastScrollX = ref(0);
+const scrollTimeout = ref(null);
+
+// 计算文字倾斜角度
+const textSkewAngle = computed(() => {
+  if (!isScrolling.value) return 0;
+  // 根据水平滚动速度计算倾斜角度，最大倾斜15度
+  const maxSkew = 15;
+  const clampedVelocity = Math.max(-30, Math.min(30, scrollVelocity.value));
+  // 水平滚动：向右滚动(正值)文字向右倾斜，向左滚动(负值)文字向左倾斜
+  const angle = (clampedVelocity / 30) * maxSkew;
+
+  return angle;
+});
+
+// 计算文字transform样式
+const textTransformStyle = computed(() => {
+  return {
+    transform: `skewX(${textSkewAngle.value}deg)`,
+    transition: isScrolling.value
+      ? "transform 0.1s ease-out"
+      : "transform 0.5s ease-out",
+  };
+});
+
 let scrollHandler;
+let handleWheel;
 let animationFrame;
 let rotationAngle = 0;
 
 onMounted(() => {
   const image = document.querySelector(".rotating-image img");
 
+  // 查找正确的滚动容器
+  const scrollContainer = document.querySelector(".scroll-container");
+
+  if (!scrollContainer) {
+    return;
+  }
+
   scrollHandler = () => {
+    // 获取滚动容器的水平滚动位置
+    const currentScrollX = scrollContainer.scrollLeft;
+
+    // 计算水平滚动速度
+    const velocity = currentScrollX - lastScrollX.value;
+    scrollVelocity.value = velocity;
+    lastScrollX.value = currentScrollX;
+
+    // 设置滚动状态
+    isScrolling.value = true;
+
+    // 清除之前的超时
+    if (scrollTimeout.value) {
+      clearTimeout(scrollTimeout.value);
+    }
+
+    // 设置超时，滚动停止后恢复正常
+    scrollTimeout.value = setTimeout(() => {
+      isScrolling.value = false;
+      scrollVelocity.value = 0;
+    }, 150); // 150ms后认为滚动停止
+
+    // 图片旋转动画
     animationFrame = requestAnimationFrame(() => {
       rotationAngle += 1;
       if (image) {
@@ -65,13 +128,39 @@ onMounted(() => {
     });
   };
 
-  window.addEventListener("scroll", scrollHandler);
+  // 监听滚动容器的滚动事件
+  scrollContainer.addEventListener("scroll", scrollHandler);
+
+  // 初始化滚动位置
+  lastScrollX.value = scrollContainer.scrollLeft;
+
+  // 添加滚轮事件监听，将垂直滚动转换为水平滚动
+  handleWheel = (e) => {
+    // 防止默认滚动
+    e.preventDefault();
+
+    // 获取滚动增量
+    const delta = e.deltaY;
+
+    // 转换为水平滚动
+    scrollContainer.scrollLeft += delta;
+  };
+
+  // 在滚动容器上添加滚轮监听
+  scrollContainer.addEventListener("wheel", handleWheel, { passive: false });
 });
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", scrollHandler);
+  const scrollContainer = document.querySelector(".scroll-container");
+  if (scrollContainer) {
+    scrollContainer.removeEventListener("scroll", scrollHandler);
+    scrollContainer.removeEventListener("wheel", handleWheel);
+  }
   if (animationFrame) {
     cancelAnimationFrame(animationFrame);
+  }
+  if (scrollTimeout.value) {
+    clearTimeout(scrollTimeout.value);
   }
 });
 </script>
@@ -107,6 +196,13 @@ h2 {
   white-space: nowrap;
   letter-spacing: 3rem;
   z-index: 2;
+}
+
+/* 倾斜文字样式 */
+.skew-text {
+  transform-origin: center center;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 /* 英文状态下的主体文字专用样式 */
