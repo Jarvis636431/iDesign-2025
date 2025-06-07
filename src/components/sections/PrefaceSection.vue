@@ -126,14 +126,26 @@ onUnmounted(() => {
         <div class="mouse-container">
           <!-- 黄色底色背景 -->
           <div class="yellow-background">
+            <!-- 桌面端：鼠标图片 -->
             <img
               src="/assets/images/mouse.png"
               alt="Mouse"
-              class="mouse-image"
+              class="mouse-image desktop-only"
+            />
+            <!-- 移动端：滑动图片 -->
+            <img
+              src="/assets/images/scroll.png"
+              alt="Scroll"
+              class="scroll-image mobile-only"
             />
             <!-- 文字说明 -->
             <div class="mouse-text">
-              {{ isEnglish ? "Scroll" : "滚动滚轮" }}
+              <span class="desktop-only">
+                {{ isEnglish ? "Scroll" : "滚动滚轮" }}
+              </span>
+              <span class="mobile-only">
+                {{ isEnglish ? "Swipe Screen" : "滑动屏幕" }}
+              </span>
             </div>
           </div>
         </div>
@@ -670,6 +682,26 @@ onUnmounted(() => {
 
 .mouse-image:hover {
   transform: scale(1.1);
+}
+
+.scroll-image {
+  width: 30px;
+  height: auto;
+  opacity: 0.9;
+  transition: transform 0.3s ease;
+}
+
+.scroll-image:hover {
+  transform: scale(1.1);
+}
+
+/* 桌面端和移动端显示控制 */
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
 }
 
 /* 黄色背景容器 */
@@ -1379,6 +1411,15 @@ onUnmounted(() => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  /* 移动端显示控制 */
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+
   .content-section {
     width: 100vw !important;
   }
@@ -1413,6 +1454,16 @@ onUnmounted(() => {
   .part-5 {
     width: 100vw;
     height: 300vh; /* 对应PC端300vw */
+  }
+
+  /* 移动端第二板块背景图调整 */
+  .part-2 {
+    background-image: url("/assets/images/backimg.png"); /* 继续使用相同的背景图 */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: rotate(0deg); /* 旋转90度适配纵向布局，暂时未适配 */
+    transform-origin: center center; /* 以中心为旋转点 */
   }
 
   .text-only-content {
