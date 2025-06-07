@@ -65,8 +65,8 @@ const textSkewAngle = computed(() => {
   // 根据水平滚动速度计算倾斜角度，最大倾斜15度
   const maxSkew = 15;
   const clampedVelocity = Math.max(-30, Math.min(30, scrollVelocity.value));
-  // 水平滚动：向右滚动(正值)文字向右倾斜，向左滚动(负值)文字向左倾斜
-  const angle = (clampedVelocity / 30) * maxSkew;
+  // 水平滚动：向左滚动(负值)文字向右倾斜，向右滚动(正值)文字向左倾斜
+  const angle = (clampedVelocity / -30) * maxSkew;
 
   return angle;
 });
