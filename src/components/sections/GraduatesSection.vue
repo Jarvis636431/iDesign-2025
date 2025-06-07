@@ -15,6 +15,11 @@ const isHovering = ref(false);
 const avatarsListRef = ref(null);
 const avatarsContainerRef = ref(null);
 
+// 移动端相关状态
+const isMobile = ref(false);
+const currentIndex = ref(0);
+const cardsContainerRef = ref(null);
+
 const handleSelectGraduate = (graduate, event) => {
   selectedGraduate.value = graduate;
 
@@ -65,13 +70,118 @@ const handleWheel = (event) => {
   }
 };
 
+// 移动端相关函数
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
+
+// 移动端切换到下一个毕业生
+const nextGraduate = () => {
+  if (currentIndex.value < graduates.length - 1) {
+    currentIndex.value++;
+    selectedGraduate.value = graduates[currentIndex.value];
+    updateCardPosition();
+    console.log(
+      "Next graduate:",
+      currentIndex.value,
+      selectedGraduate.value.name.zh
+    );
+  }
+};
+
+// 移动端切换到上一个毕业生
+const prevGraduate = () => {
+  if (currentIndex.value > 0) {
+    currentIndex.value--;
+    selectedGraduate.value = graduates[currentIndex.value];
+    updateCardPosition();
+  }
+};
+
+// 移动端跳转到指定卡片
+const goToSlide = (index) => {
+  currentIndex.value = index;
+  selectedGraduate.value = graduates[currentIndex.value];
+  updateCardPosition();
+  console.log("Go to slide:", index, selectedGraduate.value.name.zh);
+};
+
+// 更新卡片位置
+const updateCardPosition = () => {
+  if (cardsContainerRef.value) {
+    const cardWidth = window.innerWidth; // 使用窗口宽度作为卡片宽度
+    const translateX = -currentIndex.value * cardWidth;
+    cardsContainerRef.value.style.transform = `translateX(${translateX}px)`;
+    console.log(
+      "Update position:",
+      currentIndex.value,
+      "translateX:",
+      translateX,
+      "cardWidth:",
+      cardWidth
+    );
+  }
+};
+
+// 移动端触摸滑动
+let startX = 0;
+let startY = 0;
+let isDragging = false;
+
+const handleTouchStart = (event) => {
+  startX = event.touches[0].clientX;
+  startY = event.touches[0].clientY;
+  isDragging = true;
+};
+
+const handleTouchMove = (event) => {
+  if (!isDragging) return;
+  event.preventDefault();
+};
+
+const handleTouchEnd = (event) => {
+  if (!isDragging) return;
+  isDragging = false;
+
+  const endX = event.changedTouches[0].clientX;
+  const endY = event.changedTouches[0].clientY;
+  const deltaX = endX - startX;
+  const deltaY = endY - startY;
+
+  // 判断是否为水平滑动（水平距离大于垂直距离）
+  if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+    if (deltaX > 0) {
+      prevGraduate(); // 向右滑动，显示上一个
+    } else {
+      nextGraduate(); // 向左滑动，显示下一个
+    }
+  }
+};
+
 onMounted(() => {
+  // 检测移动端
+  checkMobile();
+  window.addEventListener("resize", () => {
+    checkMobile();
+    // 窗口大小变化时重新计算位置
+    if (isMobile.value) {
+      setTimeout(() => updateCardPosition(), 100);
+    }
+  });
+
   // 添加滚轮事件监听
   if (avatarsContainerRef.value) {
     avatarsContainerRef.value.addEventListener("wheel", handleWheel, {
       passive: false,
     });
   }
+
+  // 初始化移动端卡片位置
+  setTimeout(() => {
+    if (isMobile.value) {
+      updateCardPosition();
+    }
+  }, 200); // 延迟确保DOM完全渲染
 });
 
 onUnmounted(() => {
@@ -79,105 +189,198 @@ onUnmounted(() => {
   if (avatarsContainerRef.value) {
     avatarsContainerRef.value.removeEventListener("wheel", handleWheel);
   }
+  window.removeEventListener("resize", checkMobile);
 });
 </script>
 
 <template>
   <section class="content-section" id="graduates">
-    <img class="bg-image" src="/assets/images/backimage.png" alt="背景" />
-    <div class="graduates-layout">
-      <!-- 左侧内容区域 -->
-      <div class="left-content">
-        <!-- 白色卡片 -->
-        <div class="graduate-info" v-if="selectedGraduate">
-          <div class="card-layout">
-            <div class="card-left">
-              <h3 class="section-title">毕业生</h3>
-              <div class="thoughts-section">
-                {{
-                  isEnglish
-                    ? selectedGraduate.thoughts.en
-                    : selectedGraduate.thoughts.zh
-                }}
-              </div>
-
-              <div class="bottom-info">
-                <h2 class="graduate-name">
+    <!-- 桌面端布局 -->
+    <div class="desktop-layout" v-if="!isMobile">
+      <img class="bg-image" src="/assets/images/backimage.png" alt="背景" />
+      <div class="graduates-layout">
+        <!-- 左侧内容区域 -->
+        <div class="left-content">
+          <!-- 白色卡片 -->
+          <div class="graduate-info" v-if="selectedGraduate">
+            <div class="card-layout">
+              <div class="card-left">
+                <h3 class="section-title">毕业生</h3>
+                <div class="thoughts-section">
                   {{
                     isEnglish
-                      ? selectedGraduate.name.en
-                      : selectedGraduate.name.zh
-                  }}
-                </h2>
-                <div class="graduate-title">
-                  {{
-                    isEnglish
-                      ? selectedGraduate.destination.en
-                      : selectedGraduate.destination.zh
+                      ? selectedGraduate.thoughts.en
+                      : selectedGraduate.thoughts.zh
                   }}
                 </div>
-              </div>
-            </div>
 
-            <div class="card-right">
-              <div class="portrait-wrapper">
-                <img
-                  :src="selectedGraduate.avatar"
-                  :alt="selectedGraduate.name.zh"
-                  class="portrait"
-                />
+                <div class="bottom-info">
+                  <h2 class="graduate-name">
+                    {{
+                      isEnglish
+                        ? selectedGraduate.name.en
+                        : selectedGraduate.name.zh
+                    }}
+                  </h2>
+                  <div class="graduate-title">
+                    {{
+                      isEnglish
+                        ? selectedGraduate.destination.en
+                        : selectedGraduate.destination.zh
+                    }}
+                  </div>
+                </div>
               </div>
-              <div class="quote">风已至<br /><span>新苗起</span></div>
+
+              <div class="card-right">
+                <div class="portrait-wrapper">
+                  <img
+                    :src="selectedGraduate.avatar"
+                    :alt="selectedGraduate.name.zh"
+                    class="portrait"
+                  />
+                </div>
+                <div class="quote">风已至<br /><span>新苗起</span></div>
+              </div>
             </div>
+          </div>
+
+          <!-- 卡片外面的文字 -->
+          <div
+            class="bottom-text"
+            :class="{ 'english-text': isEnglish }"
+            v-if="selectedGraduate"
+          >
+            <template v-if="isEnglish">
+              <!-- 英文两行诗歌 -->
+              <div class="text-line">A Southern breeze, so soft and low,</div>
+              <div class="text-line">Awakens seeds, helps all things grow.</div>
+            </template>
+            <template v-else>
+              <!-- 中文五行文字 -->
+              <div class="text-line">南方来风</div>
+              <div class="text-line">不烈不喧 却润物无声</div>
+              <div class="text-line">它携带着方向、温度与节奏</div>
+              <div class="text-line">唤醒沉潜的种子</div>
+              <div class="text-line">也推动万物的生长</div>
+            </template>
           </div>
         </div>
 
-        <!-- 卡片外面的文字 -->
+        <!-- 右侧头像列表容器 -->
         <div
-          class="bottom-text"
-          :class="{ 'english-text': isEnglish }"
-          v-if="selectedGraduate"
+          ref="avatarsContainerRef"
+          class="avatars-container"
+          @mouseenter="handleMouseEnter"
+          @mouseleave="handleMouseLeave"
         >
-          <template v-if="isEnglish">
-            <!-- 英文两行诗歌 -->
-            <div class="text-line">A Southern breeze, so soft and low,</div>
-            <div class="text-line">Awakens seeds, helps all things grow.</div>
-          </template>
-          <template v-else>
-            <!-- 中文五行文字 -->
-            <div class="text-line">南方来风</div>
-            <div class="text-line">不烈不喧 却润物无声</div>
-            <div class="text-line">它携带着方向、温度与节奏</div>
-            <div class="text-line">唤醒沉潜的种子</div>
-            <div class="text-line">也推动万物的生长</div>
-          </template>
+          <div
+            ref="avatarsListRef"
+            class="avatars-list"
+            :class="{ 'manual-scroll': isHovering }"
+          >
+            <GraduateCard
+              v-for="graduate in [...graduates, ...graduates]"
+              :key="graduate.id + Math.random()"
+              :name="graduate.name"
+              :destination="graduate.destination"
+              :is-english="isEnglish"
+              :avatar="graduate.avatar"
+              :class="{ active: selectedGraduate?.id === graduate.id }"
+              @click="handleSelectGraduate(graduate, $event)"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 移动端布局 -->
+    <div class="mobile-layout" v-else>
+      <!-- 移动端轮播卡片容器 -->
+      <div
+        class="mobile-carousel-wrapper"
+        @touchstart="handleTouchStart"
+        @touchmove="handleTouchMove"
+        @touchend="handleTouchEnd"
+      >
+        <div ref="cardsContainerRef" class="mobile-carousel-container">
+          <div
+            v-for="(graduate, index) in graduates"
+            :key="graduate.id"
+            class="mobile-graduate-card"
+            :class="{ active: index === currentIndex }"
+          >
+            <!-- 卡片标题 -->
+            <div class="card-title">
+              {{ isEnglish ? "Graduate" : "毕业生" }}
+            </div>
+
+            <!-- 卡片主体 -->
+            <div class="card-body">
+              <!-- 头像 -->
+              <div class="avatar-section">
+                <img
+                  :src="graduate.avatar"
+                  :alt="graduate.name.zh"
+                  class="graduate-avatar"
+                />
+              </div>
+
+              <!-- 毕业感言 -->
+              <div class="thoughts-section">
+                <p class="thoughts-text">
+                  {{ isEnglish ? graduate.thoughts.en : graduate.thoughts.zh }}
+                </p>
+              </div>
+
+              <!-- 毕业生信息 -->
+              <div class="graduate-info-section">
+                <h2 class="graduate-name">
+                  {{ isEnglish ? graduate.name.en : graduate.name.zh }}
+                </h2>
+                <p
+                  class="graduate-destination"
+                  v-if="graduate.destination.zh || graduate.destination.en"
+                >
+                  {{
+                    isEnglish
+                      ? graduate.destination.en
+                      : graduate.destination.zh
+                  }}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- 右侧头像列表容器 -->
-
-      <div
-        ref="avatarsContainerRef"
-        class="avatars-container"
-        @mouseenter="handleMouseEnter"
-        @mouseleave="handleMouseLeave"
-      >
+      <!-- 轮播指示器 -->
+      <div class="carousel-indicators">
         <div
-          ref="avatarsListRef"
-          class="avatars-list"
-          :class="{ 'manual-scroll': isHovering }"
+          v-for="(graduate, index) in graduates"
+          :key="graduate.id"
+          class="indicator"
+          :class="{ active: index === currentIndex }"
+          @click="goToSlide(index)"
+        ></div>
+      </div>
+
+      <!-- 导航按钮 -->
+      <div class="carousel-nav">
+        <button
+          class="nav-btn prev-btn"
+          @click="prevGraduate"
+          :disabled="currentIndex === 0"
         >
-          <GraduateCard
-            v-for="graduate in [...graduates, ...graduates]"
-            :key="graduate.id + Math.random()"
-            :name="graduate.name"
-            :destination="graduate.destination"
-            :is-english="isEnglish"
-            :avatar="graduate.avatar"
-            :class="{ active: selectedGraduate?.id === graduate.id }"
-            @click="handleSelectGraduate(graduate, $event)"
-          />
-        </div>
+          ‹
+        </button>
+        <button
+          class="nav-btn next-btn"
+          @click="nextGraduate"
+          :disabled="currentIndex === graduates.length - 1"
+        >
+          ›
+        </button>
       </div>
     </div>
   </section>
@@ -436,5 +639,213 @@ onUnmounted(() => {
   background: #052a1b;
   z-index: 1000;
   pointer-events: none;
+}
+
+/* 移动端样式 */
+@media (max-width: 768px) {
+  .content-section {
+    width: 100vw !important;
+    height: calc(100vh - 60px); /* 减去导航栏高度 */
+    background: #fff0ca; /* 保持原有背景颜色 */
+    overflow: hidden;
+  }
+
+  .desktop-layout {
+    display: none;
+  }
+
+  .mobile-layout {
+    width: 100vw;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 移动端轮播容器 */
+  .mobile-carousel-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .mobile-carousel-container {
+    display: flex;
+    width: 2500vw; /* 25个毕业生 * 100vw */
+    height: 100%;
+    transition: transform 0.3s ease;
+  }
+
+  /* 移动端毕业生卡片 */
+  .mobile-graduate-card {
+    width: 100vw;
+    height: 100%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px;
+    box-sizing: border-box;
+  }
+
+  /* 卡片标题 */
+  .card-title {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  /* 卡片主体 */
+  .card-body {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    padding: 24px 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border: 3px solid #052a1b;
+    overflow-y: auto;
+  }
+
+  /* 头像区域 */
+  .avatar-section {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .graduate-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  /* 毕业感言区域 */
+  .thoughts-section {
+    flex: 1;
+  }
+
+  .thoughts-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    text-align: left;
+    margin: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* 毕业生信息区域 */
+  .graduate-info-section {
+    border-top: 1px solid #eee;
+    padding-top: 16px;
+  }
+
+  .graduate-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 8px 0;
+    text-align: left;
+  }
+
+  .graduate-destination {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    text-align: left;
+  }
+
+  /* 轮播指示器 */
+  .carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 0;
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  .indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .indicator.active {
+    background: #052a1b;
+    transform: scale(1.2);
+  }
+
+  /* 导航按钮 */
+  .carousel-nav {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .nav-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #052a1b;
+    color: #052a1b;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    pointer-events: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .nav-btn:hover:not(:disabled) {
+    background: #052a1b;
+    color: white;
+    transform: scale(1.1);
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .prev-btn {
+    left: 10px;
+  }
+
+  .next-btn {
+    right: 10px;
+  }
+
+  /* 隐藏桌面端元素 */
+  .bg-image,
+  .avatars-container,
+  .right-rect-bg {
+    display: none;
+  }
 }
 </style>
