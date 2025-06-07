@@ -22,6 +22,12 @@ onMounted(() => {
 
     // 设置全局滚轮转换
     wheelHandler = (e) => {
+      // 检查是否为移动端
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        return; // 移动端不转换滚轮
+      }
+
       // 检查是否在需要排除的元素内
       const target = e.target;
       const isInModal = target.closest(

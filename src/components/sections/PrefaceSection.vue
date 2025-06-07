@@ -77,6 +77,15 @@ const handleScroll = () => {
 
 // 计算文字的transform样式
 const textTransformStyle = computed(() => {
+  // 移动端禁用视差效果
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    return {
+      transform: "translateY(0px)",
+      transition: "none",
+    };
+  }
+
   return {
     transform: `translateY(${part2ScrollOffset.value}px)`,
     transition: "transform 0.1s ease-out",

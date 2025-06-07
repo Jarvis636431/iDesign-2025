@@ -61,7 +61,10 @@ const scrollTimeout = ref(null);
 
 // 计算文字倾斜角度
 const textSkewAngle = computed(() => {
-  if (!isScrolling.value) return 0;
+  // 移动端禁用倾斜效果
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile || !isScrolling.value) return 0;
+
   // 根据水平滚动速度计算倾斜角度，最大倾斜15度
   const maxSkew = 15;
   const clampedVelocity = Math.max(-30, Math.min(30, scrollVelocity.value));

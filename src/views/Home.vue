@@ -13,21 +13,56 @@ const isEnglish = ref(false);
 const currentSection = ref("home");
 const scrollContainerRef = ref(null);
 
+// 移动端汉堡菜单状态
+const isMobile = ref(false);
+const isMenuOpen = ref(false);
+
 const toggleLanguage = () => {
   isEnglish.value = !isEnglish.value;
+};
+
+// 检测是否为移动端
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
+
+// 切换汉堡菜单
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value;
+};
+
+// 关闭菜单
+const closeMenu = () => {
+  isMenuOpen.value = false;
 };
 
 // 滚动到指定区域
 const scrollToSection = (sectionId) => {
   const section = document.getElementById(sectionId);
   if (section) {
-    section.scrollIntoView({ behavior: "smooth" });
+    if (isMobile.value) {
+      // 移动端垂直滚动
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      // 桌面端水平滚动
+      section.scrollIntoView({ behavior: "smooth" });
+    }
     currentSection.value = sectionId;
+    // 移动端点击导航后关闭菜单
+    if (isMobile.value) {
+      closeMenu();
+    }
   }
 };
 
 // 使用 IntersectionObserver 监测每个 section 的可见性
 onMounted(() => {
+  // 初始检测移动端
+  checkMobile();
+
+  // 监听窗口大小变化
+  window.addEventListener("resize", checkMobile);
+
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -48,15 +83,47 @@ onMounted(() => {
     observer.observe(section);
   });
 
-  return () => observer.disconnect();
+  return () => {
+    observer.disconnect();
+    window.removeEventListener("resize", checkMobile);
+  };
 });
 </script>
 
 <template>
   <div class="home-container">
+    <!-- 移动端汉堡菜单按钮 -->
+    <div v-if="isMobile" class="mobile-header">
+      <div class="mobile-logo" @click="scrollToSection('home')">
+        <img src="/assets/images/logos/logo2025.png" alt="天津大学设计学院" />
+      </div>
+      <button
+        class="hamburger-btn"
+        @click="toggleMenu"
+        :class="{ active: isMenuOpen }"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
     <!-- 左侧导航栏 -->
-    <nav class="side-navigation">
-      <div class="nav-logo" @click="scrollToSection('home')">
+    <nav
+      class="side-navigation"
+      :class="{
+        'mobile-menu-open': isMenuOpen,
+        'mobile-hidden': isMobile && !isMenuOpen,
+      }"
+    >
+      <!-- 移动端遮罩层 -->
+      <div
+        v-if="isMobile && isMenuOpen"
+        class="mobile-overlay"
+        @click="closeMenu"
+      ></div>
+
+      <div class="nav-logo" @click="scrollToSection('home')" v-if="!isMobile">
         <img src="/assets/images/logos/logo2025.png" alt="天津大学设计学院" />
       </div>
       <div class="nav-links">
@@ -102,8 +169,12 @@ onMounted(() => {
     </nav>
 
     <!-- 主内容区域 -->
-    <main class="main-content">
-      <div class="scroll-container" ref="scrollContainerRef">
+    <main class="main-content" :class="{ 'mobile-content': isMobile }">
+      <div
+        class="scroll-container"
+        :class="{ 'mobile-scroll': isMobile }"
+        ref="scrollContainerRef"
+      >
         <HomeSection id="home" class="content-section" />
         <PrefaceSection
           id="preface"
@@ -340,5 +411,175 @@ h2 {
 /* 特殊处理过渡区域宽度 */
 :deep(#story) {
   width: 150vw;
+}
+
+/* 移动端样式 */
+@media (max-width: 768px) {
+  .home-container {
+    flex-direction: column;
+  }
+
+  /* 移动端头部 */
+  .mobile-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    z-index: 1000;
+  }
+
+  .mobile-logo img {
+    height: 40px;
+    width: auto;
+  }
+
+  /* 汉堡菜单按钮 */
+  .hamburger-btn {
+    background: none;
+    border: none;
+    width: 30px;
+    height: 30px;
+    position: relative;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .hamburger-btn span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    margin: 5px 0;
+    transition: 0.3s;
+    transform-origin: center;
+  }
+
+  .hamburger-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+  }
+
+  .hamburger-btn.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+  }
+
+  /* 移动端导航菜单 */
+  .side-navigation.mobile-hidden {
+    transform: translateX(-100%);
+  }
+
+  .side-navigation {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 280px;
+    height: calc(100vh - 60px);
+    background-color: #fff;
+    border-right: 1px solid #eee;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 999;
+    padding: 2rem 0;
+  }
+
+  .side-navigation.mobile-menu-open {
+    transform: translateX(0);
+  }
+
+  /* 移动端遮罩层 */
+  .mobile-overlay {
+    position: fixed;
+    top: 60px;
+    left: 280px;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+  }
+
+  /* 移动端导航项样式 */
+  .nav-links {
+    padding: 1rem 0;
+    gap: 1rem;
+  }
+
+  .nav-item {
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+    text-align: left;
+    justify-content: flex-start;
+  }
+
+  .nav-item.active::after {
+    display: none;
+  }
+
+  .nav-item.active {
+    background-color: #f0f9fa;
+    border-left: 3px solid #2fa3b0;
+  }
+
+  .language-switch {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin: 2rem;
+    text-align: center;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+  }
+
+  /* 移动端主内容区域 */
+  .main-content.mobile-content {
+    margin-left: 0;
+    margin-top: 60px;
+  }
+
+  /* 移动端滚动容器 - 垂直滚动 */
+  .scroll-container.mobile-scroll {
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: calc(100vh - 60px);
+  }
+
+  /* 移动端section样式 */
+  .scroll-container.mobile-scroll :deep(.content-section) {
+    width: 100vw !important;
+    min-height: calc(100vh - 60px);
+    height: auto;
+  }
+
+  /* 特殊section在移动端的处理 */
+  .scroll-container.mobile-scroll :deep(#preface) {
+    width: 100vw !important;
+  }
+
+  .scroll-container.mobile-scroll :deep(#team) {
+    width: 100vw !important;
+  }
+
+  .scroll-container.mobile-scroll :deep(#graduates) {
+    width: 100vw !important;
+  }
+
+  .scroll-container.mobile-scroll :deep(#video) {
+    width: 100vw !important;
+  }
+
+  .scroll-container.mobile-scroll :deep(#story) {
+    width: 100vw !important;
+  }
 }
 </style>
