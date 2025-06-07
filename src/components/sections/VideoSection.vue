@@ -190,6 +190,93 @@ onMounted(() => {
     width: 100vw !important;
     min-height: 100vh;
     padding: 2rem 1rem;
+    /* 移动端背景图旋转90度并缩小 */
+    background-image: url("/assets/images/mobile-video-bg.png");
+    background-position: center center;
+    background-repeat: no-repeat;
+    transform-origin: center center; /* 以中心为旋转点 */
+  }
+
+  .section-content {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* 改为左对齐 */
+    gap: 1.5rem;
+    transform-origin: center center;
+    padding: 0 5vw; /* 添加左右内边距 */
+  }
+
+  /* 移动端视频容器 */
+  .video-container {
+    width: 100%;
+    max-width: 90vw;
+    margin: 0;
+  }
+
+  /* 移动端视频播放器 */
+  .video-player {
+    width: 100%;
+    max-width: 100%;
+    min-height: auto;
+    height: auto;
+    aspect-ratio: 16/9; /* 保持16:9比例 */
+    border-radius: 8px; /* 减小圆角 */
+    border: 6px solid white; /* 减小边框 */
+    top: 0; /* 重置位置偏移 */
+    font-size: 14px; /* 调整控制栏字体大小 */
+  }
+
+  /* 移动端视频描述 */
+  .video-description {
+    width: 100%;
+    max-width: 90vw;
+    margin-top: 1rem;
+    text-align: left; /* 左对齐 */
+    font-size: 0.9rem; /* 稍微减小字体 */
+    line-height: 1.5;
+    padding: 0; /* 移除内边距，与视频对齐 */
+    color: #ffffff;
+  }
+
+  /* 移动端加载状态 */
+  .video-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    z-index: 10;
+  }
+
+  .loading-spinner {
+    width: 30px; /* 减小加载动画尺寸 */
+    height: 30px;
+    border-width: 3px;
+  }
+
+  /* 移动端错误状态 */
+  .video-error {
+    font-size: 0.9rem;
+    padding: 1rem;
+  }
+
+  /* 移动端视频光标调整 */
+  .video-player {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="%23052a1b"/><polygon points="16,14 16,26 26,20" fill="none" stroke="%23FFE29A" stroke-width="2"/></svg>')
+        20 20,
+      pointer;
+  }
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .content-section {
+    width: 100vw !important;
+    min-height: 100vh;
+    padding: 2rem 1rem;
     background-position: center center; /* 调整背景图位置 */
     background-size: cover;
   }

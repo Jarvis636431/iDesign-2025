@@ -1517,7 +1517,7 @@ onUnmounted(() => {
   /* 移动端蒲公英分布调整 */
   .part-5 .floating-dandelions {
     width: 100vw; /* 覆盖整个移动端宽度 */
-    height: 300vh; /* 覆盖整个第五板块高度 */
+    height: 400vh; /* 从300vh增加到400vh，覆盖整个第五板块高度 */
   }
 
   /* 移动端蒲公英尺寸调整 */
