@@ -1427,7 +1427,7 @@ onUnmounted(() => {
   .preface-container {
     flex-direction: column;
     width: 100vw;
-    height: 950vh; /* 总高度对应PC端总宽度950vw */
+    height: 1050vh; /* 总高度从950vh增加到1050vh (150+250+150+100+400) */
   }
 
   /* 移动端各部分高度对应PC端宽度 */
@@ -1453,7 +1453,7 @@ onUnmounted(() => {
 
   .part-5 {
     width: 100vw;
-    height: 300vh; /* 对应PC端300vw */
+    height: 400vh; /* 从300vh增加到400vh，提供更多空间 */
   }
 
   /* 移动端第二板块背景图调整 */
@@ -1468,7 +1468,7 @@ onUnmounted(() => {
 
   /* 移动端第五板块适配 */
   .part-5 .dandelion-section {
-    height: 300vh; /* 对应PC端300vw的高度 */
+    height: 400vh; /* 从300vh增加到400vh */
   }
 
   /* 移动端中心蒲公英背景图调整 */
