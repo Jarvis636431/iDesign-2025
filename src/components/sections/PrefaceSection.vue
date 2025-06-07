@@ -1386,16 +1386,33 @@ onUnmounted(() => {
   .preface-container {
     flex-direction: column;
     width: 100vw;
-    height: 500vh; /* 5个部分垂直排列 */
+    height: 950vh; /* 总高度对应PC端总宽度950vw */
   }
 
-  .part-1,
-  .part-2,
-  .part-3,
-  .part-4,
+  /* 移动端各部分高度对应PC端宽度 */
+  .part-1 {
+    width: 100vw;
+    height: 150vh; /* 对应PC端150vw */
+  }
+
+  .part-2 {
+    width: 100vw;
+    height: 250vh; /* 对应PC端250vw */
+  }
+
+  .part-3 {
+    width: 100vw;
+    height: 150vh; /* 对应PC端150vw */
+  }
+
+  .part-4 {
+    width: 100vw;
+    height: 100vh; /* 对应PC端100vw */
+  }
+
   .part-5 {
-    width: 100vw; /* 移动端所有部分都是100vw */
-    height: 100vh;
+    width: 100vw;
+    height: 300vh; /* 对应PC端300vw */
   }
 
   .text-only-content {
