@@ -1462,8 +1462,237 @@ onUnmounted(() => {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    transform: rotate(0deg); /* 旋转90度适配纵向布局，暂时未适配 */
+    transform: rotate(90deg); /* 旋转90度适配纵向布局 */
     transform-origin: center center; /* 以中心为旋转点 */
+  }
+
+  /* 移动端第五板块适配 */
+  .part-5 .dandelion-section {
+    height: 300vh; /* 对应PC端300vw的高度 */
+  }
+
+  /* 移动端中心蒲公英背景图调整 */
+  .part-5 .center-dandelion {
+    width: 80vw; /* 适合移动端宽度 */
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .part-5 .dandelion-bg {
+    width: 100%; /* 填满容器 */
+    max-width: 300px; /* 限制最大宽度 */
+    height: auto;
+  }
+
+  /* 移动端文字内容调整 */
+  .part-5 .center-text-content {
+    width: 90vw;
+    max-width: 350px;
+    padding: 2rem 1rem;
+  }
+
+  /* 移动端文字部分调整 */
+  .part-5 .text-part-1 {
+    font-size: 1.5rem; /* 适合移动端的字体大小 */
+    margin-bottom: 1.5rem;
+  }
+
+  .part-5 .text-part-2 {
+    font-size: 2rem; /* 主要文字稍大 */
+    margin-bottom: 2rem;
+    line-height: 1.3;
+  }
+
+  .part-5 .text-part-3 {
+    font-size: 1rem; /* 底部文字适中 */
+    line-height: 1.5;
+  }
+
+  .part-5 .text-part-3 .text-line {
+    margin-bottom: 0.5rem;
+  }
+
+  /* 移动端蒲公英分布调整 */
+  .part-5 .floating-dandelions {
+    width: 100vw; /* 覆盖整个移动端宽度 */
+    height: 300vh; /* 覆盖整个第五板块高度 */
+  }
+
+  /* 移动端蒲公英尺寸调整 */
+  .part-5 .floating-dandelion {
+    width: 40px !important; /* 统一调整为更小的尺寸 */
+    opacity: 0.6; /* 降低透明度，不干扰文字阅读 */
+  }
+
+  /* 移动端蒲公英重新分布 - 垂直布局 */
+  /* 顶部区域 (1-10) */
+  .part-5 .dandelion-1 {
+    top: 5%;
+    left: 10%;
+  }
+  .part-5 .dandelion-2 {
+    top: 8%;
+    left: 80%;
+  }
+  .part-5 .dandelion-3 {
+    top: 12%;
+    left: 20%;
+  }
+  .part-5 .dandelion-4 {
+    top: 15%;
+    left: 70%;
+  }
+  .part-5 .dandelion-5 {
+    top: 18%;
+    left: 5%;
+  }
+  .part-5 .dandelion-6 {
+    top: 22%;
+    left: 85%;
+  }
+  .part-5 .dandelion-7 {
+    top: 25%;
+    left: 15%;
+  }
+  .part-5 .dandelion-8 {
+    top: 28%;
+    left: 75%;
+  }
+  .part-5 .dandelion-9 {
+    top: 32%;
+    left: 25%;
+  }
+  .part-5 .dandelion-10 {
+    top: 35%;
+    left: 90%;
+  }
+
+  /* 中上区域 (11-20) - 避开中心文字 */
+  .part-5 .dandelion-11 {
+    top: 38%;
+    left: 5%;
+  }
+  .part-5 .dandelion-12 {
+    top: 42%;
+    left: 85%;
+  }
+  .part-5 .dandelion-13 {
+    top: 45%;
+    left: 10%;
+  }
+  .part-5 .dandelion-14 {
+    top: 48%;
+    left: 80%;
+  }
+  .part-5 .dandelion-15 {
+    top: 52%;
+    left: 15%;
+  }
+  .part-5 .dandelion-16 {
+    top: 55%;
+    left: 90%;
+  }
+  .part-5 .dandelion-17 {
+    top: 58%;
+    left: 5%;
+  }
+  .part-5 .dandelion-18 {
+    top: 62%;
+    left: 85%;
+  }
+  .part-5 .dandelion-19 {
+    top: 65%;
+    left: 20%;
+  }
+  .part-5 .dandelion-20 {
+    top: 68%;
+    left: 75%;
+  }
+
+  /* 中下区域 (21-30) */
+  .part-5 .dandelion-21 {
+    top: 72%;
+    left: 10%;
+  }
+  .part-5 .dandelion-22 {
+    top: 75%;
+    left: 80%;
+  }
+  .part-5 .dandelion-23 {
+    top: 78%;
+    left: 25%;
+  }
+  .part-5 .dandelion-24 {
+    top: 82%;
+    left: 70%;
+  }
+  .part-5 .dandelion-25 {
+    top: 85%;
+    left: 5%;
+  }
+  .part-5 .dandelion-26 {
+    top: 88%;
+    left: 85%;
+  }
+  .part-5 .dandelion-27 {
+    top: 92%;
+    left: 15%;
+  }
+  .part-5 .dandelion-28 {
+    top: 95%;
+    left: 75%;
+  }
+  .part-5 .dandelion-29 {
+    top: 98%;
+    left: 30%;
+  }
+  .part-5 .dandelion-30 {
+    top: 2%;
+    left: 50%;
+  }
+
+  /* 底部区域 (31-40) */
+  .part-5 .dandelion-31 {
+    top: 3%;
+    left: 40%;
+  }
+  .part-5 .dandelion-32 {
+    top: 7%;
+    left: 60%;
+  }
+  .part-5 .dandelion-33 {
+    top: 13%;
+    left: 45%;
+  }
+  .part-5 .dandelion-34 {
+    top: 17%;
+    left: 55%;
+  }
+  .part-5 .dandelion-35 {
+    top: 23%;
+    left: 35%;
+  }
+  .part-5 .dandelion-36 {
+    top: 27%;
+    left: 65%;
+  }
+  .part-5 .dandelion-37 {
+    top: 33%;
+    left: 40%;
+  }
+  .part-5 .dandelion-38 {
+    top: 37%;
+    left: 60%;
+  }
+  .part-5 .dandelion-39 {
+    top: 63%;
+    left: 35%;
+  }
+  .part-5 .dandelion-40 {
+    top: 67%;
+    left: 65%;
   }
 
   .text-only-content {
