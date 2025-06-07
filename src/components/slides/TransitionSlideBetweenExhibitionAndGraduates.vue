@@ -120,4 +120,92 @@ const props = defineProps({
   font-weight: 600; /* 稍微加粗，增强可读性 */
   text-shadow: 4px 4px 4px rgba(0, 0, 0, 0.05);
 }
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .content-section {
+    width: 100vw !important;
+    height: calc(100vh - 60px) !important; /* 屏幕高度减去导航栏高度60px */
+  }
+
+  .transition-content {
+    width: 100vw;
+    height: calc(100vh - 60px); /* 屏幕高度减去导航栏高度60px */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #ffe9d5;
+  }
+
+  /* 移动端GIF容器 - 纵向排列 */
+  .gif-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column; /* 改为纵向排列 */
+    gap: 40px; /* 减小间距适合移动端 */
+    align-items: center;
+  }
+
+  /* 移动端GIF尺寸调整 */
+  .gif-item {
+    width: 50px; /* 稍微减小尺寸 */
+    height: 50px;
+    object-fit: cover;
+  }
+
+  /* 移动端文字调整 - 水平排布在底部 */
+  .repeating-text {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto; /* 重置PC端的right属性 */
+    top: auto; /* 重置PC端的top属性 */
+    margin-right: 0; /* 重置PC端的margin-right */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .repeating-text.english-position {
+    margin-right: 0; /* 重置英文状态下的边距 */
+  }
+
+  /* 移动端文字容器 - 水平排列 */
+  .text-container {
+    display: flex;
+    flex-direction: row; /* 改为水平排列 */
+    gap: 1rem; /* 减小间距 */
+    align-items: center;
+    justify-content: center;
+    overflow-x: auto; /* 如果文字过多，允许水平滚动 */
+  }
+
+  .text-container.english-layout {
+    gap: 1.5rem; /* 英文稍大间距 */
+  }
+
+  /* 移动端文字样式调整 */
+  .text-item {
+    color: #fff0ca;
+    font-family: "SmileySans", sans-serif;
+    font-size: 3rem; /* 大幅减小字体 */
+    transform: rotate(0deg); /* 移除旋转 */
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
+    white-space: nowrap; /* 防止文字换行 */
+    flex-shrink: 0; /* 防止文字被压缩 */
+  }
+
+  .text-item.english-text {
+    font-family: "Futura", "Arial", sans-serif;
+    font-size: 1.2rem; /* 英文稍小 */
+    font-weight: 600;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
+  }
+}
 </style>
