@@ -13,6 +13,12 @@ const props = defineProps({
 
 const activeHallIndex = ref(0);
 const activeHall = computed(() => halls[activeHallIndex.value]);
+
+// 计算轮播的transform值
+const carouselTransform = computed(() => {
+  const translateValue = (activeHallIndex.value * 100) / 5;
+  return `translateX(-${translateValue}%)`;
+});
 const isSwiping = ref(false);
 const router = useRouter();
 const isLoading = ref(false); // 加载状态
@@ -318,10 +324,7 @@ const handleCarouselTouchEnd = (event) => {
         @touchend="handleCarouselTouchEnd"
       >
         <div class="carousel-container">
-          <div
-            class="carousel-track"
-            :style="{ transform: `translateX(-${activeHallIndex * 100}%)` }"
-          >
+          <div class="carousel-track" :style="{ transform: carouselTransform }">
             <div
               v-for="(hall, index) in halls"
               :key="hall.id"
@@ -711,10 +714,12 @@ const handleCarouselTouchEnd = (event) => {
     width: 500%; /* 5个展厅，每个100% */
     height: 100%;
     transition: transform 0.4s ease-in-out;
+    position: relative;
+    left: 0;
   }
 
   .carousel-slide {
-    width: 100%;
+    width: calc(100% / 5); /* 每个slide占容器的1/5 */
     height: 100%;
     flex-shrink: 0;
     display: flex;
@@ -722,6 +727,7 @@ const handleCarouselTouchEnd = (event) => {
     align-items: center;
     padding: 1rem;
     box-sizing: border-box;
+    position: relative;
   }
 
   .carousel-logo {
