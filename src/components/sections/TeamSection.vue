@@ -309,11 +309,13 @@ const easeInOutCubic = (x) => {
     max-width: none; /* 移除最大宽度限制 */
     height: auto;
     background-color: #fff0ca;
-    padding: 1.5rem; /* 增加内边距 */
+    padding: 0; /* 移除内边距，让子元素控制 */
     transition: all 0.3s ease-out;
     overflow: visible;
-    border-radius: 12px;
+    border-radius: 0; /* 去掉卡片圆角 */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: flex; /* 使用flex布局 */
+    flex-direction: row; /* 水平排列：侧边标题 + 内容区域 */
   }
 
   .team-rectangle.mobile-rectangle h3 {
@@ -327,23 +329,35 @@ const easeInOutCubic = (x) => {
   }
 
   .team-rectangle.mobile-rectangle h3 {
-    font-size: 1.2rem;
-    margin-bottom: 1.5rem;
-    color: #333333;
+    font-size: 1rem;
+    margin: 0;
+    color: #333333; /* 深色文字 */
     text-align: center;
-    border-bottom: 2px solid rgba(5, 42, 27, 0.2);
-    padding-bottom: 0.8rem;
     white-space: nowrap;
+    writing-mode: vertical-rl; /* 纵向文字，从右到左 */
+    text-orientation: mixed; /* 文字方向 */
+    background-color: #fff0ca; /* 米黄色背景 */
+    padding: 1rem 0.8rem; /* 上下内边距大，左右内边距小 */
+    border-radius: 0; /* 去掉圆角 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px; /* 最小宽度 */
+    flex-shrink: 0; /* 不被压缩 */
+    border-right: 2px solid rgba(5, 42, 27, 0.2); /* 添加右边框分割线 */
   }
 
   .members-grid.mobile-grid {
     display: flex;
     flex-direction: row; /* 横向排列成员 */
     gap: 1rem;
-    padding: 0;
+    padding: 1.5rem; /* 内容区域内边距 */
     overflow-x: auto; /* 支持横向滚动 */
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch; /* iOS平滑滚动 */
+    flex: 1; /* 占据剩余空间 */
+    background-color: #fff0ca; /* 确保背景色 */
+    border-radius: 0; /* 去掉圆角 */
   }
 
   .member-card.mobile-card {
@@ -355,7 +369,8 @@ const easeInOutCubic = (x) => {
     transition: all 0.3s ease;
     text-align: center;
     flex-shrink: 0; /* 防止被压缩 */
-    width: 120px; /* 固定宽度 */
+    width: auto; /* 自适应宽度 */
+    min-width: 100px; /* 最小宽度 */
     background: rgba(255, 255, 255, 0.1);
   }
 
@@ -367,7 +382,7 @@ const easeInOutCubic = (x) => {
   .member-avatar.mobile-avatar {
     width: 80px;
     height: 80px;
-    border-radius: 50%;
+    border-radius: 0; /* 完全方形，无圆角 */
     object-fit: cover;
     margin-bottom: 0.8rem;
     border: 2px solid rgba(5, 42, 27, 0.3);
@@ -382,9 +397,10 @@ const easeInOutCubic = (x) => {
     font-size: 0.9rem;
     margin: 0 0 0.3rem 0;
     font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal; /* 允许换行 */
+    word-wrap: break-word; /* 长单词换行 */
+    text-align: center;
+    line-height: 1.3;
   }
 
   .mobile-card .member-info p {
@@ -392,9 +408,9 @@ const easeInOutCubic = (x) => {
     opacity: 0.8;
     margin: 0;
     line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal; /* 允许换行 */
+    word-wrap: break-word; /* 长单词换行 */
+    text-align: center;
   }
 }
 </style>
