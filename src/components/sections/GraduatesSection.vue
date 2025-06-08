@@ -85,10 +85,10 @@ const checkMobile = () => {
   isMobile.value = isMobileUserAgent || width <= 768;
 };
 
-// 更新卡片位置（支持无限滚动）
+// 更新卡片位置（支持轮播效果）
 const updateCardPosition = () => {
   if (cardsContainerRef.value) {
-    const cardWidth = window.innerWidth; // 使用窗口宽度作为卡片宽度
+    const cardWidth = window.innerWidth - 60; // 卡片宽度（减去左右边距）
     const totalCards = graduates.length;
 
     // 确保索引在有效范围内
@@ -98,6 +98,7 @@ const updateCardPosition = () => {
       currentIndex.value = totalCards - 1;
     }
 
+    // 计算偏移量，让当前卡片居中
     const translateX = -currentIndex.value * cardWidth;
     cardsContainerRef.value.style.transform = `translateX(${translateX}px)`;
   }
@@ -663,45 +664,74 @@ onUnmounted(() => {
 
   .mobile-carousel-container {
     display: flex;
-    width: calc(100vw * 25); /* 25个毕业生卡片的总宽度 */
+    width: calc((100vw - 60px) * 25); /* 调整总宽度，每张卡片左右留30px */
     height: 100%;
-    transition: transform 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 更流畅的缓动 */
+    padding: 0 30px; /* 左右内边距，让第一张和最后一张卡片也能居中 */
+    box-sizing: border-box;
   }
 
   /* 移动端毕业生卡片 */
   .mobile-graduate-card {
-    width: 100vw;
+    width: calc(100vw - 60px); /* 卡片宽度，左右各留30px */
     height: 100%;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    padding: 40px 20px; /* 增加上下内边距 */
+    padding: 40px 20px;
     box-sizing: border-box;
-    justify-content: center; /* 垂直居中 */
-    align-items: center; /* 水平居中 */
+    justify-content: center;
+    align-items: center;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 平滑过渡 */
+    transform-origin: center; /* 缩放中心点 */
+  }
+
+  /* 当前激活的卡片 */
+  .mobile-graduate-card.active {
+    transform: scale(1.05); /* 放大当前卡片 */
+    z-index: 10; /* 提高层级 */
+  }
+
+  /* 非激活的卡片 */
+  .mobile-graduate-card:not(.active) {
+    transform: scale(0.95); /* 缩小非当前卡片 */
+    opacity: 0.7; /* 降低透明度 */
+    z-index: 5; /* 较低层级 */
   }
 
   /* 卡片主体 */
   .card-body {
     background: white;
-    border-radius: 20px; /* 增大圆角，匹配UI图 */
-    padding: 20px;
+    border-radius: 20px;
+    padding: 24px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     display: flex;
-    flex-direction: row; /* 左右布局 */
-    gap: 0px;
-    border: 4px solid #052a1b; /* 增加边框宽度 */
-    height: 500px; /* 增加高度以匹配UI图 */
+    flex-direction: row;
+    border: 4px solid #052a1b;
+    height: 500px; /* 恢复合适的高度 */
     width: 100%;
-    max-width: 600px; /* 限制最大宽度，避免过宽 */
+    max-width: 600px;
     overflow: hidden;
     position: relative;
-    margin: 0 auto; /* 水平居中 */
+    margin: 0 auto;
+    transition: all 0.3s ease; /* 添加过渡效果 */
+  }
+
+  /* 激活卡片的主体样式 */
+  .mobile-graduate-card.active .card-body {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15); /* 增强阴影 */
+    border-color: #052a1b;
+  }
+
+  /* 非激活卡片的主体样式 */
+  .mobile-graduate-card:not(.active) .card-body {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); /* 减弱阴影 */
+    border-color: rgba(5, 42, 27, 0.6); /* 淡化边框 */
   }
 
   /* 左侧区域 */
   .card-left {
-    flex: 0 0 180px; /* 增加宽度以匹配UI图 */
+    flex: 0 0 160px; /* 增加宽度以匹配UI图 */
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -730,6 +760,7 @@ onUnmounted(() => {
   .graduate-avatar {
     width: 140px;
     height: 140px;
+    border-radius: 8px; /* 恢复圆角 */
     object-fit: cover;
   }
 
@@ -762,8 +793,9 @@ onUnmounted(() => {
   }
 
   .thoughts-text {
-    font-size: 14px;
-    line-height: 1.2; /* 增加行高，匹配UI图 */
+    margin-top: 80px;
+    font-size: 12px;
+    line-height: 1; /* 增加行高，匹配UI图 */
     color: #333;
     text-align: justify; /* 两端对齐，匹配UI图 */
     word-wrap: break-word;
@@ -783,10 +815,6 @@ onUnmounted(() => {
     margin: 0 0 4px 0;
     text-align: left;
     line-height: 1.2;
-    width: 160px; /* 设置固定宽度 */
-    white-space: nowrap; /* 不换行 */
-    overflow: hidden; /* 隐藏溢出 */
-    text-overflow: ellipsis; /* 显示省略号 */
   }
 
   .graduate-destination {
@@ -795,10 +823,6 @@ onUnmounted(() => {
     margin: 0;
     text-align: left;
     line-height: 1.4;
-    width: 160px; /* 设置固定宽度 */
-    white-space: nowrap; /* 不换行 */
-    overflow: hidden; /* 隐藏溢出 */
-    text-overflow: ellipsis; /* 显示省略号 */
   }
 
   /* 隐藏桌面端元素 */
