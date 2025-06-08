@@ -75,11 +75,17 @@ const handleScroll = () => {
   }
 };
 
+// 移动端检测
+const isMobile = ref(false);
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
+
 // 计算文字的transform样式
 const textTransformStyle = computed(() => {
   // 移动端禁用视差效果
-  const isMobile = window.innerWidth <= 768;
-  if (isMobile) {
+  if (isMobile.value) {
     return {
       transform: "translateY(0px)",
       transition: "none",
@@ -93,6 +99,10 @@ const textTransformStyle = computed(() => {
 });
 
 onMounted(() => {
+  // 初始化移动端检测
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+
   if (part3Ref.value) {
     part3Ref.value.addEventListener("mousemove", handleMouseMove);
     part3Ref.value.addEventListener("mouseenter", handleMouseEnter);
@@ -106,6 +116,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  // 移除resize监听器
+  window.removeEventListener("resize", checkMobile);
+
   if (part3Ref.value) {
     part3Ref.value.removeEventListener("mousemove", handleMouseMove);
     part3Ref.value.removeEventListener("mouseenter", handleMouseEnter);
@@ -1458,12 +1471,11 @@ onUnmounted(() => {
 
   /* 移动端第二板块背景图调整 */
   .part-2 {
-    background-image: url("/assets/images/backimg.png"); /* 继续使用相同的背景图 */
+    background-image: url("/assets/images/mobile-preface-bg.png"); /* 使用移动端专用背景图 */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    transform: rotate(90deg); /* 旋转90度适配纵向布局 */
-    transform-origin: center center; /* 以中心为旋转点 */
+    /* 移除旋转，使用专门的移动端背景图 */
   }
 
   /* 移动端第五板块适配 */
