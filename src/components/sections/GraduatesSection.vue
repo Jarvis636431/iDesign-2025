@@ -685,13 +685,13 @@ onUnmounted(() => {
   .card-body {
     background: white;
     border-radius: 20px; /* 增大圆角，匹配UI图 */
-    padding: 24px;
+    padding: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: row; /* 左右布局 */
-    gap: 24px;
+    gap: 0px;
     border: 4px solid #052a1b; /* 增加边框宽度 */
-    height: 320px; /* 增加高度以匹配UI图 */
+    height: 500px; /* 增加高度以匹配UI图 */
     width: 100%;
     max-width: 600px; /* 限制最大宽度，避免过宽 */
     overflow: hidden;
@@ -739,8 +739,6 @@ onUnmounted(() => {
     margin-top: auto; /* 确保在底部 */
     padding-top: 8px; /* 添加一些上边距 */
     min-height: 60px; /* 确保有足够高度显示名字 */
-    margin-right: 50px;
-    margin-bottom: 20px;
     display: flex;
     flex-direction: row;
     justify-content: flex-end; /* 内容靠底部对齐 */
@@ -754,7 +752,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 16px;
+    padding: 0 8px;
   }
 
   /* 毕业感言区域 */
@@ -767,14 +765,13 @@ onUnmounted(() => {
 
   .thoughts-text {
     font-size: 14px;
-    line-height: 1.8; /* 增加行高，匹配UI图 */
+    line-height: 1.2; /* 增加行高，匹配UI图 */
     color: #333;
     text-align: justify; /* 两端对齐，匹配UI图 */
-    margin: 0;
     word-wrap: break-word;
     overflow-wrap: break-word;
     display: -webkit-box;
-    -webkit-line-clamp: 12; /* 增加显示行数 */
+    -webkit-line-clamp: auto; /* 增加显示行数 */
     line-clamp: 12;
     -webkit-box-orient: vertical;
     overflow: hidden;
