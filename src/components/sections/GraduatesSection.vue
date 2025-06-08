@@ -743,6 +743,7 @@ onUnmounted(() => {
     flex-direction: row;
     justify-content: flex-end; /* 内容靠底部对齐 */
     align-items: baseline;
+    gap: 0.5rem;
     /* 沿下划线对齐 */
   }
 
@@ -752,7 +753,6 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 8px;
   }
 
   /* 毕业感言区域 */
@@ -779,7 +779,7 @@ onUnmounted(() => {
 
   /* 名字区域样式 */
   .graduate-name {
-    font-size: 24px; /* 增大字体，匹配UI图 */
+    font-size: 20px; /* 增大字体，匹配UI图 */
     font-weight: bold;
     color: #333;
     text-align: left;
