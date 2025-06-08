@@ -739,11 +739,13 @@ onUnmounted(() => {
     margin-top: auto; /* 确保在底部 */
     padding-top: 8px; /* 添加一些上边距 */
     min-height: 60px; /* 确保有足够高度显示名字 */
+    margin-right: 50px;
+    margin-bottom: 20px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: flex-end; /* 内容靠底部对齐 */
-    background: lightblue !important; /* 调试用背景色 */
-    border: 2px solid blue !important; /* 调试用边框 */
+    align-items: baseline;
+    /* 沿下划线对齐 */
   }
 
   /* 右侧区域（毕业感言中间位置） */
@@ -782,27 +784,16 @@ onUnmounted(() => {
   .graduate-name {
     font-size: 24px; /* 增大字体，匹配UI图 */
     font-weight: bold;
-    color: #333 !important; /* 强制颜色 */
-    background: yellow !important; /* 调试用背景色 */
-    margin: 0 0 4px 0;
+    color: #333;
     text-align: left;
-    display: block !important; /* 确保显示 */
-    visibility: visible !important; /* 确保可见 */
-    opacity: 1 !important; /* 确保不透明 */
     line-height: 1.2; /* 添加行高 */
-    padding: 4px; /* 添加内边距 */
-    border: 2px solid red !important; /* 调试用边框 */
   }
 
   .graduate-destination {
     font-size: 14px;
-    color: #666 !important; /* 强制颜色 */
-    margin: 0;
+    color: #666;
     text-align: left;
     line-height: 1.4;
-    display: block !important; /* 确保显示 */
-    visibility: visible !important; /* 确保可见 */
-    opacity: 1 !important; /* 确保不透明 */
   }
 
   /* 隐藏桌面端元素 */
