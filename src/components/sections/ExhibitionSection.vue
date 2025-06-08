@@ -217,9 +217,18 @@ const enterExhibition = (hall) => {
   }, 2000);
 };
 
-// 移动端检测
+// 移动端检测 - 简化逻辑，主要基于用户代理和屏幕尺寸
 const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768;
+  const width = window.innerWidth;
+  const userAgent = navigator.userAgent.toLowerCase();
+
+  // 检测移动设备用户代理
+  const isMobileUserAgent =
+    /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+      userAgent
+    );
+
+  isMobile.value = isMobileUserAgent || width <= 768;
 };
 
 // 生命周期钩子
@@ -301,7 +310,6 @@ const handleCarouselTouchEnd = (event) => {
     @wheel.passive="handleWheel"
     :style="{ backgroundColor: activeHall.backgroundColor }"
   >
-    <!-- 左上角标题 -->
     <!-- 左上角标题 -->
     <div class="hall-title-area">
       <h2 class="hall-title" :style="{ color: activeHall.color }">
@@ -494,7 +502,7 @@ const handleCarouselTouchEnd = (event) => {
 .exhibition-section {
   position: relative;
   height: 100vh;
-  width: calc(100%-90px);
+  width: calc(100% - 90px);
   overflow: hidden;
   background-color: transparent;
   touch-action: none; /* 防止触摸设备上的默认滚动行为 */
