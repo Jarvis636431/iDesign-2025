@@ -571,6 +571,13 @@ const wrapText = (ctx, text, maxWidth) => {
                   <div class="teacher-name">
                     {{ exhibitInfo.details.teacher || "无" }}
                   </div>
+                  <!-- 移动端展厅图标 -->
+                  <img
+                    v-if="isMobile && hallInfo && hallInfo.icon"
+                    class="mobile-hall-icon"
+                    :src="hallInfo.icon"
+                    alt="展厅图标"
+                  />
                 </div>
               </div>
             </div>
@@ -1178,6 +1185,7 @@ const wrapText = (ctx, text, maxWidth) => {
     flex-direction: column;
     align-items: flex-start;
     text-align: left;
+    margin-left: 0.5rem;
   }
 
   .teacher-section {
@@ -1186,10 +1194,24 @@ const wrapText = (ctx, text, maxWidth) => {
     flex-direction: column;
     align-items: flex-end;
     text-align: right;
+    position: relative;
+    padding-right: 2.5rem; /* 为图标留出空间 */
+    justify-content: flex-start; /* 改为顶部对齐 */
+    margin-top: -0.3rem; /* 向上移动 */
   }
 
   .teacher-name {
     text-align: right;
+  }
+
+  /* 移动端展厅图标 */
+  .mobile-hall-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    opacity: 0.8;
   }
 
   /* 移动端导航指示器 */
