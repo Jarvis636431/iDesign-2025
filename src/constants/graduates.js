@@ -3,6 +3,42 @@ export const baseURL = import.meta.env.VITE_BASE_URL || "";
 
 // 毕业生数据配置
 export const graduates = [
+  // 班导师信息 - 默认显示
+  {
+    id: "teacher1",
+    name: {
+      zh: "朱黎明",
+      en: "Liming ZHU",
+    },
+    destination: {
+      zh: "班导师",
+      en: "Class Advisor",
+    },
+    avatar: `${baseURL}assets/images/staff/teachers/zhuliming.jpg`,
+    thoughts: {
+      zh: "时光飞逝,转眼又到了一年一度的年展时间,本年已经是年展11周年了,这11年来各种难以忘怀的人和事,仍历历在目,而且今年也恰逢天津大学130周年校庆,可谓双喜临门。虽然这几年就业环境的压力相对较大,但我相信我们优秀的21级毕业生,有足够的能力和才华走出校园,迎接各自崭新的人生。在此也衷心的祝愿各位工业设计学子，勇往直前，开拓未来，不负韶华。",
+      en: "Time flies. In the blink of an eye, it's time for our annual exhibition again. This year marks its 11th anniversary, and the unforgettable people and events of these past eleven years remain vivid in my mind. Moreover, this year also coincides with the 130th anniversary of Tianjin University, making it a truly double blessing. Although the pressure of the employment environment has been relatively high in recent years, I believe that our outstanding '21 graduates (Class of 2021 graduates) have sufficient ability and talent to step out of campus and embrace their own new lives. Here, I also sincerely wish all our industrial design students: forge ahead courageously, pioneer the future, and live up to your splendid youth.",
+    },
+    isTeacher: true,
+  },
+  {
+    id: "teacher2",
+    name: {
+      zh: "杨君宇",
+      en: "Junyu YANG",
+    },
+    destination: {
+      zh: "班导师",
+      en: "Class Advisor",
+    },
+    avatar: `${baseURL}assets/images/staff/teachers/yangjunyu.jpg`,
+    thoughts: {
+      zh: "亲爱的同学们：你们是用思维草图勾勒未来的人，是将创意转化为现实的实践者。从草图到模型，从一支笔到整个世界，你们让“设计”不仅是解决问题，更是传递温度、启发想象的语言。今天你们毕业了，愿你们继续以敏锐的观察、独立的思考与温暖的创造力，在生活这块画布上描绘出独属于自己的精彩作品。请记住：世界不缺产品，缺的是有人为世界设计希望。出发吧，设计师们，去改造世界，也被世界感动。你们的班导师 杨君宇",
+      en: "You are the ones who sketch the future with conceptual designs, the practitioners who transform creativity into reality. From sketches to models, from a single pen to the entire world, you have shown that 'design' is not just about solving problems, but a language that conveys warmth and inspires imagination. Today, you are graduating. May you continue to use your keen observation, independent thinking, and warm creativity to paint your own unique and brilliant works on the canvas of life. Please remember: the world does not lack products; what it lacks are people who design hope for the world. Go forth, designers, to transform the world and be moved by it.",
+    },
+    isTeacher: true,
+  },
+  // 毕业生信息
   {
     id: 1,
     name: {

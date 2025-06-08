@@ -205,7 +205,17 @@ onUnmounted(() => {
           <div class="graduate-info" v-if="selectedGraduate">
             <div class="card-layout">
               <div class="card-left">
-                <h3 class="section-title">毕业生</h3>
+                <h3 class="section-title">
+                  {{
+                    selectedGraduate.isTeacher
+                      ? isEnglish
+                        ? "Class Advisor"
+                        : "班导师"
+                      : isEnglish
+                      ? "Graduate"
+                      : "毕业生"
+                  }}
+                </h3>
                 <div class="thoughts-section">
                   {{
                     isEnglish
@@ -312,7 +322,15 @@ onUnmounted(() => {
           >
             <!-- 卡片标题 -->
             <div class="card-title">
-              {{ isEnglish ? "Graduate" : "毕业生" }}
+              {{
+                graduate.isTeacher
+                  ? isEnglish
+                    ? "Class Advisor"
+                    : "班导师"
+                  : isEnglish
+                  ? "Graduate"
+                  : "毕业生"
+              }}
             </div>
 
             <!-- 卡片主体 -->
