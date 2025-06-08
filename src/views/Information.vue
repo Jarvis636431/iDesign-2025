@@ -1,5 +1,12 @@
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import CustomCarousel from "@/components/slides/CustomCarousel.vue"; // Import CustomCarousel
 import AuthorCards from "@/components/exhibition/AuthorCards.vue";
@@ -49,10 +56,16 @@ const checkMobile = () => {
   isMobile.value = window.innerWidth <= 768;
 };
 
-onMounted(() => {
+onMounted(async () => {
   fetchExhibits();
   checkMobile();
   window.addEventListener("resize", checkMobile);
+
+  // 确保页面滚动到顶部
+  await nextTick();
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
 });
 
 onBeforeUnmount(() => {
@@ -60,6 +73,16 @@ onBeforeUnmount(() => {
 });
 
 watch(hallId, fetchExhibits);
+
+// 监听路由变化，确保滚动到顶部
+watch([currentId, hallId], async () => {
+  await nextTick();
+  setTimeout(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, 50);
+});
 
 const exhibitInfo = computed(() => {
   if (!currentId.value || !Array.isArray(exhibits.value)) return null;
@@ -130,6 +153,13 @@ const goToExhibit = (direction) => {
   }
   const nextId = exhibits.value[newIdx]?.id;
   router.push(`/2025/information/${nextId}?hallId=${hallId.value}`);
+
+  // 切换展品后滚动到顶部
+  setTimeout(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, 100);
 };
 
 // const currentSlide = ref(0) // Remove old currentSlide
@@ -1005,8 +1035,9 @@ const wrapText = (ctx, text, maxWidth) => {
     min-height: 100vh;
     height: auto;
     padding: 1rem;
+    padding-top: 3rem;
     align-items: flex-start;
-    padding-top: 2rem;
+    justify-content: flex-start;
     overflow-y: auto;
   }
 
@@ -1016,6 +1047,7 @@ const wrapText = (ctx, text, maxWidth) => {
     width: 100%;
     align-items: flex-start;
     justify-content: flex-start;
+    margin-top: 1rem;
   }
 
   .nav-button {
