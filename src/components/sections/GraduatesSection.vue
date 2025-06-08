@@ -88,7 +88,7 @@ const checkMobile = () => {
 // 更新卡片位置（支持轮播效果）
 const updateCardPosition = () => {
   if (cardsContainerRef.value) {
-    const cardWidth = window.innerWidth - 60; // 卡片宽度（减去左右边距）
+    const cardWidth = window.innerWidth - 80; // 卡片宽度（减去左右边距）
     const totalCards = graduates.length;
 
     // 确保索引在有效范围内
@@ -664,16 +664,16 @@ onUnmounted(() => {
 
   .mobile-carousel-container {
     display: flex;
-    width: calc((100vw - 60px) * 25); /* 调整总宽度，每张卡片左右留30px */
+    width: calc((100vw - 80px) * 25); /* 调整总宽度，每张卡片左右留30px */
     height: 100%;
     transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 更流畅的缓动 */
-    padding: 0 30px; /* 左右内边距，让第一张和最后一张卡片也能居中 */
+    padding: 0 40px; /* 左右内边距，让第一张和最后一张卡片也能居中 */
     box-sizing: border-box;
   }
 
   /* 移动端毕业生卡片 */
   .mobile-graduate-card {
-    width: calc(100vw - 60px); /* 卡片宽度，左右各留30px */
+    width: calc(100vw - 80px); /* 卡片宽度，左右各留30px */
     height: 100%;
     flex-shrink: 0;
     display: flex;
