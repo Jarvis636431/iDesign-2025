@@ -678,7 +678,7 @@ onUnmounted(() => {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    padding: 40px 20px;
+    padding: 40px 10px;
     box-sizing: border-box;
     justify-content: center;
     align-items: center;
