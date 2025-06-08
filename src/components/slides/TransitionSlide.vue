@@ -6,7 +6,14 @@
         :style="textTransformStyle"
         class="skew-text"
       >
-        {{ isEnglish ? "Balmy Breeze, New Growth" : "有风自南，翼彼新苗" }}
+        <template v-if="isEnglish">
+          <span class="text-line">Balmy Breeze,</span>
+          <span class="text-line offset">New Growth</span>
+        </template>
+        <template v-else>
+          <span class="text-line">有风自南，</span>
+          <span class="text-line offset">翼彼新苗</span>
+        </template>
       </h2>
       <div class="rotating-image">
         <img src="/assets/images/chime.png" alt="chime" />
@@ -269,5 +276,135 @@ h2.english-text {
 /* 英文状态下的整体重复文字容器位置调整 */
 .repeating-text.english-position {
   right: -8vw; /* 英文状态下向左移动，给长单词更多空间 */
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .transition-slide {
+    width: 100vw !important;
+    height: calc(100vh - 60px); /* 适配页面高度，减去导航栏 */
+    min-height: calc(100vh - 60px);
+    background: #052a1b;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  .transition-content {
+    position: relative;
+    left: 0;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    z-index: 2;
+    width: 90%;
+    text-align: center;
+  }
+
+  /* 移动端主标题 */
+  h2 {
+    font-size: 3.5rem; /* 增大字体 */
+    letter-spacing: 0.8rem; /* 增大字符间距 */
+    text-align: center;
+    white-space: normal; /* 允许换行 */
+    line-height: 1.4; /* 增加行高 */
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  h2.english-text {
+    font-size: 2.8rem; /* 英文也增大 */
+    letter-spacing: 0.15em;
+    line-height: 1.4;
+  }
+
+  /* 移动端文字行样式 */
+  .text-line {
+    display: block;
+    text-align: center;
+  }
+
+  /* 移动端第二行错开效果 */
+  .text-line.offset {
+    margin-left: 2rem; /* 向右偏移 */
+    margin-top: -0.2rem; /* 稍微向上调整，减少行间距 */
+  }
+
+  /* 英文状态下的错开效果 */
+  h2.english-text .text-line.offset {
+    margin-left: 1.5rem; /* 英文偏移稍小 */
+    margin-top: -0.3rem;
+  }
+
+  /* 移动端旋转图片 */
+  .rotating-image {
+    position: relative;
+    left: 0;
+    top: 0;
+    transform: none;
+    z-index: 1;
+  }
+
+  .rotating-image img {
+    width: 150px; /* 减小图片尺寸 */
+    height: 150px;
+  }
+
+  /* 移动端底部文字 - 水平排列 */
+  .repeating-text {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    top: auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .repeating-text.english-position {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* 移动端文字容器 - 水平布局 */
+  .text-container {
+    display: flex;
+    flex-direction: row; /* 改为水平排列 */
+    gap: 1.5rem; /* 减小间距 */
+    align-items: center;
+    justify-content: center;
+    overflow-x: auto; /* 如果文字过多，允许水平滚动 */
+    padding: 0 1rem;
+    width: 100%;
+  }
+
+  .text-container.english-layout {
+    gap: 2rem; /* 英文稍大间距 */
+  }
+
+  /* 移动端文字项 - 水平显示 */
+  .text-item {
+    font-size: 1.2rem; /* 大幅减小字体 */
+    transform: rotate(0deg); /* 移除旋转 */
+    white-space: nowrap; /* 防止换行 */
+    flex-shrink: 0; /* 防止被压缩 */
+    color: #ffffff;
+  }
+
+  .text-item.english-text {
+    font-size: 1rem; /* 英文更小 */
+    transform: rotate(0deg); /* 移除旋转和位移 */
+    letter-spacing: 0.05em;
+  }
 }
 </style>
