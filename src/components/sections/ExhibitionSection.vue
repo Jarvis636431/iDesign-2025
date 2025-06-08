@@ -13,7 +13,6 @@ const props = defineProps({
 
 const activeHallIndex = ref(0);
 const activeHall = computed(() => halls[activeHallIndex.value]);
-const touchStartY = ref(0);
 const isSwiping = ref(false);
 const router = useRouter();
 const isLoading = ref(false); // 加载状态
@@ -47,7 +46,11 @@ const prevHall = () => {
 };
 
 // 触摸事件处理
+const touchStartX = ref(0);
+const touchStartY = ref(0);
+
 const handleTouchStart = (event) => {
+  touchStartX.value = event.touches[0].clientX;
   touchStartY.value = event.touches[0].clientY;
   isSwiping.value = true;
 };
@@ -60,19 +63,35 @@ const handleTouchMove = (event) => {
 const handleTouchEnd = (event) => {
   if (!isSwiping.value) return;
 
+  const touchEndX = event.changedTouches[0].clientX;
   const touchEndY = event.changedTouches[0].clientY;
+  const deltaX = touchEndX - touchStartX.value;
   const deltaY = touchEndY - touchStartY.value;
 
-  // 只有滑动距离超过50像素才触发切换
-  if (Math.abs(deltaY) > 50) {
-    if (deltaY > 0) {
-      // 向下滑动时，设置反向动画
-      document.querySelector(".logo-container").classList.add("reverse");
-      prevHall();
-    } else {
-      // 向上滑动时，移除反向动画
-      document.querySelector(".logo-container").classList.remove("reverse");
-      nextHall();
+  // 移动端使用横向滑动，PC端使用纵向滑动
+  if (isMobile.value) {
+    // 移动端：横向滑动切换
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        // 向右滑动，上一个展厅
+        prevHall();
+      } else {
+        // 向左滑动，下一个展厅
+        nextHall();
+      }
+    }
+  } else {
+    // PC端：纵向滑动切换
+    if (Math.abs(deltaY) > 50) {
+      if (deltaY > 0) {
+        // 向下滑动时，设置反向动画
+        document.querySelector(".logo-container")?.classList.add("reverse");
+        prevHall();
+      } else {
+        // 向上滑动时，移除反向动画
+        document.querySelector(".logo-container")?.classList.remove("reverse");
+        nextHall();
+      }
     }
   }
 
@@ -140,12 +159,62 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("resize", checkMobile);
 });
+
+// 轮播专用的触摸事件处理
+const carouselTouchStartX = ref(0);
+const carouselTouchStartY = ref(0);
+const carouselIsSwiping = ref(false);
+
+const handleCarouselTouchStart = (event) => {
+  carouselTouchStartX.value = event.touches[0].clientX;
+  carouselTouchStartY.value = event.touches[0].clientY;
+  carouselIsSwiping.value = true;
+  event.stopPropagation(); // 阻止事件冒泡到父级
+};
+
+const handleCarouselTouchMove = (event) => {
+  if (!carouselIsSwiping.value) return;
+
+  // 计算滑动方向
+  const currentX = event.touches[0].clientX;
+  const currentY = event.touches[0].clientY;
+  const deltaX = Math.abs(currentX - carouselTouchStartX.value);
+  const deltaY = Math.abs(currentY - carouselTouchStartY.value);
+
+  // 只有当横向滑动距离大于纵向滑动距离时，才阻止默认行为
+  if (deltaX > deltaY && deltaX > 10) {
+    event.preventDefault(); // 防止页面滚动
+    event.stopPropagation(); // 阻止事件冒泡
+  }
+};
+
+const handleCarouselTouchEnd = (event) => {
+  if (!carouselIsSwiping.value) return;
+
+  const touchEndX = event.changedTouches[0].clientX;
+  const deltaX = touchEndX - carouselTouchStartX.value;
+
+  // 滑动距离超过50像素才触发切换
+  if (Math.abs(deltaX) > 50) {
+    if (deltaX > 0) {
+      // 向右滑动，上一个展厅
+      prevHall();
+    } else {
+      // 向左滑动，下一个展厅
+      nextHall();
+    }
+  }
+
+  carouselIsSwiping.value = false;
+  event.stopPropagation(); // 阻止事件冒泡
+};
 </script>
 
 <template>
+  <!-- PC端section -->
   <section
+    v-if="!isMobile"
     class="exhibition-section"
-    :class="{ 'mobile-layout': isMobile }"
     id="exhibition"
     @touchstart="handleTouchStart"
     @touchmove="handleTouchMove"
@@ -153,142 +222,171 @@ onUnmounted(() => {
     @wheel.passive="handleWheel"
     :style="{ backgroundColor: activeHall.backgroundColor }"
   >
-    <!-- 桌面端布局 -->
-    <template v-if="!isMobile">
-      <!-- 左上角标题 -->
-      <div class="hall-title-area">
-        <h2 class="hall-title" :style="{ color: activeHall.color }">
+    <!-- 左上角标题 -->
+    <!-- 左上角标题 -->
+    <div class="hall-title-area">
+      <h2 class="hall-title" :style="{ color: activeHall.color }">
+        {{ isEnglish ? activeHall.enName : activeHall.name }}
+      </h2>
+    </div>
+
+    <!-- 展厅Logo -->
+    <div class="hall-logo-area">
+      <transition-group name="slide-fade" tag="div" class="logo-container">
+        <img
+          :key="activeHall.logo"
+          :src="activeHall.logo"
+          :alt="isEnglish ? activeHall.enName : activeHall.name"
+          class="hall-logo"
+          :style="{ cursor: customCursor }"
+          @click="enterExhibition(activeHall)"
+        />
+      </transition-group>
+    </div>
+
+    <!-- 左下角展厅Icon -->
+    <div class="hall-icon-area">
+      <img
+        :key="activeHall.icon"
+        :src="activeHall.icon"
+        :alt="isEnglish ? activeHall.enName : activeHall.name"
+        class="hall-icon"
+      />
+    </div>
+
+    <!-- 右下角描述 -->
+    <div class="hall-description" :style="{ color: activeHall.color }">
+      <div class="hall-subtitle" :style="{ color: activeHall.color }">
+        {{ isEnglish ? activeHall.enSubTitle : activeHall.subTitle }}
+      </div>
+      <div class="hall-text" :style="{ color: activeHall.color }">
+        <p
+          v-for="(sentence, index) in formatText(
+            isEnglish ? activeHall.enDesc : activeHall.desc
+          )"
+          :key="index"
+          class="text-line"
+        >
+          {{ sentence }}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 移动端section -->
+  <section
+    v-else
+    class="exhibition-section mobile-layout"
+    id="exhibition"
+    :style="{ backgroundColor: activeHall.backgroundColor }"
+  >
+    <div class="mobile-content">
+      <!-- 标题 -->
+      <div class="mobile-title-area">
+        <h2 class="mobile-hall-title" :style="{ color: activeHall.color }">
           {{ isEnglish ? activeHall.enName : activeHall.name }}
         </h2>
       </div>
 
-      <!-- 展厅Logo -->
-      <div class="hall-logo-area">
-        <transition-group name="slide-fade" tag="div" class="logo-container">
-          <img
-            :key="activeHall.logo"
-            :src="activeHall.logo"
-            :alt="isEnglish ? activeHall.enName : activeHall.name"
-            class="hall-logo"
-            :style="{ cursor: customCursor }"
-            @click="enterExhibition(activeHall)"
-          />
-        </transition-group>
-      </div>
-
-      <!-- 左下角展厅Icon -->
-      <div class="hall-icon-area">
-        <img
-          :key="activeHall.icon"
-          :src="activeHall.icon"
-          :alt="isEnglish ? activeHall.enName : activeHall.name"
-          class="hall-icon"
-        />
-      </div>
-
-      <!-- 右下角描述 -->
-      <div class="hall-description" :style="{ color: activeHall.color }">
-        <div class="hall-subtitle" :style="{ color: activeHall.color }">
+      <!-- 副标题 -->
+      <div class="mobile-subtitle-area">
+        <div class="mobile-hall-subtitle" :style="{ color: activeHall.color }">
           {{ isEnglish ? activeHall.enSubTitle : activeHall.subTitle }}
         </div>
-        <div class="hall-text" :style="{ color: activeHall.color }">
+      </div>
+
+      <!-- 描述 -->
+      <div class="mobile-description-area">
+        <div class="mobile-hall-text" :style="{ color: activeHall.color }">
           <p
             v-for="(sentence, index) in formatText(
               isEnglish ? activeHall.enDesc : activeHall.desc
             )"
             :key="index"
-            class="text-line"
+            class="mobile-text-line"
           >
             {{ sentence }}
           </p>
         </div>
       </div>
-    </template>
 
-    <!-- 移动端布局 -->
-    <template v-else>
-      <div class="mobile-content">
-        <!-- 标题 -->
-        <div class="mobile-title-area">
-          <h2 class="mobile-hall-title" :style="{ color: activeHall.color }">
-            {{ isEnglish ? activeHall.enName : activeHall.name }}
-          </h2>
-        </div>
-
-        <!-- 副标题 -->
-        <div class="mobile-subtitle-area">
+      <!-- Logo轮播区域 -->
+      <div
+        class="mobile-logo-carousel"
+        @touchstart="handleCarouselTouchStart"
+        @touchmove="handleCarouselTouchMove"
+        @touchend="handleCarouselTouchEnd"
+      >
+        <div class="carousel-container">
           <div
-            class="mobile-hall-subtitle"
-            :style="{ color: activeHall.color }"
+            class="carousel-track"
+            :style="{ transform: `translateX(-${activeHallIndex * 100}%)` }"
           >
-            {{ isEnglish ? activeHall.enSubTitle : activeHall.subTitle }}
-          </div>
-        </div>
-
-        <!-- 描述 -->
-        <div class="mobile-description-area">
-          <div class="mobile-hall-text" :style="{ color: activeHall.color }">
-            <p
-              v-for="(sentence, index) in formatText(
-                isEnglish ? activeHall.enDesc : activeHall.desc
-              )"
-              :key="index"
-              class="mobile-text-line"
+            <div
+              v-for="(hall, index) in halls"
+              :key="hall.id"
+              class="carousel-slide"
+              :class="{ active: index === activeHallIndex }"
             >
-              {{ sentence }}
-            </p>
+              <img
+                :src="hall.logo"
+                :alt="isEnglish ? hall.enName : hall.name"
+                class="carousel-logo"
+                @click="enterExhibition(hall)"
+              />
+            </div>
           </div>
         </div>
 
-        <!-- Logo -->
-        <div class="mobile-logo-area">
-          <transition-group
-            name="slide-fade"
-            tag="div"
-            class="mobile-logo-container"
-          >
-            <img
-              :key="activeHall.logo"
-              :src="activeHall.logo"
-              :alt="isEnglish ? activeHall.enName : activeHall.name"
-              class="mobile-hall-logo"
-              @click="enterExhibition(activeHall)"
-            />
-          </transition-group>
-        </div>
-      </div>
-    </template>
-
-    <!-- 加载状态遮罩 -->
-    <div v-if="isLoading" class="loading-overlay">
-      <div class="loading-content">
-        <!-- 展厅Icon -->
-        <div class="loading-icon">
-          <img
-            :src="activeHall.icon"
-            :alt="isEnglish ? activeHall.enName : activeHall.name"
-            class="loading-hall-icon"
-          />
-          <!-- Loading文字 -->
-          <div class="loading-text">Loading...</div>
-        </div>
-        <!-- 展厅描述 -->
-        <div class="loading-description" :style="{ color: activeHall.color }">
-          <div class="loading-desc-text">
-            <p
-              v-for="(sentence, index) in formatText(
-                isEnglish ? activeHall.enDesc : activeHall.desc
-              )"
-              :key="index"
-              class="loading-desc-line"
-            >
-              {{ sentence }}
-            </p>
-          </div>
+        <!-- 轮播指示器 -->
+        <div class="carousel-indicators">
+          <div
+            v-for="(hall, index) in halls"
+            :key="hall.id"
+            class="indicator"
+            :class="{ active: index === activeHallIndex }"
+            :style="{
+              backgroundColor:
+                index === activeHallIndex
+                  ? activeHall.color
+                  : 'rgba(255,255,255,0.5)',
+            }"
+            @click="activeHallIndex = index"
+          ></div>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- 加载状态遮罩 -->
+  <div v-if="isLoading" class="loading-overlay">
+    <div class="loading-content">
+      <!-- 展厅Icon -->
+      <div class="loading-icon">
+        <img
+          :src="activeHall.icon"
+          :alt="isEnglish ? activeHall.enName : activeHall.name"
+          class="loading-hall-icon"
+        />
+        <!-- Loading文字 -->
+        <div class="loading-text">Loading...</div>
+      </div>
+      <!-- 展厅描述 -->
+      <div class="loading-description" :style="{ color: activeHall.color }">
+        <div class="loading-desc-text">
+          <p
+            v-for="(sentence, index) in formatText(
+              isEnglish ? activeHall.enDesc : activeHall.desc
+            )"
+            :key="index"
+            class="loading-desc-line"
+          >
+            {{ sentence }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -439,11 +537,11 @@ onUnmounted(() => {
 
 /* 加载状态遮罩 */
 .loading-overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background: rgba(255, 255, 255, 0.1); /* 半透明白色背景 */
   backdrop-filter: blur(20px); /* 毛玻璃效果 */
   -webkit-backdrop-filter: blur(20px); /* Safari兼容 */
@@ -525,15 +623,16 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .exhibition-section.mobile-layout {
     width: 100vw !important;
-    height: calc(100vh - 60px) !important; /* 适配导航栏高度 */
+    height: auto !important; /* 改为自适应高度，允许滚动 */
+    min-height: calc(100vh - 60px); /* 最小高度 */
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: visible; /* 允许竖直滚动 */
     padding: 0;
   }
 
   .mobile-content {
     width: 100%;
-    height: 100%;
+    min-height: 100%; /* 改为最小高度 */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -588,27 +687,44 @@ onUnmounted(() => {
     margin-top: 0;
   }
 
-  /* 移动端Logo */
-  .mobile-logo-area {
+  /* 移动端Logo轮播 */
+  .mobile-logo-carousel {
     width: 100%;
     max-width: 400px;
-    height: 300px;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    gap: 1rem;
+    touch-action: pan-x; /* 只允许横向平移，保持竖直滚动 */
   }
 
-  .mobile-logo-container {
+  .carousel-container {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    border-radius: 12px;
     position: relative;
+  }
+
+  .carousel-track {
+    display: flex;
+    width: 500%; /* 5个展厅，每个100% */
+    height: 100%;
+    transition: transform 0.4s ease-in-out;
+  }
+
+  .carousel-slide {
     width: 100%;
     height: 100%;
+    flex-shrink: 0;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 1rem;
+    box-sizing: border-box;
   }
 
-  .mobile-hall-logo {
-    position: absolute;
+  .carousel-logo {
     max-height: 100%;
     max-width: 100%;
     width: auto;
@@ -616,10 +732,37 @@ onUnmounted(() => {
     object-fit: contain;
     cursor: pointer;
     transition: transform 0.3s ease;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
   }
 
-  .mobile-hall-logo:hover {
+  .carousel-logo:hover {
     transform: scale(1.05);
+  }
+
+  /* 轮播指示器 */
+  .carousel-indicators {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .indicator:hover {
+    transform: scale(1.2);
+  }
+
+  .indicator.active {
+    transform: scale(1.3);
+    border: 2px solid rgba(255, 255, 255, 0.8);
   }
 
   /* 移动端加载状态适配 */
