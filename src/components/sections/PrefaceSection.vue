@@ -625,6 +625,15 @@ onUnmounted(() => {
   font-display: swap;
 }
 
+/* 加载Voyage Regular字体 */
+@font-face {
+  font-family: "Voyage Regular";
+  src: url("assets/fonts/voyage-regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 .content-section {
   width: 950vw !important; /* 扩展到950vw (150+250+150+100+300) */
   height: 100vh;
@@ -1022,7 +1031,7 @@ onUnmounted(() => {
 
 /* 英文状态下的forest-text样式 */
 .forest-text.english-text {
-  font-family: "Voyage", "slidefu", sans-serif !important; /* 英文使用Voyage字体 */
+  font-family: "Voyage Regular", "Voyage", "slidefu", sans-serif !important; /* 英文使用Voyage Regular字体 */
 }
 
 /* 第四部分：纯文字展示 */
