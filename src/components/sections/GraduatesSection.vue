@@ -421,7 +421,7 @@ onUnmounted(() => {
 
 .left-content {
   position: absolute;
-  left: 40%;
+  left: 35%; /* 从40%改为35%，向左移动一些，为右侧头像列表留出更多空间 */
   transform: translateX(-50%);
   width: 1000px;
   top: 10%; /* 将整个内容区域上移 */
@@ -563,7 +563,7 @@ onUnmounted(() => {
   width: 150px;
   min-height: 100vh;
   position: absolute;
-  right: 15vw;
+  right: -60vw; /* 从15vw改为8vw，向右移动 */
   overflow: hidden;
   background: #ffffff;
   z-index: 2;
