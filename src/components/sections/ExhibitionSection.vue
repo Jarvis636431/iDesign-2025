@@ -27,6 +27,7 @@ const isSwiping = ref(false);
 const router = useRouter();
 const isLoading = ref(false); // 加载状态
 const isMobile = ref(false); // 移动端检测
+const windowWidth = ref(window.innerWidth); // 窗口宽度调试
 
 // 动态光标样式
 const customCursor = computed(() => {
@@ -228,6 +229,7 @@ const checkMobile = () => {
       userAgent
     );
 
+  windowWidth.value = width; // 更新调试用的窗口宽度
   isMobile.value = isMobileUserAgent || width <= 768;
 };
 
@@ -501,11 +503,15 @@ const handleCarouselTouchEnd = (event) => {
 <style scoped>
 .exhibition-section {
   position: relative;
-  height: 100vh;
-  width: calc(100% - 90px);
+  height: 100vh !important;
+  width: 100vw !important; /* 使用!important确保优先级 */
+  min-width: 100vw !important; /* 添加最小宽度 */
+  max-width: 100vw !important; /* 添加最大宽度 */
   overflow: hidden;
   background-color: transparent;
   touch-action: none; /* 防止触摸设备上的默认滚动行为 */
+  display: block !important; /* 确保显示 */
+  flex-shrink: 0 !important; /* 防止被压缩 */
 }
 
 .hall-title-area {
