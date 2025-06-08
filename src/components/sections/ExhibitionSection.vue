@@ -14,9 +14,13 @@ const props = defineProps({
 const activeHallIndex = ref(0);
 const activeHall = computed(() => halls[activeHallIndex.value]);
 
+// 无限轮播相关
+const isTransitioning = ref(false);
+const currentTranslateIndex = ref(1); // 从1开始，因为第0个是克隆的最后一个
+
 // 计算轮播的transform值
 const carouselTransform = computed(() => {
-  const translateValue = (activeHallIndex.value * 100) / 5;
+  const translateValue = (currentTranslateIndex.value * 100) / 7; // 7个slide：克隆+原始5个+克隆
   return `translateX(-${translateValue}%)`;
 });
 const isSwiping = ref(false);
@@ -42,13 +46,75 @@ const formatText = (text) => {
 
 // 切换到下一个展厅
 const nextHall = () => {
-  activeHallIndex.value = (activeHallIndex.value + 1) % halls.length;
+  if (isTransitioning.value) return;
+
+  isTransitioning.value = true;
+  currentTranslateIndex.value++;
+
+  // 如果到达克隆的第一个slide（索引6），需要跳回到真实的第一个slide（索引1）
+  if (currentTranslateIndex.value === 6) {
+    setTimeout(() => {
+      // 禁用过渡动画
+      const track = document.querySelector(".carousel-track");
+      if (track) {
+        track.classList.add("no-transition");
+        currentTranslateIndex.value = 1;
+        activeHallIndex.value = 0;
+
+        // 重新启用过渡动画
+        setTimeout(() => {
+          track.classList.remove("no-transition");
+          isTransitioning.value = false;
+        }, 50);
+      }
+    }, 400); // 等待动画完成
+  } else {
+    activeHallIndex.value = (activeHallIndex.value + 1) % halls.length;
+    setTimeout(() => {
+      isTransitioning.value = false;
+    }, 400);
+  }
 };
 
 // 切换到上一个展厅
 const prevHall = () => {
-  activeHallIndex.value =
-    (activeHallIndex.value - 1 + halls.length) % halls.length;
+  if (isTransitioning.value) return;
+
+  isTransitioning.value = true;
+  currentTranslateIndex.value--;
+
+  // 如果到达克隆的最后一个slide（索引0），需要跳回到真实的最后一个slide（索引5）
+  if (currentTranslateIndex.value === 0) {
+    setTimeout(() => {
+      // 禁用过渡动画
+      const track = document.querySelector(".carousel-track");
+      if (track) {
+        track.classList.add("no-transition");
+        currentTranslateIndex.value = 5;
+        activeHallIndex.value = 4;
+
+        // 重新启用过渡动画
+        setTimeout(() => {
+          track.classList.remove("no-transition");
+          isTransitioning.value = false;
+        }, 50);
+      }
+    }, 400); // 等待动画完成
+  } else {
+    activeHallIndex.value =
+      (activeHallIndex.value - 1 + halls.length) % halls.length;
+    setTimeout(() => {
+      isTransitioning.value = false;
+    }, 400);
+  }
+};
+
+// 直接跳转到指定展厅
+const jumpToHall = (targetIndex) => {
+  if (isTransitioning.value) return;
+
+  activeHallIndex.value = targetIndex;
+  currentTranslateIndex.value = targetIndex + 1; // +1因为第0个是克隆的
 };
 
 // 触摸事件处理
@@ -160,6 +226,13 @@ const checkMobile = () => {
 onMounted(() => {
   checkMobile();
   window.addEventListener("resize", checkMobile);
+
+  // 初始化无限轮播位置
+  if (isMobile.value) {
+    // 确保初始位置正确（第1个slide是真实的第0个展厅）
+    currentTranslateIndex.value = 1;
+    activeHallIndex.value = 0;
+  }
 });
 
 onUnmounted(() => {
@@ -325,6 +398,21 @@ const handleCarouselTouchEnd = (event) => {
       >
         <div class="carousel-container">
           <div class="carousel-track" :style="{ transform: carouselTransform }">
+            <!-- 克隆的最后一个slide（用于从第一个向前滑动的无缝效果） -->
+            <div class="carousel-slide">
+              <img
+                :src="halls[halls.length - 1].logo"
+                :alt="
+                  isEnglish
+                    ? halls[halls.length - 1].enName
+                    : halls[halls.length - 1].name
+                "
+                class="carousel-logo"
+                @click="enterExhibition(halls[halls.length - 1])"
+              />
+            </div>
+
+            <!-- 原始的5个展厅slides -->
             <div
               v-for="(hall, index) in halls"
               :key="hall.id"
@@ -336,6 +424,16 @@ const handleCarouselTouchEnd = (event) => {
                 :alt="isEnglish ? hall.enName : hall.name"
                 class="carousel-logo"
                 @click="enterExhibition(hall)"
+              />
+            </div>
+
+            <!-- 克隆的第一个slide（用于从最后一个向后滑动的无缝效果） -->
+            <div class="carousel-slide">
+              <img
+                :src="halls[0].logo"
+                :alt="isEnglish ? halls[0].enName : halls[0].name"
+                class="carousel-logo"
+                @click="enterExhibition(halls[0])"
               />
             </div>
           </div>
@@ -354,7 +452,7 @@ const handleCarouselTouchEnd = (event) => {
                   ? activeHall.color
                   : 'rgba(255,255,255,0.5)',
             }"
-            @click="activeHallIndex = index"
+            @click="jumpToHall(index)"
           ></div>
         </div>
       </div>
@@ -711,15 +809,20 @@ const handleCarouselTouchEnd = (event) => {
 
   .carousel-track {
     display: flex;
-    width: 500%; /* 5个展厅，每个100% */
+    width: 700%; /* 7个slide：2个克隆 + 5个原始 */
     height: 100%;
     transition: transform 0.4s ease-in-out;
     position: relative;
     left: 0;
   }
 
+  /* 禁用过渡动画的类（用于瞬间跳转） */
+  .carousel-track.no-transition {
+    transition: none !important;
+  }
+
   .carousel-slide {
-    width: calc(100% / 5); /* 每个slide占容器的1/5 */
+    width: calc(100% / 7); /* 每个slide占容器的1/7 */
     height: 100%;
     flex-shrink: 0;
     display: flex;
