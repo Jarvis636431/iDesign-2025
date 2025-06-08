@@ -735,16 +735,14 @@ onUnmounted(() => {
 
   /* 名字区域（底部） */
   .name-section {
-    text-align: left;
     margin-top: auto; /* 确保在底部 */
     padding-top: 8px; /* 添加一些上边距 */
     min-height: 60px; /* 确保有足够高度显示名字 */
     display: flex;
-    flex-direction: row;
+    flex-direction: column; /* 垂直排列名字和去向 */
     justify-content: flex-end; /* 内容靠底部对齐 */
-    align-items: baseline;
-    gap: 0.5rem;
-    /* 沿下划线对齐 */
+    align-items: flex-start; /* 内容靠左对齐 */
+    width: 100%; /* 占满左侧区域宽度 */
   }
 
   /* 右侧区域（毕业感言中间位置） */
@@ -779,18 +777,28 @@ onUnmounted(() => {
 
   /* 名字区域样式 */
   .graduate-name {
-    font-size: 20px; /* 增大字体，匹配UI图 */
+    font-size: 24px; /* 增大字体，匹配UI图 */
     font-weight: bold;
     color: #333;
+    margin: 0 0 4px 0;
     text-align: left;
-    line-height: 1.2; /* 添加行高 */
+    line-height: 1.2;
+    width: 160px; /* 设置固定宽度 */
+    white-space: nowrap; /* 不换行 */
+    overflow: hidden; /* 隐藏溢出 */
+    text-overflow: ellipsis; /* 显示省略号 */
   }
 
   .graduate-destination {
     font-size: 14px;
     color: #666;
+    margin: 0;
     text-align: left;
     line-height: 1.4;
+    width: 160px; /* 设置固定宽度 */
+    white-space: nowrap; /* 不换行 */
+    overflow: hidden; /* 隐藏溢出 */
+    text-overflow: ellipsis; /* 显示省略号 */
   }
 
   /* 隐藏桌面端元素 */
