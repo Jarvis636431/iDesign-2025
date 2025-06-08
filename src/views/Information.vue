@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import CustomCarousel from "@/components/slides/CustomCarousel.vue"; // Import CustomCarousel
 import AuthorCards from "@/components/exhibition/AuthorCards.vue";
@@ -12,6 +12,7 @@ const router = useRouter();
 
 const carouselRef = ref(null); // Add carouselRef
 const showShareModal = ref(false); // 分享弹窗状态
+const isMobile = ref(false); // 移动端检测
 
 const hallId = computed(() => parseInt(route.query.hallId));
 const currentId = computed(() => parseInt(route.params.id));
@@ -43,7 +44,21 @@ async function fetchExhibits() {
   }
 }
 
-onMounted(fetchExhibits);
+// 移动端检测
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
+
+onMounted(() => {
+  fetchExhibits();
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", checkMobile);
+});
+
 watch(hallId, fetchExhibits);
 
 const exhibitInfo = computed(() => {
@@ -167,6 +182,36 @@ const exhibitSlides = computed(() => {
 // 返回home页面并定位到exhibitionsection
 const goToHome = () => {
   router.push("/2025#exhibition");
+};
+
+// 移动端触摸滑动支持
+let touchStartX = 0;
+let touchEndX = 0;
+
+const handleTouchStart = (e) => {
+  if (!isMobile.value) return;
+  touchStartX = e.changedTouches[0].screenX;
+};
+
+const handleTouchEnd = (e) => {
+  if (!isMobile.value) return;
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipe();
+};
+
+const handleSwipe = () => {
+  const swipeThreshold = 50; // 最小滑动距离
+  const swipeDistance = touchEndX - touchStartX;
+
+  if (Math.abs(swipeDistance) > swipeThreshold) {
+    if (swipeDistance > 0) {
+      // 向右滑动，显示上一个
+      goToExhibit("prev");
+    } else {
+      // 向左滑动，显示下一个
+      goToExhibit("next");
+    }
+  }
 };
 
 // 分享功能
@@ -427,14 +472,21 @@ const wrapText = (ctx, text, maxWidth) => {
           <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
         </svg>
       </button>
-      <div class="exhibit-container">
+      <div
+        class="exhibit-container"
+        :class="{ 'mobile-container': isMobile }"
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
+      >
         <img
-          v-if="hallInfo && hallInfo.border"
+          v-if="
+            hallInfo && (isMobile ? hallInfo.mobileBorder : hallInfo.border)
+          "
           class="border-image"
-          :src="hallInfo.border"
+          :src="isMobile ? hallInfo.mobileBorder : hallInfo.border"
           alt="边框"
         />
-        <div class="exhibit-content">
+        <div class="exhibit-content" :class="{ 'mobile-content': isMobile }">
           <div class="exhibit-image-wrapper">
             <div class="exhibit-image-inner">
               <!-- Replace old carousel content with CustomCarousel component -->
@@ -493,6 +545,16 @@ const wrapText = (ctx, text, maxWidth) => {
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- 移动端导航指示器 -->
+        <div v-if="isMobile && exhibits.length > 1" class="mobile-indicators">
+          <div
+            v-for="exhibit in exhibits"
+            :key="exhibit.id"
+            class="mobile-indicator"
+            :class="{ active: exhibit.id === currentId }"
+          ></div>
         </div>
       </div>
       <button class="nav-button next" @click="goToExhibit('next')">
@@ -937,7 +999,193 @@ const wrapText = (ctx, text, maxWidth) => {
     gap: 1.2rem;
   }
 }
-@media (max-width: 900px) {
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .information-page {
+    min-height: 100vh;
+    height: auto;
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+    overflow-y: auto;
+  }
+
+  .navigation-container {
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .nav-button {
+    display: none; /* 隐藏左右导航按钮 */
+  }
+
+  .exhibit-container.mobile-container {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    min-height: 0;
+    border-radius: 20px;
+    padding: 0.8rem;
+    margin: 0;
+    position: relative;
+  }
+
+  .exhibit-container.mobile-container .border-image {
+    width: calc(100% - 16px);
+    height: calc(100% - 16px);
+    border-radius: 20px;
+  }
+
+  .exhibit-content.mobile-content {
+    display: flex;
+    flex-direction: column;
+    padding: 1.2rem;
+    gap: 1.2rem;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+  }
+
+  /* 移动端图片区域 - 上方正方形 */
+  .exhibit-image-wrapper {
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%; /* 创建正方形比例 */
+    min-width: 0;
+    min-height: 0;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border-radius: 16px;
+    order: 1;
+    position: relative;
+  }
+
+  .exhibit-image-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+  }
+
+  /* 移动端详情区域 - 下方 */
+  .exhibit-details {
+    max-height: none;
+    overflow-y: visible;
+    margin-left: 0;
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  /* 隐藏展厅信息 */
+  .hall-info {
+    display: none;
+  }
+
+  .desc-section {
+    gap: 0.8rem;
+    padding-right: 0;
+    flex: 1;
+  }
+
+  /* 标题和分享按钮 - 两端对齐 */
+  .desc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .desc-title {
+    font-size: 1.2rem;
+    text-align: left;
+    flex: 1;
+  }
+
+  .share-btn {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    margin-left: 1rem;
+    order: 2;
+  }
+
+  .share-btn img {
+    width: 16px;
+  }
+
+  /* 展品描述 */
+  .desc-content {
+    font-size: 0.9rem;
+    text-align: left;
+    line-height: 1.5;
+    margin: 0.3rem 0;
+  }
+
+  /* 底部作者和教师信息 - 两端对齐 */
+  .desc-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-left: 0;
+    margin-top: 0.8rem;
+  }
+
+  .authors-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .teacher-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .teacher-name {
+    text-align: right;
+  }
+
+  /* 移动端导航指示器 */
+  .mobile-indicators {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+  }
+
+  .mobile-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  .mobile-indicator.active {
+    background: #fff;
+    transform: scale(1.2);
+  }
+}
+
+@media (max-width: 900px) and (min-width: 769px) {
   .exhibit-content {
     grid-template-columns: 1fr;
     padding: 1.2rem 0.5rem;
@@ -976,6 +1224,24 @@ const wrapText = (ctx, text, maxWidth) => {
   z-index: 10;
 }
 
+/* 移动端返回按钮优化 */
+@media (max-width: 768px) {
+  .back-button {
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
 /* 分享弹窗样式 */
 .share-modal-overlay {
   position: fixed;
@@ -1004,6 +1270,29 @@ const wrapText = (ctx, text, maxWidth) => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+/* 移动端分享弹窗优化 */
+@media (max-width: 768px) {
+  .share-modal {
+    padding: 1rem;
+    width: 95%;
+    max-width: 350px;
+  }
+
+  .share-card-image {
+    height: 250px;
+  }
+
+  .share-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .share-action-btn {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
 }
 
 .share-card {
@@ -1124,6 +1413,7 @@ const wrapText = (ctx, text, maxWidth) => {
   margin-bottom: 0.75rem;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
