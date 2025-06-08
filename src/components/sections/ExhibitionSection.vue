@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { halls } from "../../constants/halls";
 import { useRouter } from "vue-router";
 import axios from "axios";
@@ -17,6 +17,7 @@ const touchStartY = ref(0);
 const isSwiping = ref(false);
 const router = useRouter();
 const isLoading = ref(false); // 加载状态
+const isMobile = ref(false); // 移动端检测
 
 // 动态光标样式
 const customCursor = computed(() => {
@@ -124,11 +125,27 @@ const enterExhibition = (hall) => {
       });
   }, 2000);
 };
+
+// 移动端检测
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
+
+// 生命周期钩子
+onMounted(() => {
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", checkMobile);
+});
 </script>
 
 <template>
   <section
     class="exhibition-section"
+    :class="{ 'mobile-layout': isMobile }"
     id="exhibition"
     @touchstart="handleTouchStart"
     @touchmove="handleTouchMove"
@@ -136,54 +153,111 @@ const enterExhibition = (hall) => {
     @wheel.passive="handleWheel"
     :style="{ backgroundColor: activeHall.backgroundColor }"
   >
-    <!-- 左上角标题 -->
-    <div class="hall-title-area">
-      <h2 class="hall-title" :style="{ color: activeHall.color }">
-        {{ isEnglish ? activeHall.enName : activeHall.name }}
-      </h2>
-    </div>
+    <!-- 桌面端布局 -->
+    <template v-if="!isMobile">
+      <!-- 左上角标题 -->
+      <div class="hall-title-area">
+        <h2 class="hall-title" :style="{ color: activeHall.color }">
+          {{ isEnglish ? activeHall.enName : activeHall.name }}
+        </h2>
+      </div>
 
-    <!-- 展厅Logo -->
-    <div class="hall-logo-area">
-      <transition-group name="slide-fade" tag="div" class="logo-container">
+      <!-- 展厅Logo -->
+      <div class="hall-logo-area">
+        <transition-group name="slide-fade" tag="div" class="logo-container">
+          <img
+            :key="activeHall.logo"
+            :src="activeHall.logo"
+            :alt="isEnglish ? activeHall.enName : activeHall.name"
+            class="hall-logo"
+            :style="{ cursor: customCursor }"
+            @click="enterExhibition(activeHall)"
+          />
+        </transition-group>
+      </div>
+
+      <!-- 左下角展厅Icon -->
+      <div class="hall-icon-area">
         <img
-          :key="activeHall.logo"
-          :src="activeHall.logo"
+          :key="activeHall.icon"
+          :src="activeHall.icon"
           :alt="isEnglish ? activeHall.enName : activeHall.name"
-          class="hall-logo"
-          :style="{ cursor: customCursor }"
-          @click="enterExhibition(activeHall)"
+          class="hall-icon"
         />
-      </transition-group>
-    </div>
-
-    <!-- 左下角展厅Icon -->
-    <div class="hall-icon-area">
-      <img
-        :key="activeHall.icon"
-        :src="activeHall.icon"
-        :alt="isEnglish ? activeHall.enName : activeHall.name"
-        class="hall-icon"
-      />
-    </div>
-
-    <!-- 右下角描述 -->
-    <div class="hall-description" :style="{ color: activeHall.color }">
-      <div class="hall-subtitle" :style="{ color: activeHall.color }">
-        {{ isEnglish ? activeHall.enSubTitle : activeHall.subTitle }}
       </div>
-      <div class="hall-text" :style="{ color: activeHall.color }">
-        <p
-          v-for="(sentence, index) in formatText(
-            isEnglish ? activeHall.enDesc : activeHall.desc
-          )"
-          :key="index"
-          class="text-line"
-        >
-          {{ sentence }}
-        </p>
+
+      <!-- 右下角描述 -->
+      <div class="hall-description" :style="{ color: activeHall.color }">
+        <div class="hall-subtitle" :style="{ color: activeHall.color }">
+          {{ isEnglish ? activeHall.enSubTitle : activeHall.subTitle }}
+        </div>
+        <div class="hall-text" :style="{ color: activeHall.color }">
+          <p
+            v-for="(sentence, index) in formatText(
+              isEnglish ? activeHall.enDesc : activeHall.desc
+            )"
+            :key="index"
+            class="text-line"
+          >
+            {{ sentence }}
+          </p>
+        </div>
       </div>
-    </div>
+    </template>
+
+    <!-- 移动端布局 -->
+    <template v-else>
+      <div class="mobile-content">
+        <!-- 标题 -->
+        <div class="mobile-title-area">
+          <h2 class="mobile-hall-title" :style="{ color: activeHall.color }">
+            {{ isEnglish ? activeHall.enName : activeHall.name }}
+          </h2>
+        </div>
+
+        <!-- 副标题 -->
+        <div class="mobile-subtitle-area">
+          <div
+            class="mobile-hall-subtitle"
+            :style="{ color: activeHall.color }"
+          >
+            {{ isEnglish ? activeHall.enSubTitle : activeHall.subTitle }}
+          </div>
+        </div>
+
+        <!-- 描述 -->
+        <div class="mobile-description-area">
+          <div class="mobile-hall-text" :style="{ color: activeHall.color }">
+            <p
+              v-for="(sentence, index) in formatText(
+                isEnglish ? activeHall.enDesc : activeHall.desc
+              )"
+              :key="index"
+              class="mobile-text-line"
+            >
+              {{ sentence }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Logo -->
+        <div class="mobile-logo-area">
+          <transition-group
+            name="slide-fade"
+            tag="div"
+            class="mobile-logo-container"
+          >
+            <img
+              :key="activeHall.logo"
+              :src="activeHall.logo"
+              :alt="isEnglish ? activeHall.enName : activeHall.name"
+              class="mobile-hall-logo"
+              @click="enterExhibition(activeHall)"
+            />
+          </transition-group>
+        </div>
+      </div>
+    </template>
 
     <!-- 加载状态遮罩 -->
     <div v-if="isLoading" class="loading-overlay">
@@ -444,6 +518,135 @@ const enterExhibition = (hall) => {
   }
   50% {
     transform: scale(1.05);
+  }
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .exhibition-section.mobile-layout {
+    width: 100vw !important;
+    height: calc(100vh - 60px) !important; /* 适配导航栏高度 */
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  .mobile-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1.5rem;
+    box-sizing: border-box;
+    text-align: center;
+    gap: 2rem;
+  }
+
+  /* 移动端标题 */
+  .mobile-title-area {
+    width: 100%;
+  }
+
+  .mobile-hall-title {
+    font-size: 3rem; /* 减小字体 */
+    font-weight: bold;
+    line-height: 1.2;
+    margin: 0;
+    font-family: "MFXiHei", sans-serif;
+    text-align: center;
+  }
+
+  /* 移动端副标题 */
+  .mobile-subtitle-area {
+    width: 100%;
+  }
+
+  .mobile-hall-subtitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  /* 移动端描述 */
+  .mobile-description-area {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .mobile-hall-text {
+    text-align: center;
+  }
+
+  .mobile-text-line {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 0.8rem;
+    margin-top: 0;
+  }
+
+  /* 移动端Logo */
+  .mobile-logo-area {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mobile-logo-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mobile-hall-logo {
+    position: absolute;
+    max-height: 100%;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+
+  .mobile-hall-logo:hover {
+    transform: scale(1.05);
+  }
+
+  /* 移动端加载状态适配 */
+  .loading-overlay {
+    padding: 1rem;
+  }
+
+  .loading-content {
+    gap: 1.5rem;
+  }
+
+  .loading-hall-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .loading-text {
+    font-size: 1rem;
+  }
+
+  .loading-description {
+    margin-top: 2rem;
+  }
+
+  .loading-desc-line {
+    font-size: 1rem;
+    margin-bottom: 0.6rem;
   }
 }
 </style>
