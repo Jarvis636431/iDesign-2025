@@ -91,11 +91,11 @@ const updateCardPosition = () => {
     const cardWidth = window.innerWidth; // 使用窗口宽度作为卡片宽度
     const totalCards = graduates.length;
 
-    // 无限滚动逻辑：当到达第二组的开始时，重置到第一组
+    // 确保索引在有效范围内
     if (currentIndex.value >= totalCards) {
-      currentIndex.value = currentIndex.value - totalCards;
+      currentIndex.value = 0;
     } else if (currentIndex.value < 0) {
-      currentIndex.value = currentIndex.value + totalCards;
+      currentIndex.value = totalCards - 1;
     }
 
     const translateX = -currentIndex.value * cardWidth;
@@ -133,35 +133,13 @@ const handleTouchEnd = (event) => {
     if (deltaX > 0) {
       // 向右滑动，显示上一个
       currentIndex.value--;
-      if (currentIndex.value < 0) {
-        // 到达第一组开始，跳转到第二组对应位置
-        currentIndex.value = graduates.length - 1;
-        cardsContainerRef.value.style.transition = "none";
-        cardsContainerRef.value.style.transform = `translateX(-${
-          (graduates.length + currentIndex.value) * window.innerWidth
-        }px)`;
-        setTimeout(() => {
-          cardsContainerRef.value.style.transition = "transform 0.3s ease";
-          updateCardPosition();
-        }, 10);
-      } else {
-        updateCardPosition();
-      }
     } else {
       // 向左滑动，显示下一个
       currentIndex.value++;
-      if (currentIndex.value >= graduates.length) {
-        // 到达第一组末尾，重置到第一组开始
-        currentIndex.value = 0;
-        cardsContainerRef.value.style.transition = "none";
-        cardsContainerRef.value.style.transform = `translateX(0px)`;
-        setTimeout(() => {
-          cardsContainerRef.value.style.transition = "transform 0.3s ease";
-        }, 10);
-      } else {
-        updateCardPosition();
-      }
     }
+
+    // 更新卡片位置
+    updateCardPosition();
 
     // 更新选中的毕业生
     selectedGraduate.value = graduates[currentIndex.value % graduates.length];
@@ -324,31 +302,31 @@ onUnmounted(() => {
         @touchend="handleTouchEnd"
       >
         <div ref="cardsContainerRef" class="mobile-carousel-container">
-          <!-- 第一组卡片 -->
+          <!-- 卡片列表 -->
           <div
             v-for="(graduate, index) in graduates"
-            :key="`first-${graduate.id}`"
+            :key="graduate.id"
             class="mobile-graduate-card"
             :class="{ active: index === currentIndex }"
           >
-            <!-- 卡片标题 -->
-            <div class="card-title">
-              {{
-                graduate.isTeacher
-                  ? isEnglish
-                    ? "Class Advisor"
-                    : "班导师"
-                  : isEnglish
-                  ? "Graduate"
-                  : "毕业生"
-              }}
-            </div>
-
             <!-- 卡片主体 -->
             <div class="card-body">
-              <!-- 左侧：头像和信息 -->
+              <!-- 左侧区域 -->
               <div class="card-left">
-                <!-- 头像 -->
+                <!-- 卡片标题（左上角） -->
+                <div class="card-title">
+                  {{
+                    graduate.isTeacher
+                      ? isEnglish
+                        ? "Class Advisor"
+                        : "班导师寄语"
+                      : isEnglish
+                      ? "Graduate"
+                      : "毕业生"
+                  }}
+                </div>
+
+                <!-- 头像（标题下方） -->
                 <div class="avatar-section">
                   <img
                     :src="graduate.avatar"
@@ -357,8 +335,8 @@ onUnmounted(() => {
                   />
                 </div>
 
-                <!-- 毕业生信息 -->
-                <div class="graduate-info-section">
+                <!-- 名字（底部） -->
+                <div class="name-section">
                   <h2 class="graduate-name">
                     {{ isEnglish ? graduate.name.en : graduate.name.zh }}
                   </h2>
@@ -375,70 +353,7 @@ onUnmounted(() => {
                 </div>
               </div>
 
-              <!-- 右侧：毕业感言 -->
-              <div class="card-right">
-                <div class="thoughts-section">
-                  <p class="thoughts-text">
-                    {{
-                      isEnglish ? graduate.thoughts.en : graduate.thoughts.zh
-                    }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 第二组卡片（重复，用于无限滚动） -->
-          <div
-            v-for="graduate in graduates"
-            :key="`second-${graduate.id}`"
-            class="mobile-graduate-card"
-          >
-            <!-- 卡片标题 -->
-            <div class="card-title">
-              {{
-                graduate.isTeacher
-                  ? isEnglish
-                    ? "Class Advisor"
-                    : "班导师"
-                  : isEnglish
-                  ? "Graduate"
-                  : "毕业生"
-              }}
-            </div>
-
-            <!-- 卡片主体 -->
-            <div class="card-body">
-              <!-- 左侧：头像和信息 -->
-              <div class="card-left">
-                <!-- 头像 -->
-                <div class="avatar-section">
-                  <img
-                    :src="graduate.avatar"
-                    :alt="graduate.name.zh"
-                    class="graduate-avatar"
-                  />
-                </div>
-
-                <!-- 毕业生信息 -->
-                <div class="graduate-info-section">
-                  <h2 class="graduate-name">
-                    {{ isEnglish ? graduate.name.en : graduate.name.zh }}
-                  </h2>
-                  <p
-                    class="graduate-destination"
-                    v-if="graduate.destination.zh || graduate.destination.en"
-                  >
-                    {{
-                      isEnglish
-                        ? graduate.destination.en
-                        : graduate.destination.zh
-                    }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- 右侧：毕业感言 -->
+              <!-- 右侧：毕业感言（中间位置） -->
               <div class="card-right">
                 <div class="thoughts-section">
                   <p class="thoughts-text">
@@ -739,13 +654,13 @@ onUnmounted(() => {
     overflow: hidden;
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
+    justify-content: flex-start; /* 改为左对齐，配合transform定位 */
+    padding: 0; /* 移除内边距，让卡片完全控制自己的位置 */
   }
 
   .mobile-carousel-container {
     display: flex;
-    width: 5000vw; /* 增加宽度以支持无限滚动 (25个毕业生 * 2 * 100vw) */
+    width: calc(100vw * 25); /* 25个毕业生卡片的总宽度 */
     height: 100%;
     transition: transform 0.3s ease;
   }
@@ -757,105 +672,115 @@ onUnmounted(() => {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 40px 20px; /* 增加上下内边距 */
     box-sizing: border-box;
     justify-content: center; /* 垂直居中 */
-  }
-
-  /* 卡片标题 */
-  .card-title {
-    font-size: 18px;
-    color: #333;
-    margin-bottom: 20px;
-    text-align: left;
-    font-weight: 600;
+    align-items: center; /* 水平居中 */
   }
 
   /* 卡片主体 */
   .card-body {
     background: white;
-    border-radius: 16px; /* 恢复圆角 */
-    padding: 20px;
+    border-radius: 20px; /* 增大圆角，匹配UI图 */
+    padding: 24px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     display: flex;
-    flex-direction: row; /* 改为左右布局 */
-    gap: 20px;
-    border: 3px solid #052a1b;
-    height: 200px; /* 固定高度，降低卡片高度 */
+    flex-direction: row; /* 左右布局 */
+    gap: 24px;
+    border: 4px solid #052a1b; /* 增加边框宽度 */
+    height: 320px; /* 增加高度以匹配UI图 */
+    width: 100%;
+    max-width: 600px; /* 限制最大宽度，避免过宽 */
     overflow: hidden;
+    position: relative;
+    margin: 0 auto; /* 水平居中 */
   }
 
   /* 左侧区域 */
   .card-left {
-    flex: 0 0 140px; /* 固定宽度 */
+    flex: 0 0 180px; /* 增加宽度以匹配UI图 */
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    height: 100%;
+    position: relative;
   }
 
-  /* 头像区域 */
+  /* 卡片标题（左上角） */
+  .card-title {
+    font-size: 16px;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 16px;
+    text-align: left;
+  }
+
+  /* 头像区域（标题下方） */
   .avatar-section {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
+    margin-bottom: auto; /* 推送名字到底部 */
   }
 
   .graduate-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px; /* 恢复圆角 */
+    width: 140px;
+    height: 140px;
+    border-radius: 8px; /* 匹配UI图的圆角 */
     object-fit: cover;
   }
 
-  /* 右侧区域 */
+  /* 名字区域（底部） */
+  .name-section {
+    text-align: left;
+    margin-top: auto; /* 确保在底部 */
+  }
+
+  /* 右侧区域（毕业感言中间位置） */
   .card-right {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0 16px;
   }
 
   /* 毕业感言区域 */
   .thoughts-section {
-    height: 100%;
+    width: 100%;
     display: flex;
     align-items: center;
-    padding: 0 10px;
+    justify-content: center;
   }
 
   .thoughts-text {
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.8; /* 增加行高，匹配UI图 */
     color: #333;
-    text-align: center;
+    text-align: justify; /* 两端对齐，匹配UI图 */
     margin: 0;
     word-wrap: break-word;
     overflow-wrap: break-word;
     display: -webkit-box;
-    -webkit-line-clamp: 6; /* 限制显示行数 */
-    line-clamp: 6; /* 标准属性 */
+    -webkit-line-clamp: 12; /* 增加显示行数 */
+    line-clamp: 12;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  /* 毕业生信息区域 */
-  .graduate-info-section {
-    text-align: center;
-  }
-
+  /* 名字区域样式 */
   .graduate-name {
-    font-size: 16px;
+    font-size: 24px; /* 增大字体，匹配UI图 */
     font-weight: bold;
     color: #333;
     margin: 0 0 4px 0;
-    text-align: center;
+    text-align: left;
   }
 
   .graduate-destination {
-    font-size: 12px;
+    font-size: 14px;
     color: #666;
     margin: 0;
-    text-align: center;
-    line-height: 1.3;
+    text-align: left;
+    line-height: 1.4;
   }
 
   /* 隐藏桌面端元素 */
