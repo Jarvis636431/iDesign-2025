@@ -283,11 +283,19 @@ const easeInOutCubic = (x) => {
 
 /* 移动端适配 */
 @media (max-width: 768px) {
+  /* 确保body不会出现横向滚动 */
+  :global(body) {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+
   .content-section.mobile-layout {
     width: 100vw !important; /* 移动端恢复正常宽度 */
     height: auto !important; /* 自适应高度 */
     min-height: calc(100vh - 60px); /* 最小高度 */
-    overflow: visible;
+    overflow-x: hidden !important; /* 隐藏横向滚动 */
+    overflow-y: visible; /* 允许纵向滚动 */
+    max-width: 100vw; /* 确保不超过视口宽度 */
   }
 
   .team-container.mobile-container {
@@ -298,6 +306,8 @@ const easeInOutCubic = (x) => {
     flex-direction: column; /* 纵向排列 */
     gap: 2rem; /* 卡片间距 */
     padding: 2rem 1rem; /* 容器内边距 */
+    overflow-x: hidden; /* 隐藏横向滚动 */
+    box-sizing: border-box; /* 确保padding不会增加总宽度 */
   }
 
   .team-rectangle.mobile-rectangle {
@@ -306,16 +316,17 @@ const easeInOutCubic = (x) => {
     top: auto !important;
     bottom: auto !important;
     width: 100%; /* 占满容器宽度 */
-    max-width: none; /* 移除最大宽度限制 */
+    max-width: 100%; /* 限制最大宽度 */
     height: auto;
     background-color: #fff0ca;
     padding: 0; /* 移除内边距，让子元素控制 */
     transition: all 0.3s ease-out;
-    overflow: visible;
+    overflow: hidden; /* 隐藏超出部分 */
     border-radius: 0; /* 去掉卡片圆角 */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     display: flex; /* 使用flex布局 */
     flex-direction: row; /* 水平排列：侧边标题 + 内容区域 */
+    box-sizing: border-box; /* 确保边框和内边距不增加宽度 */
   }
 
   .team-rectangle.mobile-rectangle h3 {
@@ -358,6 +369,8 @@ const easeInOutCubic = (x) => {
     flex: 1; /* 占据剩余空间 */
     background-color: #fff0ca; /* 确保背景色 */
     border-radius: 0; /* 去掉圆角 */
+    max-width: 100%; /* 限制最大宽度 */
+    box-sizing: border-box; /* 确保padding不增加宽度 */
   }
 
   .member-card.mobile-card {
