@@ -106,6 +106,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 移动端允许滚动 */
+@media (max-width: 768px) {
+  html,
+  body {
+    overflow: auto;
+    height: auto;
+    min-height: 100%;
+  }
+}
+
 #app {
   height: 100%; /* 让 #app 占满视口高度 */
 }
