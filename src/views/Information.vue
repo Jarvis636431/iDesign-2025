@@ -19,6 +19,7 @@ const router = useRouter();
 
 const carouselRef = ref(null); // Add carouselRef
 const showShareModal = ref(false); // 分享弹窗状态
+const showFullscreen = ref(false); // 全屏展示状态
 const isMobile = ref(false); // 移动端检测
 
 const hallId = computed(() => parseInt(route.query.hallId));
@@ -253,6 +254,15 @@ const shareExhibit = () => {
 // 关闭分享弹窗
 const closeShareModal = () => {
   showShareModal.value = false;
+};
+
+// 全屏展示功能
+const openFullscreen = () => {
+  showFullscreen.value = true;
+};
+
+const closeFullscreen = () => {
+  showFullscreen.value = false;
 };
 
 // 复制链接
@@ -526,6 +536,19 @@ const wrapText = (ctx, text, maxWidth) => {
                 ref="carouselRef"
                 style="width: 100%; height: 100%"
               />
+              <!-- 放大镜按钮 -->
+              <button
+                class="fullscreen-btn"
+                :style="{ backgroundColor: hallColor }"
+                @click="openFullscreen"
+                title="全屏查看"
+              >
+                <svg viewBox="0 0 24 24" class="magnify-icon">
+                  <path
+                    d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
           <div class="exhibit-details">
@@ -689,6 +712,33 @@ const wrapText = (ctx, text, maxWidth) => {
         <canvas id="shareCanvas" style="display: none"></canvas>
       </div>
     </div>
+
+    <!-- 全屏展示弹窗 -->
+    <div
+      v-if="showFullscreen"
+      class="fullscreen-modal-overlay"
+      @click="closeFullscreen"
+    >
+      <div class="fullscreen-modal" @click.stop>
+        <!-- 关闭按钮 -->
+        <button class="fullscreen-close-btn" @click="closeFullscreen">
+          <svg viewBox="0 0 24 24" class="close-icon">
+            <path
+              d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+            />
+          </svg>
+        </button>
+
+        <!-- 全屏展示内容 -->
+        <div class="fullscreen-content">
+          <CustomCarousel
+            :slides="exhibitSlides"
+            :hallColor="hallColor"
+            style="width: 100%; height: 100%"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -819,6 +869,36 @@ const wrapText = (ctx, text, maxWidth) => {
   border-radius: 24px;
   overflow: hidden;
   background: #fff;
+  position: relative;
+}
+
+/* 放大镜按钮 */
+.fullscreen-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.fullscreen-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.magnify-icon {
+  width: 18px;
+  height: 18px;
+  fill: white;
 }
 
 .exhibit-main-image,
@@ -1195,6 +1275,7 @@ const wrapText = (ctx, text, maxWidth) => {
     align-items: flex-end;
     text-align: right;
     position: relative;
+    padding-bottom: 0.3rem;
     padding-right: 2.5rem; /* 为图标留出空间 */
     justify-content: flex-start; /* 改为顶部对齐 */
     margin-top: -0.3rem; /* 向上移动 */
@@ -1207,7 +1288,7 @@ const wrapText = (ctx, text, maxWidth) => {
   /* 移动端展厅图标 */
   .mobile-hall-icon {
     position: absolute;
-    top: 0;
+    top: 5px;
     right: 0;
     width: 32px;
     height: 32px;
@@ -1523,6 +1604,92 @@ const wrapText = (ctx, text, maxWidth) => {
 .copy-btn:hover {
   background: #e0e0e0;
   transform: translateY(-2px);
+}
+
+/* 全屏展示模态框 */
+.fullscreen-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.fullscreen-modal {
+  position: relative;
+  width: 90vw;
+  height: 90vh;
+  max-width: 1200px;
+  max-height: 800px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.fullscreen-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.fullscreen-close-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+}
+
+.close-icon {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+
+.fullscreen-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 移动端全屏优化 */
+@media (max-width: 768px) {
+  .fullscreen-modal {
+    width: 95vw;
+    height: 95vh;
+    border-radius: 8px;
+  }
+
+  .fullscreen-close-btn {
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .close-icon {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 @keyframes fadeIn {
