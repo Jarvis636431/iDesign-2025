@@ -84,30 +84,38 @@ const setupScrollHandler = () => {
   if (isMobile.value) {
     // 移动端：监听窗口滚动，实现水平滑入动画
     scrollHandler = () => {
-      rectangles.value = rectangles.value.map((rect) => {
-        const rectElement = document.querySelector(`#team-rect-${rect.id}`);
-        if (!rectElement) return rect;
+      // 检测TeamSection容器而不是单个卡片
+      const sectionElement = document.querySelector("#team");
+      if (!sectionElement) return;
 
-        const rectBounds = rectElement.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
+      const sectionBounds = sectionElement.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
 
-        // 计算卡片进入视口的进度
-        let progress = 0;
-        if (rectBounds.top < windowHeight && rectBounds.bottom > 0) {
-          // 卡片在视口中，计算进入进度
-          progress =
-            (windowHeight - rectBounds.top) /
-            (windowHeight + rectBounds.height);
-          progress = Math.max(0, Math.min(1, progress));
-        } else if (rectBounds.top >= windowHeight) {
-          // 卡片还未进入视口
-          progress = 0;
+      // 简化的进度计算：当section顶部进入视口时就开始动画
+      let sectionProgress = 0;
+      if (sectionBounds.top <= windowHeight) {
+        // section开始进入视口，计算进度
+        if (sectionBounds.top <= 0) {
+          // section已经完全进入或通过视口
+          sectionProgress = 1;
         } else {
-          // 卡片已完全通过视口
-          progress = 1;
+          // section正在进入视口
+          sectionProgress = (windowHeight - sectionBounds.top) / windowHeight;
+        }
+      }
+
+      // 根据section的进度更新所有卡片，添加层次化动画
+      rectangles.value = rectangles.value.map((rect, index) => {
+        // 为每个卡片添加延迟效果，让动画更有层次
+        const cardDelay = index * 0.08; // 每个卡片延迟0.08的进度
+        let cardProgress = Math.max(0, sectionProgress - cardDelay);
+
+        // 重新映射到0-1范围，确保动画能完整播放
+        if (cardProgress > 0) {
+          cardProgress = Math.min(1, cardProgress / (1 - cardDelay * 0.5));
         }
 
-        const easeProgress = easeInOutCubic(progress);
+        const easeProgress = easeInOutCubic(cardProgress);
         const newTranslateX =
           rect.position === "left"
             ? -100 + easeProgress * 100 // 左侧卡片从-100%移动到0%
@@ -191,7 +199,7 @@ const easeInOutCubic = (x) => {
           isMobile
             ? {
                 transform: `translateX(${rectangle.translateX}%)`,
-                transition: 'transform 0.6s ease-out',
+                transition: 'transform 0.3s ease-out',
               }
             : {
                 transform: `translate(calc(${rectangle.translateX}vw + 50%), ${rectangle.translateY}%)`,
