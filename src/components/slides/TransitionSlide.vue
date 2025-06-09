@@ -293,13 +293,14 @@ h2.english-text {
   }
 
   .transition-content {
-    position: relative;
-    left: 0;
-    transform: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
+    justify-content: center;
     z-index: 2;
     width: 90%;
     text-align: center;
@@ -312,16 +313,20 @@ h2.english-text {
     text-align: center;
     white-space: normal; /* 允许换行 */
     line-height: 1.4; /* 增加行高 */
-    margin-bottom: 1rem;
+    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    z-index: 3; /* 确保在图片上方 */
+    position: relative;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* 添加文字阴影，增强可读性 */
   }
 
   h2.english-text {
     font-size: 2.8rem; /* 英文也增大 */
     letter-spacing: 0.15em;
     line-height: 1.4;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* 英文也添加阴影 */
   }
 
   /* 移动端文字行样式 */
@@ -342,18 +347,19 @@ h2.english-text {
     margin-top: -0.3rem;
   }
 
-  /* 移动端旋转图片 */
+  /* 移动端旋转图片 - 作为背景层 */
   .rotating-image {
-    position: relative;
-    left: 0;
-    top: 0;
-    transform: none;
-    z-index: 1;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1; /* 在文字下方 */
+    opacity: 1; /* 降低透明度，作为背景 */
   }
 
   .rotating-image img {
-    width: 150px; /* 减小图片尺寸 */
-    height: 150px;
+    width: 200px; /* 适中的图片尺寸 */
+    height: 200px;
   }
 
   /* 移动端底部文字 - 水平排列 */
