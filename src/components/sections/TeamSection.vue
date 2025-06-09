@@ -22,10 +22,6 @@ onMounted(() => {
     checkMobile();
     initializeRectangles(); // 重新初始化卡片位置
   });
-
-  // 调试信息
-  console.log("TeamSection mounted, isMobile:", isMobile.value);
-  console.log("Total rectangles:", rectangles.value.length);
 });
 
 const checkMobile = () => {
@@ -35,7 +31,11 @@ const checkMobile = () => {
 onBeforeUnmount(() => {
   if (scrollHandler) {
     if (isMobile.value) {
+      // 移除所有移动端事件监听器
       window.removeEventListener("scroll", scrollHandler);
+      document.removeEventListener("scroll", scrollHandler);
+      document.body.removeEventListener("scroll", scrollHandler);
+      window.removeEventListener("touchmove", scrollHandler);
     } else {
       const scrollContainer = document.querySelector(".scroll-container");
       if (scrollContainer) {
@@ -50,10 +50,6 @@ const initializeRectangles = () => {
   rectangles.value = staffGroups.map((group, index) => {
     if (isMobile.value) {
       // 移动端：从左右两侧滑入的动画效果
-      console.log(
-        `Mobile card ${index}: ${index % 2 === 0 ? "left" : "right"} slide-in`
-      );
-
       return {
         ...group,
         position: index % 2 === 0 ? "left" : "right", // 奇偶分配左右
@@ -117,13 +113,6 @@ const setupScrollHandler = () => {
             ? -100 + easeProgress * 100 // 左侧卡片从-100%移动到0%
             : 100 - easeProgress * 100; // 右侧卡片从100%移动到0%
 
-        // 调试信息
-        console.log(
-          `Card ${rect.id}: progress=${progress.toFixed(
-            2
-          )}, translateX=${newTranslateX.toFixed(2)}, position=${rect.position}`
-        );
-
         return {
           ...rect,
           translateY: 0,
@@ -132,7 +121,13 @@ const setupScrollHandler = () => {
       });
     };
 
-    window.addEventListener("scroll", scrollHandler);
+    // 添加多种滚动事件监听
+    window.addEventListener("scroll", scrollHandler, { passive: true });
+    document.addEventListener("scroll", scrollHandler, { passive: true });
+    document.body.addEventListener("scroll", scrollHandler, { passive: true });
+
+    // 添加触摸事件监听
+    window.addEventListener("touchmove", scrollHandler, { passive: true });
   } else {
     // PC端：原有的水平滚动逻辑
     const scrollContainer = document.querySelector(".scroll-container");
@@ -197,30 +192,12 @@ const easeInOutCubic = (x) => {
             ? {
                 transform: `translateX(${rectangle.translateX}%)`,
                 transition: 'transform 0.6s ease-out',
-                border: '2px solid red', // 调试用红色边框
-                zIndex: 999, // 确保可见
               }
             : {
                 transform: `translate(calc(${rectangle.translateX}vw + 50%), ${rectangle.translateY}%)`,
               }
         "
       >
-        <!-- 调试信息 -->
-        <div
-          v-if="isMobile"
-          style="
-            position: absolute;
-            top: -20px;
-            left: 0;
-            background: yellow;
-            padding: 2px;
-            font-size: 10px;
-            z-index: 1000;
-          "
-        >
-          ID: {{ rectangle.id }} | X: {{ rectangle.translateX }}% | Pos:
-          {{ rectangle.position }}
-        </div>
         <h3>{{ rectangle.name }}</h3>
         <div class="members-grid" :class="{ 'mobile-grid': isMobile }">
           <div
