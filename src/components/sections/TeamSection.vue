@@ -34,9 +34,14 @@ const checkMobile = () => {
 
 onBeforeUnmount(() => {
   if (scrollHandler) {
-    document
-      .querySelector(".scroll-container")
-      .removeEventListener("scroll", scrollHandler);
+    if (isMobile.value) {
+      window.removeEventListener("scroll", scrollHandler);
+    } else {
+      const scrollContainer = document.querySelector(".scroll-container");
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("scroll", scrollHandler);
+      }
+    }
   }
   window.removeEventListener("resize", checkMobile);
 });
@@ -44,14 +49,16 @@ onBeforeUnmount(() => {
 const initializeRectangles = () => {
   rectangles.value = staffGroups.map((group, index) => {
     if (isMobile.value) {
-      // 移动端：简单的自上到下排列
-      console.log(`Mobile card ${index}: vertical layout`);
+      // 移动端：从左右两侧滑入的动画效果
+      console.log(
+        `Mobile card ${index}: ${index % 2 === 0 ? "left" : "right"} slide-in`
+      );
 
       return {
         ...group,
-        position: "mobile", // 使用新的position标识
-        translateY: 0, // 不需要垂直偏移
-        translateX: 0, // 不需要水平偏移
+        position: index % 2 === 0 ? "left" : "right", // 奇偶分配左右
+        translateY: 0,
+        translateX: index % 2 === 0 ? -100 : 100, // 左侧卡片从-100%开始，右侧从+100%开始
       };
     } else {
       // PC端：原有的上下错开布局
@@ -78,48 +85,80 @@ const initializeRectangles = () => {
 };
 
 const setupScrollHandler = () => {
-  const scrollContainer = document.querySelector(".scroll-container");
-  if (!scrollContainer) return;
+  if (isMobile.value) {
+    // 移动端：监听窗口滚动，实现水平滑入动画
+    scrollHandler = () => {
+      rectangles.value = rectangles.value.map((rect) => {
+        const rectElement = document.querySelector(`#team-rect-${rect.id}`);
+        if (!rectElement) return rect;
 
-  scrollHandler = () => {
-    const containerWidth = window.innerWidth;
+        const rectBounds = rectElement.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
 
-    // 更新每个矩形的位置
-    rectangles.value = rectangles.value.map((rect) => {
-      // 获取矩形元素
-      const rectElement = document.querySelector(`#team-rect-${rect.id}`);
-      if (!rectElement) return rect;
+        // 计算卡片进入视口的进度
+        let progress = 0;
+        if (rectBounds.top < windowHeight && rectBounds.bottom > 0) {
+          // 卡片在视口中，计算进入进度
+          progress =
+            (windowHeight - rectBounds.top) /
+            (windowHeight + rectBounds.height);
+          progress = Math.max(0, Math.min(1, progress));
+        } else if (rectBounds.top >= windowHeight) {
+          // 卡片还未进入视口
+          progress = 0;
+        } else {
+          // 卡片已完全通过视口
+          progress = 1;
+        }
 
-      const rectBounds = rectElement.getBoundingClientRect();
-      let progress = 0;
+        const easeProgress = easeInOutCubic(progress);
+        const newTranslateX =
+          rect.position === "left"
+            ? -100 + easeProgress * 100 // 左侧卡片从-100%移动到0%
+            : 100 - easeProgress * 100; // 右侧卡片从100%移动到0%
 
-      // 计算每个矩形自己的进度
-      if (rectBounds.right > 0 && rectBounds.left < containerWidth) {
-        // 当矩形开始进入视口，根据其位置计算进度
-        progress = (containerWidth - rectBounds.left) / containerWidth;
-        // 限制进度在 0-1 之间
-        progress = Math.max(0, Math.min(1, progress));
-      } else if (rectBounds.left >= containerWidth) {
-        progress = 0;
-      } else {
-        progress = 1;
-      }
+        // 调试信息
+        console.log(
+          `Card ${rect.id}: progress=${progress.toFixed(
+            2
+          )}, translateX=${newTranslateX.toFixed(2)}, position=${rect.position}`
+        );
 
-      // 使用缓动函数使动画更平滑
-      const easeProgress = easeInOutCubic(progress);
-
-      if (isMobile.value) {
-        // 移动端：横向滚动时卡片向对侧移动
         return {
           ...rect,
-          translateY:
-            rect.position === "top"
-              ? -40 + easeProgress * 80 // 移动端减小移动范围
-              : 40 - easeProgress * 80,
-          translateX: rect.translateX,
+          translateY: 0,
+          translateX: newTranslateX,
         };
-      } else {
-        // PC端：原有逻辑
+      });
+    };
+
+    window.addEventListener("scroll", scrollHandler);
+  } else {
+    // PC端：原有的水平滚动逻辑
+    const scrollContainer = document.querySelector(".scroll-container");
+    if (!scrollContainer) return;
+
+    scrollHandler = () => {
+      const containerWidth = window.innerWidth;
+
+      rectangles.value = rectangles.value.map((rect) => {
+        const rectElement = document.querySelector(`#team-rect-${rect.id}`);
+        if (!rectElement) return rect;
+
+        const rectBounds = rectElement.getBoundingClientRect();
+        let progress = 0;
+
+        if (rectBounds.right > 0 && rectBounds.left < containerWidth) {
+          progress = (containerWidth - rectBounds.left) / containerWidth;
+          progress = Math.max(0, Math.min(1, progress));
+        } else if (rectBounds.left >= containerWidth) {
+          progress = 0;
+        } else {
+          progress = 1;
+        }
+
+        const easeProgress = easeInOutCubic(progress);
+
         return {
           ...rect,
           translateY:
@@ -128,11 +167,11 @@ const setupScrollHandler = () => {
               : 60 - easeProgress * 120,
           translateX: rect.translateX,
         };
-      }
-    });
-  };
+      });
+    };
 
-  scrollContainer.addEventListener("scroll", scrollHandler);
+    scrollContainer.addEventListener("scroll", scrollHandler);
+  }
 };
 
 const easeInOutCubic = (x) => {
@@ -155,12 +194,33 @@ const easeInOutCubic = (x) => {
         :class="[rectangle.position, { 'mobile-rectangle': isMobile }]"
         :style="
           isMobile
-            ? {}
+            ? {
+                transform: `translateX(${rectangle.translateX}%)`,
+                transition: 'transform 0.6s ease-out',
+                border: '2px solid red', // 调试用红色边框
+                zIndex: 999, // 确保可见
+              }
             : {
                 transform: `translate(calc(${rectangle.translateX}vw + 50%), ${rectangle.translateY}%)`,
               }
         "
       >
+        <!-- 调试信息 -->
+        <div
+          v-if="isMobile"
+          style="
+            position: absolute;
+            top: -20px;
+            left: 0;
+            background: yellow;
+            padding: 2px;
+            font-size: 10px;
+            z-index: 1000;
+          "
+        >
+          ID: {{ rectangle.id }} | X: {{ rectangle.translateX }}% | Pos:
+          {{ rectangle.position }}
+        </div>
         <h3>{{ rectangle.name }}</h3>
         <div class="members-grid" :class="{ 'mobile-grid': isMobile }">
           <div
@@ -311,16 +371,16 @@ const easeInOutCubic = (x) => {
   }
 
   .team-rectangle.mobile-rectangle {
-    position: relative !important; /* 改为相对定位 */
-    left: auto !important;
-    top: auto !important;
-    bottom: auto !important;
+    position: relative; /* 相对定位，但不使用!important */
+    left: auto;
+    top: auto;
+    bottom: auto;
     width: 100%; /* 占满容器宽度 */
     max-width: 100%; /* 限制最大宽度 */
     height: auto;
     background-color: #fff0ca;
     padding: 0; /* 移除内边距，让子元素控制 */
-    transition: all 0.3s ease-out;
+    /* transition: all 0.3s ease-out; 移除这个，让JavaScript控制过渡 */
     overflow: hidden; /* 隐藏超出部分 */
     border-radius: 0; /* 去掉卡片圆角 */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
