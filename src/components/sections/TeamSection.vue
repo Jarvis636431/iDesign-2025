@@ -327,10 +327,12 @@ const easeInOutCubic = (x) => {
 }
 
 .member-info h4 {
-  font-size: 1rem;
+  font-size: 0.9rem; /* 稍微减小字体 */
   margin: 0 0 0.3rem 0;
   font-weight: 500;
   white-space: nowrap;
+  text-overflow: ellipsis; /* 文字过长时显示省略号 */
+  overflow: hidden;
 }
 
 .member-info p {
@@ -365,8 +367,10 @@ const easeInOutCubic = (x) => {
     flex-direction: column; /* 纵向排列 */
     gap: 2rem; /* 卡片间距 */
     padding: 2rem 1rem; /* 容器内边距 */
-    overflow-x: hidden; /* 隐藏横向滚动 */
+    overflow-x: visible; /* 改为visible，允许卡片超出容器 */
+    overflow-y: visible; /* 允许垂直方向也可见 */
     box-sizing: border-box; /* 确保padding不会增加总宽度 */
+    align-items: center; /* 让卡片在容器中居中 */
   }
 
   .team-rectangle.mobile-rectangle {
@@ -374,18 +378,20 @@ const easeInOutCubic = (x) => {
     left: auto;
     top: auto;
     bottom: auto;
-    width: 100%; /* 占满容器宽度 */
-    max-width: 100%; /* 限制最大宽度 */
+    width: auto; /* 自动宽度，完全贴合内容 */
+    min-width: auto; /* 移除最小宽度限制 */
+    max-width: none; /* 移除最大宽度限制 */
     height: auto;
     background-color: #fff0ca;
     padding: 0; /* 移除内边距，让子元素控制 */
     /* transition: all 0.3s ease-out; 移除这个，让JavaScript控制过渡 */
-    overflow: hidden; /* 隐藏超出部分 */
+    overflow: visible; /* 改为visible，让内容完全显示 */
     border-radius: 0; /* 去掉卡片圆角 */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    display: flex; /* 使用flex布局 */
+    display: inline-flex; /* 改为inline-flex，让宽度完全贴合内容 */
     flex-direction: row; /* 水平排列：侧边标题 + 内容区域 */
     box-sizing: border-box; /* 确保边框和内边距不增加宽度 */
+    margin: 0 auto; /* 居中对齐 */
   }
 
   .team-rectangle.mobile-rectangle h3 {
@@ -422,13 +428,12 @@ const easeInOutCubic = (x) => {
     flex-direction: row; /* 横向排列成员 */
     gap: 1rem;
     padding: 1.5rem; /* 内容区域内边距 */
-    overflow-x: auto; /* 支持横向滚动 */
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch; /* iOS平滑滚动 */
-    flex: 1; /* 占据剩余空间 */
+    overflow: visible; /* 移除滚动，让内容完全显示 */
+    flex: none; /* 不占据剩余空间，而是根据内容自适应 */
     background-color: #fff0ca; /* 确保背景色 */
     border-radius: 0; /* 去掉圆角 */
-    max-width: 100%; /* 限制最大宽度 */
+    width: auto; /* 自动宽度 */
+    white-space: nowrap; /* 防止换行 */
     box-sizing: border-box; /* 确保padding不增加宽度 */
   }
 
@@ -437,12 +442,11 @@ const easeInOutCubic = (x) => {
     flex-direction: column;
     align-items: center;
     border-radius: 8px;
-    padding: 1rem;
+    padding: 0.8rem; /* 稍微减小内边距 */
     transition: all 0.3s ease;
     text-align: center;
     flex-shrink: 0; /* 防止被压缩 */
-    width: auto; /* 自适应宽度 */
-    min-width: 100px; /* 最小宽度 */
+    width: 90px; /* 设置固定宽度，确保一致性 */
     background: rgba(255, 255, 255, 0.1);
   }
 
