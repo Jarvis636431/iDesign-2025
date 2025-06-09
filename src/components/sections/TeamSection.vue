@@ -112,25 +112,46 @@ const setupScrollHandler = () => {
         );
       }
 
-      // 根据滚动进度更新所有卡片，调整移动速度
+      // 根据滚动进度更新所有卡片，基于宽度调整滚动速度
       rectangles.value = rectangles.value.map((rect, index) => {
-        // 减小延迟和速度差异，让动画更温和
-        const cardDelay = index * 0.05; // 减小延迟
-        const cardSpeed = 1; // 统一速度，不再有速度差异
+        // 获取卡片元素来检测实际宽度
+        const cardElement = document.querySelector(`#team-rect-${rect.id}`);
+        let cardWidth = 300; // 默认宽度
+
+        if (cardElement) {
+          cardWidth = cardElement.getBoundingClientRect().width;
+        }
+
+        // 基于卡片宽度计算速度系数
+        // 使用平方根函数让速度增长更温和
+        const baseWidth = 250; // 提高基准宽度
+        const rawSpeedFactor = cardWidth / baseWidth;
+        const widthSpeedFactor = Math.sqrt(rawSpeedFactor); // 使用平方根减缓增长
+
+        // 延迟仍然基于索引，但速度基于宽度
+        const cardDelay = index * 0.05;
+        // 设置速度上限，避免过快
+        const maxSpeed = 1.8; // 最大1.8倍速
+        const minSpeed = 0.6; // 最小0.6倍速
+        const cardSpeed = Math.max(
+          minSpeed,
+          Math.min(maxSpeed, widthSpeedFactor)
+        );
 
         let cardProgress = Math.max(0, scrollProgress - cardDelay) * cardSpeed;
 
-        // 减小移动范围，让卡片移动更温和
+        // 移动范围也基于宽度调整，但增长更温和
+        const moveRange = 65 + (cardSpeed - 1) * 15; // 基础65，范围增长更温和
         const newTranslateX =
           rect.position === "left"
-            ? -100 + cardProgress * 80 // 减小移动系数从120到80
-            : 100 - cardProgress * 80; // 减小移动系数从120到80
+            ? -100 + cardProgress * moveRange
+            : 100 - cardProgress * moveRange;
 
-        // 调试信息：查看每个卡片的位置
+        // 调试信息：查看每个卡片的宽度和速度
         console.log(
-          `Card ${rect.id}: position=${
-            rect.position
-          }, cardProgress=${cardProgress.toFixed(
+          `Card ${rect.id}: width=${cardWidth.toFixed(
+            0
+          )}px, speedFactor=${widthSpeedFactor.toFixed(
             2
           )}, translateX=${newTranslateX.toFixed(2)}`
         );
