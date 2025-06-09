@@ -91,35 +91,49 @@ const setupScrollHandler = () => {
       const sectionBounds = sectionElement.getBoundingClientRect();
       const windowHeight = window.innerHeight;
 
-      // 简化的进度计算：当section顶部进入视口时就开始动画
-      let sectionProgress = 0;
+      // 连续滚动进度计算：让卡片跟随滚动持续移动
+      // 计算section相对于视口的滚动进度，可以超出0-1范围
+      let scrollProgress = 0;
+
+      // 当section开始进入视口时开始计算
       if (sectionBounds.top <= windowHeight) {
-        // section开始进入视口，计算进度
-        if (sectionBounds.top <= 0) {
-          // section已经完全进入或通过视口
-          sectionProgress = 1;
-        } else {
-          // section正在进入视口
-          sectionProgress = (windowHeight - sectionBounds.top) / windowHeight;
-        }
+        // 计算从section进入视口到完全离开视口的整个过程
+        // 增大分母，让进度增长更慢
+        scrollProgress =
+          (windowHeight - sectionBounds.top) / (windowHeight * 1.5);
       }
 
-      // 根据section的进度更新所有卡片，添加层次化动画
+      // 临时调试日志
+      if (scrollProgress > 0) {
+        console.log(
+          `🔄 Continuous scroll progress: ${scrollProgress.toFixed(
+            2
+          )}, top: ${sectionBounds.top.toFixed(0)}`
+        );
+      }
+
+      // 根据滚动进度更新所有卡片，调整移动速度
       rectangles.value = rectangles.value.map((rect, index) => {
-        // 为每个卡片添加延迟效果，让动画更有层次
-        const cardDelay = index * 0.08; // 每个卡片延迟0.08的进度
-        let cardProgress = Math.max(0, sectionProgress - cardDelay);
+        // 减小延迟和速度差异，让动画更温和
+        const cardDelay = index * 0.05; // 减小延迟
+        const cardSpeed = 1; // 统一速度，不再有速度差异
 
-        // 重新映射到0-1范围，确保动画能完整播放
-        if (cardProgress > 0) {
-          cardProgress = Math.min(1, cardProgress / (1 - cardDelay * 0.5));
-        }
+        let cardProgress = Math.max(0, scrollProgress - cardDelay) * cardSpeed;
 
-        const easeProgress = easeInOutCubic(cardProgress);
+        // 减小移动范围，让卡片移动更温和
         const newTranslateX =
           rect.position === "left"
-            ? -100 + easeProgress * 100 // 左侧卡片从-100%移动到0%
-            : 100 - easeProgress * 100; // 右侧卡片从100%移动到0%
+            ? -100 + cardProgress * 80 // 减小移动系数从120到80
+            : 100 - cardProgress * 80; // 减小移动系数从120到80
+
+        // 调试信息：查看每个卡片的位置
+        console.log(
+          `Card ${rect.id}: position=${
+            rect.position
+          }, cardProgress=${cardProgress.toFixed(
+            2
+          )}, translateX=${newTranslateX.toFixed(2)}`
+        );
 
         return {
           ...rect,
