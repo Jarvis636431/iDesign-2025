@@ -36,10 +36,28 @@
           <button @click="switchToTestScene" class="control-btn">
             程序化场景
           </button>
+          <button @click="setPresetView('front')" class="control-btn">
+            正视图
+          </button>
+          <button @click="setPresetView('top')" class="control-btn">
+            俯视图
+          </button>
+          <button @click="setPresetView('side')" class="control-btn">
+            侧视图
+          </button>
+          <button @click="rotateModel(180)" class="control-btn">
+            旋转180°
+          </button>
+          <button @click="toggleAxes" class="control-btn">
+            {{ showAxes ? "隐藏坐标轴" : "显示坐标轴" }}
+          </button>
           <button @click="toggleBoundingBox" class="control-btn">
             {{ showBoundingBox ? "隐藏边界框" : "显示边界框" }}
           </button>
           <button @click="resetView" class="control-btn">重置视角</button>
+          <button @click="logCurrentConfig" class="control-btn">
+            输出配置
+          </button>
           <button @click="toggleFullscreen" class="control-btn">
             {{ isFullscreen ? "退出全屏" : "全屏" }}
           </button>
@@ -68,9 +86,10 @@ const isFullscreen = ref(false);
 const modelContainer = ref(null);
 const currentModel = ref(null);
 const showBoundingBox = ref(false);
+const showAxes = ref(true); // 默认显示坐标轴
 
 // Three.js 相关变量
-let scene, camera, renderer, controls, model, boundingBoxHelper;
+let scene, camera, renderer, controls, model, boundingBoxHelper, axesHelper;
 
 const modelConfig = {
   name: "虚拟展厅",
@@ -81,6 +100,19 @@ const modelConfig = {
   scale: 1,
   position: { x: 0, y: 0, z: 0 },
   rotation: { x: 0, y: 0, z: 0 },
+  // 初始视角设置
+  camera: {
+    // 相机初始位置 (绕z轴旋转180度：x和y取反)
+    position: { x: 180, y: 0, z: 180 },
+    // 相机目标点（看向的位置）
+    target: { x: 0, y: 0, z: 0 },
+    // 视野角度（度）- 减小视野角度实现放大效果
+    fov: 20,
+    // 是否自动调整到模型最佳视角
+    autoFit: true,
+    // 自动调整时的距离倍数 - 减小倍数让相机更近（放大效果）
+    fitMultiplier: 1.2,
+  },
 };
 
 // 初始化Three.js场景
@@ -93,12 +125,17 @@ const initThreeJS = () => {
 
   // 创建相机
   camera = new THREE.PerspectiveCamera(
-    75, // 视野角度
+    modelConfig.camera.fov, // 使用配置的视野角度
     window.innerWidth / window.innerHeight, // 宽高比
     0.01, // 近平面（更小，可以更近距离观看）
     10000 // 远平面（更大，可以看到更远的物体）
   );
-  camera.position.set(5, 5, 5);
+  // 设置初始相机位置
+  camera.position.set(
+    modelConfig.camera.position.x,
+    modelConfig.camera.position.y,
+    modelConfig.camera.position.z
+  );
 
   // 创建渲染器
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -140,6 +177,9 @@ const initThreeJS = () => {
   directionalLight.position.set(10, 10, 5);
   directionalLight.castShadow = true;
   scene.add(directionalLight);
+
+  // 添加坐标轴辅助器
+  createAxesHelper();
 };
 
 // 加载外部模型
@@ -208,32 +248,20 @@ const loadExternalModel = async () => {
     scene.add(model);
     currentModel.value = modelConfig;
 
-    // 自动调整相机位置
-    const box = new THREE.Box3().setFromObject(model);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
+    // 设置相机视角
+    setupCameraView(model);
 
-    // 调试信息：显示模型边界框
-    console.log("模型边界框信息:");
-    console.log("- 中心点:", center);
-    console.log("- 尺寸:", size);
-    console.log("- 边界框:", box);
-
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = camera.fov * (Math.PI / 180);
-    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-
-    // 设置相机位置，稍微远一些以便完整查看模型
-    camera.position.set(center.x, center.y, center.z + cameraZ * 2);
-    controls.target.copy(center);
-    controls.update();
-
-    console.log("相机位置设置为:", camera.position);
-    console.log("控制器目标设置为:", controls.target);
+    // 根据模型大小调整坐标轴
+    updateAxesSize(model);
 
     isLoading.value = false;
 
     console.log("模型加载成功!");
+
+    // 自动输出当前配置信息
+    setTimeout(() => {
+      logCurrentConfig();
+    }, 500); // 延迟500ms确保所有设置都完成
 
     // 清理Draco加载器（可选，释放内存）
     dracoLoader.dispose();
@@ -367,6 +395,110 @@ const buildTestScene = () => {
   animate();
 };
 
+// 创建坐标轴辅助器
+const createAxesHelper = (size = 10) => {
+  if (axesHelper) {
+    scene.remove(axesHelper);
+  }
+
+  // 创建坐标轴辅助器
+  // 参数是轴的长度，可以根据模型大小调整
+  axesHelper = new THREE.AxesHelper(size);
+
+  // 设置轴的位置（默认在原点）
+  axesHelper.position.set(0, 0, 0);
+
+  if (showAxes.value) {
+    scene.add(axesHelper);
+    console.log(
+      `坐标轴已添加 (长度: ${size}) - X轴(红色), Y轴(绿色), Z轴(蓝色)`
+    );
+  }
+};
+
+// 根据模型大小更新坐标轴
+const updateAxesSize = (targetModel) => {
+  if (!targetModel) return;
+
+  const box = new THREE.Box3().setFromObject(targetModel);
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+
+  // 坐标轴长度设为模型最大尺寸的一半
+  const axesSize = maxDim * 0.5;
+
+  console.log(`根据模型尺寸调整坐标轴长度: ${axesSize.toFixed(2)}`);
+  createAxesHelper(axesSize);
+};
+
+// 设置相机视角
+const setupCameraView = (targetModel) => {
+  if (!targetModel || !camera || !controls) return;
+
+  const box = new THREE.Box3().setFromObject(targetModel);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+
+  // 调试信息：显示模型边界框
+  console.log("模型边界框信息:");
+  console.log("- 中心点:", center);
+  console.log("- 尺寸:", size);
+  console.log("- 边界框:", box);
+
+  if (modelConfig.camera.autoFit) {
+    // 自动调整到最佳视角
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const fov = camera.fov * (Math.PI / 180);
+    let cameraDistance = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+
+    // 应用距离倍数
+    cameraDistance *= modelConfig.camera.fitMultiplier;
+
+    // 计算相机位置（保持相对方向，但调整距离）
+    let direction = new THREE.Vector3(
+      modelConfig.camera.position.x,
+      modelConfig.camera.position.y,
+      modelConfig.camera.position.z
+    ).normalize();
+
+    // 如果有z轴旋转，应用旋转变换
+    if (modelConfig.camera.rotationZ) {
+      const rotationAngle = (modelConfig.camera.rotationZ * Math.PI) / 180;
+      const cos = Math.cos(rotationAngle);
+      const sin = Math.sin(rotationAngle);
+
+      // 绕z轴旋转矩阵
+      const newX = direction.x * cos - direction.y * sin;
+      const newY = direction.x * sin + direction.y * cos;
+      direction.set(newX, newY, direction.z);
+
+      console.log(`应用z轴旋转 ${modelConfig.camera.rotationZ}度`);
+    }
+
+    camera.position.copy(center).add(direction.multiplyScalar(cameraDistance));
+    controls.target.copy(center);
+
+    console.log("自动调整相机位置:", camera.position);
+  } else {
+    // 使用配置的固定位置
+    camera.position.set(
+      modelConfig.camera.position.x,
+      modelConfig.camera.position.y,
+      modelConfig.camera.position.z
+    );
+    controls.target.set(
+      modelConfig.camera.target.x,
+      modelConfig.camera.target.y,
+      modelConfig.camera.target.z
+    );
+
+    console.log("使用配置的相机位置:", camera.position);
+  }
+
+  controls.update();
+  console.log("控制器目标设置为:", controls.target);
+};
+
 // 动画循环
 const animate = () => {
   requestAnimationFrame(animate);
@@ -374,20 +506,155 @@ const animate = () => {
   renderer.render(scene, camera);
 };
 
-// 重置视角
-const resetView = () => {
-  if (model && controls) {
+// 设置预设视角
+const setPresetView = (viewType) => {
+  if (!model || !camera || !controls) return;
+
+  const box = new THREE.Box3().setFromObject(model);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const distance = maxDim * 2; // 适当的观看距离
+
+  switch (viewType) {
+    case "front":
+      // 正视图：从前方看
+      camera.position.set(center.x, center.y, center.z + distance);
+      controls.target.copy(center);
+      break;
+    case "top":
+      // 俯视图：从上方看
+      camera.position.set(center.x, center.y + distance, center.z);
+      controls.target.copy(center);
+      break;
+    case "side":
+      // 侧视图：从右侧看
+      camera.position.set(center.x + distance, center.y, center.z);
+      controls.target.copy(center);
+      break;
+    case "isometric":
+      // 等轴视图：45度角
+      camera.position.set(
+        center.x + distance * 0.7,
+        center.y + distance * 0.7,
+        center.z + distance * 0.7
+      );
+      controls.target.copy(center);
+      break;
+  }
+
+  controls.update();
+  console.log(`切换到${viewType}视角:`, camera.position);
+};
+
+// 旋转模型
+const rotateModel = (degrees) => {
+  if (!model) return;
+
+  const radians = (degrees * Math.PI) / 180;
+  model.rotation.z += radians;
+
+  console.log(`模型绕z轴旋转 ${degrees}度，当前旋转角度:`, {
+    x: (model.rotation.x * 180) / Math.PI,
+    y: (model.rotation.y * 180) / Math.PI,
+    z: (model.rotation.z * 180) / Math.PI,
+  });
+};
+
+// 输出当前配置信息
+const logCurrentConfig = () => {
+  console.log("=".repeat(60));
+  console.log("📋 当前 ModelConfig 配置:");
+  console.log("=".repeat(60));
+
+  // 输出完整的modelConfig
+  console.log("🔧 完整配置对象:");
+  console.log(JSON.stringify(modelConfig, null, 2));
+
+  console.log("\n📐 相机配置详情:");
+  console.log("- 初始位置:", modelConfig.camera.position);
+  console.log("- 目标点:", modelConfig.camera.target);
+  console.log("- 视野角度:", modelConfig.camera.fov + "°");
+  console.log("- 自动适配:", modelConfig.camera.autoFit ? "开启" : "关闭");
+  console.log("- 距离倍数:", modelConfig.camera.fitMultiplier);
+  console.log("- Z轴旋转:", modelConfig.camera.rotationZ + "°");
+
+  console.log("\n🎯 模型配置详情:");
+  console.log("- 名称:", modelConfig.name);
+  console.log("- 描述:", modelConfig.description);
+  console.log("- 文件路径:", modelConfig.path);
+  console.log("- 缩放:", modelConfig.scale);
+  console.log("- 位置:", modelConfig.position);
+  console.log("- 旋转:", modelConfig.rotation);
+
+  // 如果有当前相机信息，也输出
+  if (camera && controls) {
+    console.log("\n📷 当前相机状态:");
+    console.log("- 当前位置:", {
+      x: parseFloat(camera.position.x.toFixed(2)),
+      y: parseFloat(camera.position.y.toFixed(2)),
+      z: parseFloat(camera.position.z.toFixed(2)),
+    });
+    console.log("- 当前目标:", {
+      x: parseFloat(controls.target.x.toFixed(2)),
+      y: parseFloat(controls.target.y.toFixed(2)),
+      z: parseFloat(controls.target.z.toFixed(2)),
+    });
+    console.log("- 当前视野角度:", camera.fov + "°");
+  }
+
+  // 如果有模型信息，也输出
+  if (model) {
     const box = new THREE.Box3().setFromObject(model);
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
 
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = camera.fov * (Math.PI / 180);
-    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+    console.log("\n📦 模型信息:");
+    console.log("- 中心点:", {
+      x: parseFloat(center.x.toFixed(2)),
+      y: parseFloat(center.y.toFixed(2)),
+      z: parseFloat(center.z.toFixed(2)),
+    });
+    console.log("- 尺寸:", {
+      x: parseFloat(size.x.toFixed(2)),
+      y: parseFloat(size.y.toFixed(2)),
+      z: parseFloat(size.z.toFixed(2)),
+    });
+    console.log(
+      "- 最大尺寸:",
+      parseFloat(Math.max(size.x, size.y, size.z).toFixed(2))
+    );
+  }
 
-    camera.position.set(center.x, center.y, center.z + cameraZ * 1.5);
-    controls.target.copy(center);
-    controls.update();
+  console.log("=".repeat(60));
+  console.log("💡 提示: 你可以复制上面的配置值来调整 modelConfig");
+  console.log("=".repeat(60));
+};
+
+// 重置视角
+const resetView = () => {
+  if (model && controls) {
+    setupCameraView(model);
+    console.log("视角已重置到配置的初始位置");
+  }
+};
+
+// 切换坐标轴显示
+const toggleAxes = () => {
+  showAxes.value = !showAxes.value;
+
+  if (showAxes.value) {
+    if (axesHelper) {
+      scene.add(axesHelper);
+    } else {
+      createAxesHelper();
+    }
+    console.log("显示坐标轴 - X轴(红色), Y轴(绿色), Z轴(蓝色)");
+  } else {
+    if (axesHelper) {
+      scene.remove(axesHelper);
+    }
+    console.log("隐藏坐标轴");
   }
 };
 
@@ -466,6 +733,24 @@ const handleFullscreenChange = () => {
   handleResize();
 };
 
+// 键盘事件监听
+const handleKeyPress = (event) => {
+  // Ctrl + L 或 Cmd + L: 输出配置
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "l") {
+    event.preventDefault();
+    logCurrentConfig();
+  }
+  // Ctrl + R 或 Cmd + R: 重置视角 (阻止默认刷新)
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "r") {
+    event.preventDefault();
+    resetView();
+  }
+  // 按键 'c': 输出配置
+  if (event.key.toLowerCase() === "c" && !event.ctrlKey && !event.metaKey) {
+    logCurrentConfig();
+  }
+};
+
 // 生命周期
 onMounted(() => {
   initThreeJS();
@@ -473,11 +758,18 @@ onMounted(() => {
 
   window.addEventListener("resize", handleResize);
   document.addEventListener("fullscreenchange", handleFullscreenChange);
+  document.addEventListener("keydown", handleKeyPress);
+
+  console.log("🎮 键盘快捷键:");
+  console.log("- 按 'C' 键: 输出配置信息");
+  console.log("- Ctrl/Cmd + L: 输出配置信息");
+  console.log("- Ctrl/Cmd + R: 重置视角");
 });
 
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
   document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  document.removeEventListener("keydown", handleKeyPress);
 
   // 清理Three.js资源
   if (renderer) {
