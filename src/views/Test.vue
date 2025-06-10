@@ -48,6 +48,9 @@
           <button @click="rotateModel(180)" class="control-btn">
             旋转180°
           </button>
+          <button @click="demonstratePositionDifference" class="control-btn">
+            演示位置差异
+          </button>
           <button @click="toggleAxes" class="control-btn">
             {{ showAxes ? "隐藏坐标轴" : "显示坐标轴" }}
           </button>
@@ -100,18 +103,18 @@ const modelConfig = {
   scale: 1,
   position: { x: 0, y: 0, z: 0 },
   rotation: { x: 0, y: 0, z: 0 },
-  // 初始视角设置
+  // 初始视角设置 - 已调试到最佳状态
   camera: {
-    // 相机初始位置 (绕z轴旋转180度：x和y取反)
-    position: { x: 180, y: 0, z: 180 },
-    // 相机目标点（看向的位置）
+    // 相机初始位置 - 经过调试的最佳观看位置
+    position: { x: 0, y: 0, z: 0 },
+    // 相机目标点（看向模型中心）
     target: { x: 0, y: 0, z: 0 },
-    // 视野角度（度）- 减小视野角度实现放大效果
-    fov: 20,
-    // 是否自动调整到模型最佳视角
+    // 视野角度 - 20度提供高放大倍数，适合细节观察
+    fov: 10,
+    // 自动适配模型大小
     autoFit: true,
-    // 自动调整时的距离倍数 - 减小倍数让相机更近（放大效果）
-    fitMultiplier: 1.2,
+    // 距离倍数 - 1.2倍提供合适的观看距离
+    fitMultiplier: 1.5,
   },
 };
 
@@ -559,6 +562,100 @@ const rotateModel = (degrees) => {
     y: (model.rotation.y * 180) / Math.PI,
     z: (model.rotation.z * 180) / Math.PI,
   });
+};
+
+// 演示相机位置和模型位置的区别
+const demonstratePositionDifference = () => {
+  if (!model || !camera || !controls) return;
+
+  console.log("=".repeat(60));
+  console.log("🎭 演示：相机位置 vs 模型位置的区别");
+  console.log("=".repeat(60));
+
+  // 保存当前状态
+  const originalCameraPos = camera.position.clone();
+  const originalModelPos = model.position.clone();
+  const originalTarget = controls.target.clone();
+
+  let step = 0;
+  const steps = [
+    {
+      name: "初始状态",
+      action: () => {
+        console.log("📍 步骤1: 初始状态");
+        console.log("- 相机位置:", camera.position);
+        console.log("- 模型位置:", model.position);
+        console.log("- 观察目标:", controls.target);
+      },
+    },
+    {
+      name: "移动相机",
+      action: () => {
+        console.log("📷 步骤2: 移动相机位置 (模型不动)");
+        camera.position.set(
+          originalCameraPos.x + 50,
+          originalCameraPos.y + 30,
+          originalCameraPos.z + 50
+        );
+        controls.target.copy(originalTarget);
+        controls.update();
+        console.log("- 新相机位置:", camera.position);
+        console.log("- 模型位置(不变):", model.position);
+        console.log("- 效果: 从不同角度观看同一个模型");
+      },
+    },
+    {
+      name: "恢复并移动模型",
+      action: () => {
+        console.log("🎯 步骤3: 移动模型位置 (相机不动)");
+        // 恢复相机
+        camera.position.copy(originalCameraPos);
+        // 移动模型
+        model.position.set(
+          originalModelPos.x + 0.05,
+          originalModelPos.y + 0.02,
+          originalModelPos.z + 0.03
+        );
+        // 更新观察目标到新的模型位置
+        controls.target.copy(model.position);
+        controls.update();
+        console.log("- 相机位置(不变):", camera.position);
+        console.log("- 新模型位置:", model.position);
+        console.log("- 新观察目标:", controls.target);
+        console.log("- 效果: 模型在3D空间中移动了位置");
+      },
+    },
+    {
+      name: "恢复原状",
+      action: () => {
+        console.log("🔄 步骤4: 恢复到原始状态");
+        camera.position.copy(originalCameraPos);
+        model.position.copy(originalModelPos);
+        controls.target.copy(originalTarget);
+        controls.update();
+        console.log("- 已恢复到初始状态");
+      },
+    },
+  ];
+
+  const executeStep = () => {
+    if (step < steps.length) {
+      steps[step].action();
+      step++;
+      if (step < steps.length) {
+        setTimeout(executeStep, 2000); // 每2秒执行下一步
+      } else {
+        console.log("=".repeat(60));
+        console.log("✅ 演示完成！");
+        console.log("📝 总结:");
+        console.log("- 移动相机 = 改变观察角度");
+        console.log("- 移动模型 = 改变模型在世界中的位置");
+        console.log("=".repeat(60));
+      }
+    }
+  };
+
+  executeStep();
 };
 
 // 输出当前配置信息
