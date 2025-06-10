@@ -36,6 +36,9 @@
           <button @click="switchToTestScene" class="control-btn">
             程序化场景
           </button>
+          <button @click="toggleBoundingBox" class="control-btn">
+            {{ showBoundingBox ? "隐藏边界框" : "显示边界框" }}
+          </button>
           <button @click="resetView" class="control-btn">重置视角</button>
           <button @click="toggleFullscreen" class="control-btn">
             {{ isFullscreen ? "退出全屏" : "全屏" }}
@@ -64,9 +67,10 @@ const loadingProgress = ref(0);
 const isFullscreen = ref(false);
 const modelContainer = ref(null);
 const currentModel = ref(null);
+const showBoundingBox = ref(false);
 
 // Three.js 相关变量
-let scene, camera, renderer, controls, model;
+let scene, camera, renderer, controls, model, boundingBoxHelper;
 
 const modelConfig = {
   name: "虚拟展厅",
@@ -89,10 +93,10 @@ const initThreeJS = () => {
 
   // 创建相机
   camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
+    75, // 视野角度
+    window.innerWidth / window.innerHeight, // 宽高比
+    0.01, // 近平面（更小，可以更近距离观看）
+    10000 // 远平面（更大，可以看到更远的物体）
   );
   camera.position.set(5, 5, 5);
 
@@ -107,6 +111,26 @@ const initThreeJS = () => {
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
+
+  // 移除缩放限制
+  controls.minDistance = 0.1; // 最小缩放距离
+  controls.maxDistance = Infinity; // 最大缩放距离（无限制）
+
+  // 移除平移限制
+  controls.enablePan = true; // 确保平移启用
+  controls.panSpeed = 1.0; // 平移速度
+
+  // 移除旋转限制
+  controls.enableRotate = true; // 确保旋转启用
+  controls.rotateSpeed = 1.0; // 旋转速度
+
+  // 移除垂直角度限制（可以从任意角度观看）
+  controls.minPolarAngle = 0; // 最小垂直角度
+  controls.maxPolarAngle = Math.PI; // 最大垂直角度
+
+  // 移除水平角度限制
+  controls.minAzimuthAngle = -Infinity; // 最小水平角度
+  controls.maxAzimuthAngle = Infinity; // 最大水平角度
 
   // 添加光源
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -189,13 +213,23 @@ const loadExternalModel = async () => {
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
 
+    // 调试信息：显示模型边界框
+    console.log("模型边界框信息:");
+    console.log("- 中心点:", center);
+    console.log("- 尺寸:", size);
+    console.log("- 边界框:", box);
+
     const maxDim = Math.max(size.x, size.y, size.z);
     const fov = camera.fov * (Math.PI / 180);
     let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
 
-    camera.position.set(center.x, center.y, center.z + cameraZ * 1.5);
+    // 设置相机位置，稍微远一些以便完整查看模型
+    camera.position.set(center.x, center.y, center.z + cameraZ * 2);
     controls.target.copy(center);
     controls.update();
+
+    console.log("相机位置设置为:", camera.position);
+    console.log("控制器目标设置为:", controls.target);
 
     isLoading.value = false;
 
@@ -354,6 +388,28 @@ const resetView = () => {
     camera.position.set(center.x, center.y, center.z + cameraZ * 1.5);
     controls.target.copy(center);
     controls.update();
+  }
+};
+
+// 切换边界框显示
+const toggleBoundingBox = () => {
+  if (!model) return;
+
+  showBoundingBox.value = !showBoundingBox.value;
+
+  if (showBoundingBox.value) {
+    // 创建边界框辅助器
+    const box = new THREE.Box3().setFromObject(model);
+    boundingBoxHelper = new THREE.Box3Helper(box, 0xff0000); // 红色边界框
+    scene.add(boundingBoxHelper);
+    console.log("显示边界框");
+  } else {
+    // 移除边界框
+    if (boundingBoxHelper) {
+      scene.remove(boundingBoxHelper);
+      boundingBoxHelper = null;
+      console.log("隐藏边界框");
+    }
   }
 };
 
