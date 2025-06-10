@@ -47,7 +47,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+// import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"; // 暂时不需要
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 const router = useRouter();
@@ -64,7 +64,6 @@ const currentModel = ref(null);
 // Three.js 相关变量
 let scene, camera, renderer, controls, model;
 
-// 展场模型配置 - 使用现有的312.glb模型
 const modelConfig = {
   name: "虚拟展厅",
   description: "3D展场模型展示",
@@ -113,71 +112,123 @@ const initThreeJS = () => {
   scene.add(directionalLight);
 };
 
-// 加载模型
-const loadModel = async () => {
+// 创建测试场景
+const createTestScene = () => {
   try {
     isLoading.value = true;
     hasError.value = false;
-    loadingProgress.value = 0;
 
-    const loader = new GLTFLoader();
-
-    // 加载进度回调
-    const onProgress = (progress) => {
-      if (progress.lengthComputable) {
-        loadingProgress.value = Math.round(
-          (progress.loaded / progress.total) * 100
-        );
+    // 模拟加载进度
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += 10;
+      loadingProgress.value = progress;
+      if (progress >= 100) {
+        clearInterval(progressInterval);
+        buildTestScene();
       }
-    };
-
-    // 加载模型
-    const gltf = await new Promise((resolve, reject) => {
-      loader.load(modelConfig.path, resolve, onProgress, reject);
-    });
-
-    model = gltf.scene;
-
-    // 设置模型属性
-    model.scale.setScalar(modelConfig.scale);
-    model.position.set(
-      modelConfig.position.x,
-      modelConfig.position.y,
-      modelConfig.position.z
-    );
-    model.rotation.set(
-      modelConfig.rotation.x,
-      modelConfig.rotation.y,
-      modelConfig.rotation.z
-    );
-
-    // 添加到场景
-    scene.add(model);
-    currentModel.value = modelConfig;
-
-    // 自动调整相机位置
-    const box = new THREE.Box3().setFromObject(model);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = camera.fov * (Math.PI / 180);
-    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-
-    camera.position.set(center.x, center.y, center.z + cameraZ * 1.5);
-    controls.target.copy(center);
-    controls.update();
-
-    isLoading.value = false;
-
-    // 开始渲染循环
-    animate();
+    }, 100);
   } catch (error) {
-    console.error("模型加载失败:", error);
+    console.error("场景创建失败:", error);
     hasError.value = true;
-    errorMessage.value = `加载失败: ${error.message}`;
+    errorMessage.value = `创建失败: ${error.message}`;
     isLoading.value = false;
   }
+};
+
+// 构建测试场景
+const buildTestScene = () => {
+  // 创建地面
+  const groundGeometry = new THREE.PlaneGeometry(20, 20);
+  const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xcccccc });
+  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // 创建展厅墙壁
+  const wallHeight = 5;
+  const wallThickness = 0.2;
+
+  // 后墙
+  const backWallGeometry = new THREE.BoxGeometry(20, wallHeight, wallThickness);
+  const wallMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+  const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
+  backWall.position.set(0, wallHeight / 2, -10);
+  backWall.receiveShadow = true;
+  scene.add(backWall);
+
+  // 左墙
+  const leftWallGeometry = new THREE.BoxGeometry(wallThickness, wallHeight, 20);
+  const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+  leftWall.position.set(-10, wallHeight / 2, 0);
+  leftWall.receiveShadow = true;
+  scene.add(leftWall);
+
+  // 右墙
+  const rightWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+  rightWall.position.set(10, wallHeight / 2, 0);
+  rightWall.receiveShadow = true;
+  scene.add(rightWall);
+
+  // 创建一些展示台
+  const pedestalGeometry = new THREE.CylinderGeometry(1, 1, 1, 8);
+  const pedestalMaterial = new THREE.MeshLambertMaterial({ color: 0x8b4513 });
+
+  // 展示台1
+  const pedestal1 = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
+  pedestal1.position.set(-5, 0.5, -5);
+  pedestal1.castShadow = true;
+  scene.add(pedestal1);
+
+  // 展示台2
+  const pedestal2 = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
+  pedestal2.position.set(5, 0.5, -5);
+  pedestal2.castShadow = true;
+  scene.add(pedestal2);
+
+  // 展示台3
+  const pedestal3 = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
+  pedestal3.position.set(0, 0.5, 0);
+  pedestal3.castShadow = true;
+  scene.add(pedestal3);
+
+  // 在展示台上放置一些装饰物
+  const decorGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+  const decorMaterials = [
+    new THREE.MeshLambertMaterial({ color: 0xff6b6b }),
+    new THREE.MeshLambertMaterial({ color: 0x4ecdc4 }),
+    new THREE.MeshLambertMaterial({ color: 0x45b7d1 }),
+  ];
+
+  decorMaterials.forEach((material, index) => {
+    const decor = new THREE.Mesh(decorGeometry, material);
+    const pedestals = [pedestal1, pedestal2, pedestal3];
+    decor.position.copy(pedestals[index].position);
+    decor.position.y += 1.4;
+    decor.castShadow = true;
+    scene.add(decor);
+  });
+
+  // 创建一个组作为模型
+  model = new THREE.Group();
+  scene.children.forEach((child) => {
+    if (child !== model) {
+      model.add(child.clone());
+    }
+  });
+
+  currentModel.value = modelConfig;
+
+  // 设置相机位置
+  camera.position.set(8, 6, 8);
+  controls.target.set(0, 2, 0);
+  controls.update();
+
+  isLoading.value = false;
+
+  // 开始渲染循环
+  animate();
 };
 
 // 动画循环
@@ -218,7 +269,7 @@ const toggleFullscreen = () => {
 // 重新加载
 const retryLoad = () => {
   hasError.value = false;
-  loadModel();
+  createTestScene();
 };
 
 // 返回主页
@@ -244,7 +295,7 @@ const handleFullscreenChange = () => {
 // 生命周期
 onMounted(() => {
   initThreeJS();
-  loadModel();
+  createTestScene();
 
   window.addEventListener("resize", handleResize);
   document.addEventListener("fullscreenchange", handleFullscreenChange);

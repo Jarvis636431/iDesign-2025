@@ -21,6 +21,7 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border73.png",
+    model: "",
   },
   {
     id: 74,
@@ -43,6 +44,7 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border74.png",
+    model: "",
   },
   {
     id: 75,
@@ -65,6 +67,7 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border75.png",
+    model: "",
   },
   {
     id: 76,
@@ -87,6 +90,7 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border76.png",
+    model: "",
   },
   {
     id: 77,
@@ -109,5 +113,6 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border77.png",
+    model: "",
   },
 ];
