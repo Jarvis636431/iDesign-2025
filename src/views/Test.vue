@@ -103,18 +103,22 @@ const modelConfig = {
   scale: 1,
   position: { x: 0, y: 0, z: 0 },
   rotation: { x: 0, y: 0, z: 0 },
-  // 初始视角设置 - 已调试到最佳状态
+  // 初始视角设置 - 根据你的理想调试结果更新
   camera: {
-    // 相机初始位置 - 经过调试的最佳观看位置
-    position: { x: 0, y: 0, z: 0 },
-    // 相机目标点（看向模型中心）
+    // 相机方向向量 - 根据你当前的理想位置计算
+    // 当前位置: (0.06, 0.03, -0.03) 相对于模型中心: (0.04, 0.02, 0.06)
+    // 方向向量: (0.02, 0.01, -0.09)
+    // 为了便于配置，使用比例相同的整数: (2, 1, -9)
+    position: { x: 2, y: 1, z: -9 },
+    // 相机目标点（会被自动设为模型中心）
     target: { x: 0, y: 0, z: 0 },
-    // 视野角度 - 20度提供高放大倍数，适合细节观察
-    fov: 10,
+    // 视野角度 - 保持20度
+    fov: 20,
     // 自动适配模型大小
     autoFit: true,
-    // 距离倍数 - 1.2倍提供合适的观看距离
-    fitMultiplier: 1.5,
+    // 距离倍数 - 根据你当前的实际距离调整
+    // 当前实际距离约0.095，理论距离约0.48，所以倍数约0.2
+    fitMultiplier: 0.2,
   },
 };
 
@@ -133,12 +137,8 @@ const initThreeJS = () => {
     0.01, // 近平面（更小，可以更近距离观看）
     10000 // 远平面（更大，可以看到更远的物体）
   );
-  // 设置初始相机位置
-  camera.position.set(
-    modelConfig.camera.position.x,
-    modelConfig.camera.position.y,
-    modelConfig.camera.position.z
-  );
+  // 设置初始相机位置 - 使用默认位置，等待模型加载后再设置最终位置
+  camera.position.set(0, 0, 5); // 临时位置，避免在原点
 
   // 创建渲染器
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -251,7 +251,8 @@ const loadExternalModel = async () => {
     scene.add(model);
     currentModel.value = modelConfig;
 
-    // 设置相机视角
+    // 设置相机视角 - 这是最终的视角设置
+    console.log("🎯 模型加载完成，设置最终视角...");
     setupCameraView(model);
 
     // 根据模型大小调整坐标轴
@@ -451,18 +452,63 @@ const setupCameraView = (targetModel) => {
   if (modelConfig.camera.autoFit) {
     // 自动调整到最佳视角
     const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = camera.fov * (Math.PI / 180);
-    let cameraDistance = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+    const fovDegrees = camera.fov; // 20度
+    const fov = fovDegrees * (Math.PI / 180); // 转换为弧度
+    const halfFov = fov / 2; // 一半的视野角度
+    const halfFovDegrees = fovDegrees / 2; // 10度
+
+    // 详细的计算过程
+    console.log("📐 FOV角度计算详解:");
+    console.log(`- 完整FOV: ${fovDegrees}°`);
+    console.log(`- 半FOV: ${halfFovDegrees}° (${halfFov.toFixed(4)} 弧度)`);
+    console.log(`- 模型最大尺寸: ${maxDim.toFixed(4)}`);
+    console.log(`- 模型半尺寸: ${(maxDim / 2).toFixed(4)}`);
+    console.log(`- tan(${halfFovDegrees}°) = ${Math.tan(halfFov).toFixed(4)}`);
+
+    let cameraDistance = Math.abs(maxDim / 2 / Math.tan(halfFov));
+    console.log(
+      `- 基础距离 = ${(maxDim / 2).toFixed(4)} ÷ ${Math.tan(halfFov).toFixed(
+        4
+      )} = ${cameraDistance.toFixed(4)}`
+    );
 
     // 应用距离倍数
+    const originalDistance = cameraDistance;
     cameraDistance *= modelConfig.camera.fitMultiplier;
+    console.log(
+      `- 最终距离 = ${originalDistance.toFixed(4)} × ${
+        modelConfig.camera.fitMultiplier
+      } = ${cameraDistance.toFixed(4)}`
+    );
 
     // 计算相机位置（保持相对方向，但调整距离）
+    console.log("🔄 配置值 → 最终值的转换过程:");
+    console.log(
+      `- 配置的相机位置: (${modelConfig.camera.position.x}, ${modelConfig.camera.position.y}, ${modelConfig.camera.position.z})`
+    );
+
     let direction = new THREE.Vector3(
       modelConfig.camera.position.x,
       modelConfig.camera.position.y,
       modelConfig.camera.position.z
-    ).normalize();
+    );
+
+    console.log(
+      `- 原始方向向量: (${direction.x.toFixed(2)}, ${direction.y.toFixed(
+        2
+      )}, ${direction.z.toFixed(2)})`
+    );
+    console.log(`- 方向向量长度: ${direction.length().toFixed(4)}`);
+
+    direction.normalize();
+    console.log(
+      `- 标准化后方向: (${direction.x.toFixed(4)}, ${direction.y.toFixed(
+        4
+      )}, ${direction.z.toFixed(4)})`
+    );
+    console.log(
+      `- 标准化后长度: ${direction.length().toFixed(4)} (应该是1.0000)`
+    );
 
     // 如果有z轴旋转，应用旋转变换
     if (modelConfig.camera.rotationZ) {
@@ -478,10 +524,33 @@ const setupCameraView = (targetModel) => {
       console.log(`应用z轴旋转 ${modelConfig.camera.rotationZ}度`);
     }
 
-    camera.position.copy(center).add(direction.multiplyScalar(cameraDistance));
+    console.log(`- 计算的距离: ${cameraDistance.toFixed(4)}`);
+    console.log(
+      `- 模型中心: (${center.x.toFixed(4)}, ${center.y.toFixed(
+        4
+      )}, ${center.z.toFixed(4)})`
+    );
+
+    const finalDirection = direction.multiplyScalar(cameraDistance);
+    console.log(
+      `- 最终偏移向量: (${finalDirection.x.toFixed(
+        4
+      )}, ${finalDirection.y.toFixed(4)}, ${finalDirection.z.toFixed(4)})`
+    );
+
+    camera.position.copy(center).add(finalDirection);
     controls.target.copy(center);
 
-    console.log("自动调整相机位置:", camera.position);
+    console.log("✅ 最终相机位置:", {
+      x: parseFloat(camera.position.x.toFixed(4)),
+      y: parseFloat(camera.position.y.toFixed(4)),
+      z: parseFloat(camera.position.z.toFixed(4)),
+    });
+    console.log("✅ 最终目标位置:", {
+      x: parseFloat(controls.target.x.toFixed(4)),
+      y: parseFloat(controls.target.y.toFixed(4)),
+      z: parseFloat(controls.target.z.toFixed(4)),
+    });
   } else {
     // 使用配置的固定位置
     camera.position.set(
@@ -731,8 +800,9 @@ const logCurrentConfig = () => {
 // 重置视角
 const resetView = () => {
   if (model && controls) {
+    console.log("🔄 重置视角按钮被点击，重新计算最佳视角...");
     setupCameraView(model);
-    console.log("视角已重置到配置的初始位置");
+    console.log("✅ 视角已重置到配置的最佳位置");
   }
 };
 
