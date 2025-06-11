@@ -189,9 +189,9 @@ const initThreeJS = () => {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xf0f0f0);
 
-  // 创建相机
+  // 创建相机 - 使用默认FOV，稍后会根据模型配置更新
   camera = new THREE.PerspectiveCamera(
-    modelConfig.camera.fov, // 使用配置的视野角度
+    75, // 默认视野角度，稍后会更新
     window.innerWidth / window.innerHeight, // 宽高比
     0.01, // 近平面（更小，可以更近距离观看）
     10000 // 远平面（更大，可以看到更远的物体）
@@ -283,32 +283,36 @@ const loadExternalModel = async () => {
       }
     };
 
-    console.log("开始加载模型:", modelConfig.path);
+    console.log("开始加载模型:", modelConfig.value.path);
     console.log("已配置Draco解码器支持");
 
     // 加载模型
     const gltf = await new Promise((resolve, reject) => {
-      loader.load(modelConfig.path, resolve, onProgress, reject);
+      loader.load(modelConfig.value.path, resolve, onProgress, reject);
     });
 
     model = gltf.scene;
 
     // 设置模型属性
-    model.scale.setScalar(modelConfig.scale);
+    model.scale.setScalar(modelConfig.value.scale);
     model.position.set(
-      modelConfig.position.x,
-      modelConfig.position.y,
-      modelConfig.position.z
+      modelConfig.value.position.x,
+      modelConfig.value.position.y,
+      modelConfig.value.position.z
     );
     model.rotation.set(
-      modelConfig.rotation.x,
-      modelConfig.rotation.y,
-      modelConfig.rotation.z
+      modelConfig.value.rotation.x,
+      modelConfig.value.rotation.y,
+      modelConfig.value.rotation.z
     );
 
     // 添加到场景
     scene.add(model);
-    currentModel.value = modelConfig;
+    currentModel.value = modelConfig.value;
+
+    // 更新相机FOV为配置值
+    camera.fov = modelConfig.value.camera.fov;
+    camera.updateProjectionMatrix();
 
     // 设置相机视角 - 这是最终的视角设置
     console.log("🎯 模型加载完成，设置最终视角...");
@@ -445,7 +449,7 @@ const buildTestScene = () => {
     }
   });
 
-  currentModel.value = modelConfig;
+  currentModel.value = modelConfig.value;
 
   // 设置相机位置
   camera.position.set(8, 6, 8);
@@ -508,7 +512,7 @@ const setupCameraView = (targetModel) => {
   console.log("- 尺寸:", size);
   console.log("- 边界框:", box);
 
-  if (modelConfig.camera.autoFit) {
+  if (modelConfig.value.camera.autoFit) {
     // 自动调整到最佳视角
     const maxDim = Math.max(size.x, size.y, size.z);
     const fovDegrees = camera.fov; // 20度
@@ -533,23 +537,23 @@ const setupCameraView = (targetModel) => {
 
     // 应用距离倍数
     const originalDistance = cameraDistance;
-    cameraDistance *= modelConfig.camera.fitMultiplier;
+    cameraDistance *= modelConfig.value.camera.fitMultiplier;
     console.log(
       `- 最终距离 = ${originalDistance.toFixed(4)} × ${
-        modelConfig.camera.fitMultiplier
+        modelConfig.value.camera.fitMultiplier
       } = ${cameraDistance.toFixed(4)}`
     );
 
     // 计算相机位置（保持相对方向，但调整距离）
     console.log("🔄 配置值 → 最终值的转换过程:");
     console.log(
-      `- 配置的相机位置: (${modelConfig.camera.position.x}, ${modelConfig.camera.position.y}, ${modelConfig.camera.position.z})`
+      `- 配置的相机位置: (${modelConfig.value.camera.position.x}, ${modelConfig.value.camera.position.y}, ${modelConfig.value.camera.position.z})`
     );
 
     let direction = new THREE.Vector3(
-      modelConfig.camera.position.x,
-      modelConfig.camera.position.y,
-      modelConfig.camera.position.z
+      modelConfig.value.camera.position.x,
+      modelConfig.value.camera.position.y,
+      modelConfig.value.camera.position.z
     );
 
     console.log(
@@ -570,8 +574,9 @@ const setupCameraView = (targetModel) => {
     );
 
     // 如果有z轴旋转，应用旋转变换
-    if (modelConfig.camera.rotationZ) {
-      const rotationAngle = (modelConfig.camera.rotationZ * Math.PI) / 180;
+    if (modelConfig.value.camera.rotationZ) {
+      const rotationAngle =
+        (modelConfig.value.camera.rotationZ * Math.PI) / 180;
       const cos = Math.cos(rotationAngle);
       const sin = Math.sin(rotationAngle);
 
@@ -580,7 +585,7 @@ const setupCameraView = (targetModel) => {
       const newY = direction.x * sin + direction.y * cos;
       direction.set(newX, newY, direction.z);
 
-      console.log(`应用z轴旋转 ${modelConfig.camera.rotationZ}度`);
+      console.log(`应用z轴旋转 ${modelConfig.value.camera.rotationZ}度`);
     }
 
     console.log(`- 计算的距离: ${cameraDistance.toFixed(4)}`);
@@ -613,14 +618,14 @@ const setupCameraView = (targetModel) => {
   } else {
     // 使用配置的固定位置
     camera.position.set(
-      modelConfig.camera.position.x,
-      modelConfig.camera.position.y,
-      modelConfig.camera.position.z
+      modelConfig.value.camera.position.x,
+      modelConfig.value.camera.position.y,
+      modelConfig.value.camera.position.z
     );
     controls.target.set(
-      modelConfig.camera.target.x,
-      modelConfig.camera.target.y,
-      modelConfig.camera.target.z
+      modelConfig.value.camera.target.x,
+      modelConfig.value.camera.target.y,
+      modelConfig.value.camera.target.z
     );
 
     console.log("使用配置的相机位置:", camera.position);
@@ -1086,6 +1091,10 @@ const handleKeyPress = (event) => {
 
 // 生命周期
 onMounted(() => {
+  console.log("🚀 组件挂载，开始初始化...");
+  console.log("📋 当前选择的展厅:", currentHallId.value);
+  console.log("🏛️ 当前模型配置:", modelConfig.value);
+
   initThreeJS();
   loadExternalModel(); // 改为加载外部模型
 
