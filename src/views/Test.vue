@@ -663,7 +663,41 @@ const setupCameraView = (targetModel) => {
 // 动画循环
 const animate = () => {
   requestAnimationFrame(animate);
-  controls.update();
+
+  if (camera && controls) {
+    // 获取相机前进方向（去掉y分量，保持水平移动）
+    const forward = new THREE.Vector3(0, 0, -1);
+    forward.applyQuaternion(camera.quaternion);
+    forward.y = 0;
+    forward.normalize();
+
+    // 计算右方向
+    const right = new THREE.Vector3(1, 0, 0);
+    right.applyQuaternion(camera.quaternion);
+    right.y = 0;
+    right.normalize();
+
+    // 根据按键状态更新相机位置
+    if (moveState.moveForward) {
+      camera.position.addScaledVector(forward, moveSpeed);
+      controls.target.addScaledVector(forward, moveSpeed);
+    }
+    if (moveState.moveBackward) {
+      camera.position.addScaledVector(forward, -moveSpeed);
+      controls.target.addScaledVector(forward, -moveSpeed);
+    }
+    if (moveState.moveLeft) {
+      camera.position.addScaledVector(right, -moveSpeed);
+      controls.target.addScaledVector(right, -moveSpeed);
+    }
+    if (moveState.moveRight) {
+      camera.position.addScaledVector(right, moveSpeed);
+      controls.target.addScaledVector(right, moveSpeed);
+    }
+
+    controls.update();
+  }
+
   renderer.render(scene, camera);
 };
 
@@ -1114,6 +1148,60 @@ const handleKeyPress = (event) => {
   }
 };
 
+// 处理键盘按下事件
+const handleKeyDown = (event) => {
+  switch (event.code) {
+    case "KeyW":
+    case "ArrowUp":
+      moveState.moveForward = true;
+      break;
+    case "KeyS":
+    case "ArrowDown":
+      moveState.moveBackward = true;
+      break;
+    case "KeyA":
+    case "ArrowLeft":
+      moveState.moveLeft = true;
+      break;
+    case "KeyD":
+    case "ArrowRight":
+      moveState.moveRight = true;
+      break;
+  }
+};
+
+// 处理键盘抬起事件
+const handleKeyUp = (event) => {
+  switch (event.code) {
+    case "KeyW":
+    case "ArrowUp":
+      moveState.moveForward = false;
+      break;
+    case "KeyS":
+    case "ArrowDown":
+      moveState.moveBackward = false;
+      break;
+    case "KeyA":
+    case "ArrowLeft":
+      moveState.moveLeft = false;
+      break;
+    case "KeyD":
+    case "ArrowRight":
+      moveState.moveRight = false;
+      break;
+  }
+};
+
+// 添加移动控制相关的状态
+const moveState = {
+  moveForward: false,
+  moveBackward: false,
+  moveLeft: false,
+  moveRight: false,
+};
+
+const moveSpeed = 0.0005; // 移动速度
+
 // 处理鼠标点击
 const onMouseClick = (event) => {
   // 计算鼠标在标准化设备坐标中的位置
@@ -1187,6 +1275,10 @@ onMounted(() => {
   document.addEventListener("fullscreenchange", handleFullscreenChange);
   document.addEventListener("keydown", handleKeyPress);
 
+  // 添加键盘事件监听
+  window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("keyup", handleKeyUp);
+
   console.log("🎮 键盘快捷键:");
   console.log("- 按 'C' 键: 输出配置信息");
   console.log("- Ctrl/Cmd + L: 输出配置信息");
@@ -1210,6 +1302,10 @@ onUnmounted(() => {
   if (scene) {
     scene.clear();
   }
+
+  // 移除键盘事件监听
+  window.removeEventListener("keydown", handleKeyDown);
+  window.removeEventListener("keyup", handleKeyUp);
 });
 </script>
 
