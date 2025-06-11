@@ -33,6 +33,21 @@
           <p>{{ currentModel?.description || "虚拟展厅3D模型" }}</p>
         </div>
         <div class="view-controls">
+          <!-- 模型选择器 -->
+          <div class="model-selector">
+            <label for="hall-select">选择展厅:</label>
+            <select
+              id="hall-select"
+              v-model="currentHallId"
+              @change="switchHall"
+              class="hall-select"
+            >
+              <option v-for="(hall, id) in hallModels" :key="id" :value="id">
+                {{ hall.name }} - {{ hall.description }}
+              </option>
+            </select>
+          </div>
+
           <button @click="switchToTestScene" class="control-btn">
             程序化场景
           </button>
@@ -61,6 +76,9 @@
           <button @click="logCurrentConfig" class="control-btn">
             输出配置
           </button>
+          <button @click="saveCurrentConfig" class="control-btn save-btn">
+            保存当前配置
+          </button>
           <button @click="toggleFullscreen" class="control-btn">
             {{ isFullscreen ? "退出全屏" : "全屏" }}
           </button>
@@ -71,7 +89,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -94,33 +112,74 @@ const showAxes = ref(true); // 默认显示坐标轴
 // Three.js 相关变量
 let scene, camera, renderer, controls, model, boundingBoxHelper, axesHelper;
 
-const modelConfig = {
-  name: "虚拟展厅",
-  description: "3D展场模型展示",
-  path:
-    import.meta.env.BASE_URL +
-    "assets/models/hall-models/1-first-whisper-with-exhibits-edited.glb",
-  scale: 1,
-  position: { x: 0, y: 0, z: 0 },
-  rotation: { x: 0, y: 0, z: 0 },
-  // 初始视角设置 - 根据你的理想调试结果更新
-  camera: {
-    // 相机方向向量 - 根据你当前的理想位置计算
-    // 当前位置: (0.06, 0.03, -0.03) 相对于模型中心: (0.04, 0.02, 0.06)
-    // 方向向量: (0.02, 0.01, -0.09)
-    // 为了便于配置，使用比例相同的整数: (2, 1, -9)
-    position: { x: -0.7, y: 1, z: -23 },
-    // 相机目标点（会被自动设为模型中心）
-    target: { x: 0, y: 0, z: 0 },
-    // 视野角度 - 保持20度
-    fov: 20,
-    // 自动适配模型大小
-    autoFit: true,
-    // 距离倍数 - 根据你当前的实际距离调整
-    // 当前实际距离约0.095，理论距离约0.48，所以倍数约0.2
-    fitMultiplier: 0.2,
+// 多展场模型配置系统
+const hallModels = {
+  // 第一个展厅 - 你当前调试好的最佳配置
+  hall1: {
+    id: "hall1",
+    name: "第一展厅",
+    description: "First Whisper 展厅模型",
+    path:
+      import.meta.env.BASE_URL +
+      "assets/models/hall-models/1-first-whisper-with-exhibits-edited.glb",
+    scale: 1,
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    camera: {
+      position: { x: -0.7, y: 1, z: -23 }, // 你调试好的最佳方向
+      target: { x: 0, y: 0, z: 0 },
+      fov: 20,
+      autoFit: true,
+      fitMultiplier: 0.2, // 你调试好的最佳距离
+    },
+  },
+
+  // 第二个展厅 - 待调试配置
+  hall2: {
+    id: "hall2",
+    name: "第二展厅",
+    description: "Second Hall 展厅模型",
+    path:
+      import.meta.env.BASE_URL +
+      "assets/models/hall-models/1-first-whisper-with-exhibits-edited.glb",
+    scale: 1,
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    camera: {
+      position: { x: 180, y: 0, z: 180 }, // 默认配置，需要调试
+      target: { x: 0, y: 0, z: 0 },
+      fov: 75,
+      autoFit: true,
+      fitMultiplier: 2.0,
+    },
+  },
+
+  // 第三个展厅 - 待调试配置
+  hall3: {
+    id: "hall3",
+    name: "第三展厅",
+    description: "Third Hall 展厅模型",
+    path:
+      import.meta.env.BASE_URL +
+      "assets/models/hall-models/1-first-whisper-with-exhibits-edited.glb",
+    scale: 1,
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    camera: {
+      position: { x: -100, y: 50, z: 100 }, // 默认配置，需要调试
+      target: { x: 0, y: 0, z: 0 },
+      fov: 45,
+      autoFit: true,
+      fitMultiplier: 1.5,
+    },
   },
 };
+
+// 当前选择的模型ID
+const currentHallId = ref("hall1"); // 默认加载第一个展厅
+
+// 当前模型配置（计算属性）
+const modelConfig = computed(() => hallModels[currentHallId.value]);
 
 // 初始化Three.js场景
 const initThreeJS = () => {
@@ -797,6 +856,113 @@ const logCurrentConfig = () => {
   console.log("=".repeat(60));
 };
 
+// 切换展厅模型
+const switchHall = async () => {
+  console.log(`🏛️ 切换到展厅: ${currentHallId.value}`);
+
+  // 清理当前场景
+  if (scene && model) {
+    scene.remove(model);
+    model = null;
+  }
+
+  // 清理边界框和坐标轴
+  if (boundingBoxHelper) {
+    scene.remove(boundingBoxHelper);
+    boundingBoxHelper = null;
+    showBoundingBox.value = false;
+  }
+
+  if (axesHelper) {
+    scene.remove(axesHelper);
+  }
+
+  // 重新初始化相机FOV（因为不同模型可能有不同的FOV）
+  if (camera) {
+    camera.fov = modelConfig.value.camera.fov;
+    camera.updateProjectionMatrix();
+  }
+
+  // 重新加载新模型
+  await loadExternalModel();
+};
+
+// 保存当前配置
+const saveCurrentConfig = () => {
+  if (!camera || !controls || !model) {
+    console.warn("⚠️ 无法保存配置：模型或相机未初始化");
+    return;
+  }
+
+  // 获取当前相机状态
+  const currentCameraPos = camera.position.clone();
+  const currentTarget = controls.target.clone();
+
+  // 获取模型信息
+  const box = new THREE.Box3().setFromObject(model);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+
+  // 计算方向向量
+  const direction = currentCameraPos.clone().sub(center);
+  const distance = direction.length();
+  direction.normalize();
+
+  // 计算理论距离和倍数
+  const fov = camera.fov * (Math.PI / 180);
+  const theoreticalDistance = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+  const calculatedMultiplier = distance / theoreticalDistance;
+
+  // 生成新的配置
+  const newConfig = {
+    position: {
+      x: parseFloat((direction.x * 100).toFixed(1)), // 放大100倍便于配置
+      y: parseFloat((direction.y * 100).toFixed(1)),
+      z: parseFloat((direction.z * 100).toFixed(1)),
+    },
+    target: { x: 0, y: 0, z: 0 },
+    fov: camera.fov,
+    autoFit: true,
+    fitMultiplier: parseFloat(calculatedMultiplier.toFixed(2)),
+  };
+
+  console.log("=".repeat(60));
+  console.log("💾 保存当前配置");
+  console.log("=".repeat(60));
+  console.log("📊 当前状态分析:");
+  console.log("- 当前相机位置:", {
+    x: parseFloat(currentCameraPos.x.toFixed(4)),
+    y: parseFloat(currentCameraPos.y.toFixed(4)),
+    z: parseFloat(currentCameraPos.z.toFixed(4)),
+  });
+  console.log("- 模型中心:", {
+    x: parseFloat(center.x.toFixed(4)),
+    y: parseFloat(center.y.toFixed(4)),
+    z: parseFloat(center.z.toFixed(4)),
+  });
+  console.log("- 实际距离:", distance.toFixed(4));
+  console.log("- 理论距离:", theoreticalDistance.toFixed(4));
+  console.log("- 计算倍数:", calculatedMultiplier.toFixed(4));
+
+  console.log("\n🔧 建议的新配置:");
+  console.log("camera: {");
+  console.log(
+    `  position: { x: ${newConfig.position.x}, y: ${newConfig.position.y}, z: ${newConfig.position.z} },`
+  );
+  console.log(`  target: { x: 0, y: 0, z: 0 },`);
+  console.log(`  fov: ${newConfig.fov},`);
+  console.log(`  autoFit: true,`);
+  console.log(`  fitMultiplier: ${newConfig.fitMultiplier},`);
+  console.log("}");
+
+  console.log(
+    "\n📋 复制以下配置到 hallModels['" + currentHallId.value + "'].camera:"
+  );
+  console.log(JSON.stringify(newConfig, null, 2));
+  console.log("=".repeat(60));
+};
+
 // 重置视角
 const resetView = () => {
   if (model && controls) {
@@ -1131,9 +1297,50 @@ onUnmounted(() => {
   font-size: 0.9rem;
 }
 
+/* 模型选择器样式 */
+.model-selector {
+  margin: 10px 0;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.model-selector label {
+  display: block;
+  color: white;
+  font-size: 14px;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.hall-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hall-select:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: #007bff;
+}
+
+.hall-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
 .view-controls {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .control-btn {
@@ -1149,6 +1356,17 @@ onUnmounted(() => {
 
 .control-btn:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+.save-btn {
+  background: rgba(40, 167, 69, 0.9) !important;
+  color: white !important;
+  font-weight: bold;
+  border-color: rgba(40, 167, 69, 0.5) !important;
+}
+
+.save-btn:hover {
+  background: rgba(40, 167, 69, 1) !important;
 }
 
 /* 移动端适配 */
