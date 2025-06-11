@@ -20,68 +20,70 @@
     </div>
 
     <!-- 模型展示区域 -->
-    <div
-      v-show="!isLoading && !hasError"
-      class="model-container"
-      ref="modelContainer"
-    >
-      <!-- 控制面板 -->
-      <div class="control-panel">
-        <button @click="goBack" class="back-button"><span>←</span> 返回</button>
-        <div class="model-info">
-          <h3>{{ currentModel?.name || "展场模型" }}</h3>
-          <p>{{ currentModel?.description || "虚拟展厅3D模型" }}</p>
-        </div>
-        <div class="view-controls">
-          <!-- 模型选择器 -->
-          <div class="model-selector">
-            <label for="hall-select">选择展厅:</label>
-            <select
-              id="hall-select"
-              v-model="currentHallId"
-              @change="switchHall"
-              class="hall-select"
-            >
-              <option v-for="(hall, id) in hallModels" :key="id" :value="id">
-                {{ hall.name }} - {{ hall.description }}
-              </option>
-            </select>
+    <div class="model-frame">
+      <div
+        v-show="!isLoading && !hasError"
+        class="model-container"
+        ref="modelContainer"
+      >
+        <!-- 控制面板 -->
+        <div class="control-panel">
+          <button @click="goBack" class="back-button"><span>←</span> 返回</button>
+          <div class="model-info">
+            <h3>{{ currentModel?.name || "展场模型" }}</h3>
+            <p>{{ currentModel?.description || "虚拟展厅3D模型" }}</p>
           </div>
+          <div class="view-controls">
+            <!-- 模型选择器 -->
+            <div class="model-selector">
+              <label for="hall-select">选择展厅:</label>
+              <select
+                id="hall-select"
+                v-model="currentHallId"
+                @change="switchHall"
+                class="hall-select"
+              >
+                <option v-for="(hall, id) in hallModels" :key="id" :value="id">
+                  {{ hall.name }} - {{ hall.description }}
+                </option>
+              </select>
+            </div>
 
-          <button @click="switchToTestScene" class="control-btn">
-            程序化场景
-          </button>
-          <button @click="setPresetView('front')" class="control-btn">
-            正视图
-          </button>
-          <button @click="setPresetView('top')" class="control-btn">
-            俯视图
-          </button>
-          <button @click="setPresetView('side')" class="control-btn">
-            侧视图
-          </button>
-          <button @click="rotateModel(180)" class="control-btn">
-            旋转180°
-          </button>
-          <button @click="demonstratePositionDifference" class="control-btn">
-            演示位置差异
-          </button>
-          <button @click="toggleAxes" class="control-btn">
-            {{ showAxes ? "隐藏坐标轴" : "显示坐标轴" }}
-          </button>
-          <button @click="toggleBoundingBox" class="control-btn">
-            {{ showBoundingBox ? "隐藏边界框" : "显示边界框" }}
-          </button>
-          <button @click="resetView" class="control-btn">重置视角</button>
-          <button @click="logCurrentConfig" class="control-btn">
-            输出配置
-          </button>
-          <button @click="saveCurrentConfig" class="control-btn save-btn">
-            保存当前配置
-          </button>
-          <button @click="toggleFullscreen" class="control-btn">
-            {{ isFullscreen ? "退出全屏" : "全屏" }}
-          </button>
+            <button @click="switchToTestScene" class="control-btn">
+              程序化场景
+            </button>
+            <button @click="setPresetView('front')" class="control-btn">
+              正视图
+            </button>
+            <button @click="setPresetView('top')" class="control-btn">
+              俯视图
+            </button>
+            <button @click="setPresetView('side')" class="control-btn">
+              侧视图
+            </button>
+            <button @click="rotateModel(180)" class="control-btn">
+              旋转180°
+            </button>
+            <button @click="demonstratePositionDifference" class="control-btn">
+              演示位置差异
+            </button>
+            <button @click="toggleAxes" class="control-btn">
+              {{ showAxes ? "隐藏坐标轴" : "显示坐标轴" }}
+            </button>
+            <button @click="toggleBoundingBox" class="control-btn">
+              {{ showBoundingBox ? "隐藏边界框" : "显示边界框" }}
+            </button>
+            <button @click="resetView" class="control-btn">重置视角</button>
+            <button @click="logCurrentConfig" class="control-btn">
+              输出配置
+            </button>
+            <button @click="saveCurrentConfig" class="control-btn save-btn">
+              保存当前配置
+            </button>
+            <button @click="toggleFullscreen" class="control-btn">
+              {{ isFullscreen ? "退出全屏" : "全屏" }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -199,8 +201,8 @@ const initThreeJS = () => {
     0.01, // 近平面（更小，可以更近距离观看）
     10000 // 远平面（更大，可以看到更远的物体）
   );
-  // 设置初始相机位置 - 使用默认位置，等待模型加载后再设置最终位置
-  camera.position.set(0, 0, 5); // 临时位置，避免在原点
+  // 设置初始相机位置 - 使用人眼高度
+  camera.position.set(0, 1.6, 5); // 设置为标准人眼高度
 
   // 创建渲染器
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -218,20 +220,27 @@ const initThreeJS = () => {
 
   // 创建控制器
   controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
+  controls.enableDamping = true; // 启用阻尼效果，使移动更平滑
   controls.dampingFactor = 0.05;
 
-  // 移除缩放限制
-  controls.minDistance = 0.1; // 最小缩放距离
-  controls.maxDistance = Infinity; // 最大缩放距离（无限制）
+  // 设置为第一人称模式
+  controls.maxPolarAngle = Math.PI / 2; // 限制垂直旋转，不能看到地面以下
+  controls.minPolarAngle = Math.PI / 2; // 锁定垂直高度
 
-  // 移除平移限制
-  controls.enablePan = true; // 确保平移启用
-  controls.panSpeed = 1.0; // 平移速度
+  // 设置移动限制
+  controls.enableZoom = false; // 禁用缩放
+  controls.enableRotate = true; // 允许水平旋转
+  controls.rotateSpeed = 0.5; // 降低旋转速度
 
-  // 移除旋转限制
-  controls.enableRotate = true; // 确保旋转启用
-  controls.rotateSpeed = 1.0; // 旋转速度
+  // 启用平移但限制为水平移动
+  controls.enablePan = true;
+  controls.panSpeed = 0.5;
+  
+  // 添加平移限制回调
+  controls.addEventListener('change', () => {
+    // 锁定相机高度
+    camera.position.y = 1.6; // 设置为标准人眼高度（约1.6米）
+  });
 
   // 移除垂直角度限制（可以从任意角度观看）
   controls.minPolarAngle = 0; // 最小垂直角度
@@ -1322,10 +1331,26 @@ onUnmounted(() => {
 }
 
 /* 模型容器 */
+.model-frame {
+  position: relative;
+  width: 90vw;
+  height: 80vh;
+  margin: 2rem auto;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
 .model-container {
   width: 100%;
   height: 100%;
   position: relative;
+  border-radius: 10px;
+  background: #f8f8f8;
+  overflow: hidden;
 }
 
 /* 控制面板 */
@@ -1334,8 +1359,12 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 10px;
+  margin: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
