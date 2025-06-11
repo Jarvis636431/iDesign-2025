@@ -28,7 +28,9 @@
       >
         <!-- 控制面板 -->
         <div class="control-panel">
-          <button @click="goBack" class="back-button"><span>←</span> 返回</button>
+          <button @click="goBack" class="back-button">
+            <span>←</span> 返回
+          </button>
           <div class="model-info">
             <h3>{{ currentModel?.name || "展场模型" }}</h3>
             <p>{{ currentModel?.description || "虚拟展厅3D模型" }}</p>
@@ -112,14 +114,22 @@ const showBoundingBox = ref(false);
 const showAxes = ref(true); // 默认显示坐标轴
 
 // Three.js 相关变量
-let scene, camera, renderer, controls, model, boundingBoxHelper, axesHelper, raycaster, mouse;
+let scene,
+  camera,
+  renderer,
+  controls,
+  model,
+  boundingBoxHelper,
+  axesHelper,
+  raycaster,
+  mouse;
 
 // 响应式状态 - 当前选中的物体
 const selectedObject = ref(null);
 
 // 多展场模型配置系统
 const hallModels = {
-  // 第一个展厅 - 你当前调试好的最佳配置
+  // 第一个展厅 - 调整后的最佳配置
   hall1: {
     id: "hall1",
     name: "第一展厅",
@@ -131,11 +141,11 @@ const hallModels = {
     position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
     camera: {
-      position: { x: -0.7, y: 1, z: -23 }, // 你调试好的最佳方向
-      target: { x: 0, y: 0, z: 0 },
-      fov: 20,
+      position: { x: -0.7, y: 1.6, z: -22 }, // 适度增加Z轴距离
+      target: { x: 0, y: 1.6, z: 0 }, // 让视线保持在人眼高度
+      fov: 50, // 保持当前FOV
       autoFit: true,
-      fitMultiplier: 0.2, // 你调试好的最佳距离
+      fitMultiplier: 0.52, // 适度增加距离倍数
     },
   },
 
@@ -196,13 +206,14 @@ const initThreeJS = () => {
 
   // 创建相机 - 使用默认FOV，稍后会根据模型配置更新
   camera = new THREE.PerspectiveCamera(
-    75, // 默认视野角度，稍后会更新
-    window.innerWidth / window.innerHeight, // 宽高比
-    0.01, // 近平面（更小，可以更近距离观看）
-    10000 // 远平面（更大，可以看到更远的物体）
+    45, // 更合适的FOV角度
+    window.innerWidth / window.innerHeight,
+    0.01,
+    10000
   );
-  // 设置初始相机位置 - 使用人眼高度
-  camera.position.set(0, 1.6, 5); // 设置为标准人眼高度
+
+  // 设置相机初始位置 - 使用人眼高度，但距离更远
+  camera.position.set(0, 1.6, 10); // 调整Z轴距离更远
 
   // 创建渲染器
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -210,45 +221,37 @@ const initThreeJS = () => {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   modelContainer.value.appendChild(renderer.domElement);
-  
+
   // 初始化射线检测器和鼠标向量
   raycaster = new THREE.Raycaster();
   mouse = new THREE.Vector2();
-  
+
   // 添加点击事件监听
-  renderer.domElement.addEventListener('click', onMouseClick);
+  renderer.domElement.addEventListener("click", onMouseClick);
 
-  // 创建控制器
+  // 创建控制器并设置限制
   controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true; // 启用阻尼效果，使移动更平滑
-  controls.dampingFactor = 0.05;
 
-  // 设置为第一人称模式
-  controls.maxPolarAngle = Math.PI / 2; // 限制垂直旋转，不能看到地面以下
-  controls.minPolarAngle = Math.PI / 2; // 锁定垂直高度
+  // 基本控制设置
+  controls.enableDamping = true; // 启用阻尼效果
+  controls.dampingFactor = 0.05; // 阻尼系数
 
-  // 设置移动限制
-  controls.enableZoom = false; // 禁用缩放
-  controls.enableRotate = true; // 允许水平旋转
-  controls.rotateSpeed = 0.5; // 降低旋转速度
+  // 禁用缩放
+  controls.enableZoom = false;
 
-  // 启用平移但限制为水平移动
-  controls.enablePan = true;
-  controls.panSpeed = 0.5;
-  
-  // 添加平移限制回调
-  controls.addEventListener('change', () => {
-    // 锁定相机高度
-    camera.position.y = 1.6; // 设置为标准人眼高度（约1.6米）
-  });
+  // 限制垂直旋转角度(固定视角高度)
+  controls.minPolarAngle = Math.PI / 2; // 90度
+  controls.maxPolarAngle = Math.PI / 2; // 90度
 
-  // 移除垂直角度限制（可以从任意角度观看）
-  controls.minPolarAngle = 0; // 最小垂直角度
-  controls.maxPolarAngle = Math.PI; // 最大垂直角度
+  // 不限制水平旋转
+  controls.minAzimuthAngle = -Infinity;
+  controls.maxAzimuthAngle = Infinity;
 
-  // 移除水平角度限制
-  controls.minAzimuthAngle = -Infinity; // 最小水平角度
-  controls.maxAzimuthAngle = Infinity; // 最大水平角度
+  // 禁用平移
+  controls.enablePan = false;
+
+  // 设置旋转速度
+  controls.rotateSpeed = 0.5; // 可以调整这个值来改变旋转灵敏度
 
   // 添加光源
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -328,7 +331,7 @@ const loadExternalModel = async () => {
     // 添加到场景
     scene.add(model);
     currentModel.value = modelConfig.value;
-    
+
     // 设置模型交互性
     setupModelInteractivity(model, `${currentHallId.value}_`);
 
@@ -1127,7 +1130,7 @@ const onMouseClick = (event) => {
 
   if (intersects.length > 0) {
     const clickedObject = intersects[0].object;
-    
+
     // 如果之前有选中的物体，恢复其材质
     if (selectedObject.value && selectedObject.value.originalMaterial) {
       selectedObject.value.material = selectedObject.value.originalMaterial;
@@ -1147,7 +1150,7 @@ const onMouseClick = (event) => {
     clickedObject.material = highlightMaterial;
     selectedObject.value = clickedObject;
 
-    console.log('点击了模型:', clickedObject.name || '未命名物体');
+    console.log("点击了模型:", clickedObject.name || "未命名物体");
     // 这里可以添加你的点击处理逻辑
   } else {
     // 如果点击空白处，取消选中
@@ -1159,7 +1162,7 @@ const onMouseClick = (event) => {
 };
 
 // 给模型的所有子物体添加名称（可选）
-const setupModelInteractivity = (object, prefix = '') => {
+const setupModelInteractivity = (object, prefix = "") => {
   let index = 0;
   object.traverse((child) => {
     if (child.isMesh) {
@@ -1194,10 +1197,10 @@ onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
   document.removeEventListener("fullscreenchange", handleFullscreenChange);
   document.removeEventListener("keydown", handleKeyPress);
-  
+
   // 移除点击事件监听
   if (renderer) {
-    renderer.domElement.removeEventListener('click', onMouseClick);
+    renderer.domElement.removeEventListener("click", onMouseClick);
   }
 
   // 清理Three.js资源
@@ -1217,6 +1220,29 @@ onUnmounted(() => {
   overflow: hidden;
   background: #000;
   position: relative;
+}
+
+/* 修改模型框架样式，去掉边距和圆角 */
+.model-frame {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  background: transparent;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+}
+
+.model-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 0;
+  background: transparent;
+  overflow: hidden;
 }
 
 /* 加载状态 */
@@ -1328,29 +1354,6 @@ onUnmounted(() => {
 .back-btn:hover {
   background: #ff6b6b;
   color: white;
-}
-
-/* 模型容器 */
-.model-frame {
-  position: relative;
-  width: 90vw;
-  height: 80vh;
-  margin: 2rem auto;
-  background: #ffffff;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 20px;
-}
-
-.model-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  border-radius: 10px;
-  background: #f8f8f8;
-  overflow: hidden;
 }
 
 /* 控制面板 */
