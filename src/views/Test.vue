@@ -110,7 +110,10 @@ const showBoundingBox = ref(false);
 const showAxes = ref(true); // 默认显示坐标轴
 
 // Three.js 相关变量
-let scene, camera, renderer, controls, model, boundingBoxHelper, axesHelper;
+let scene, camera, renderer, controls, model, boundingBoxHelper, axesHelper, raycaster, mouse;
+
+// 响应式状态 - 当前选中的物体
+const selectedObject = ref(null);
 
 // 多展场模型配置系统
 const hallModels = {
@@ -205,6 +208,13 @@ const initThreeJS = () => {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   modelContainer.value.appendChild(renderer.domElement);
+  
+  // 初始化射线检测器和鼠标向量
+  raycaster = new THREE.Raycaster();
+  mouse = new THREE.Vector2();
+  
+  // 添加点击事件监听
+  renderer.domElement.addEventListener('click', onMouseClick);
 
   // 创建控制器
   controls = new OrbitControls(camera, renderer.domElement);
@@ -309,6 +319,9 @@ const loadExternalModel = async () => {
     // 添加到场景
     scene.add(model);
     currentModel.value = modelConfig.value;
+    
+    // 设置模型交互性
+    setupModelInteractivity(model, `${currentHallId.value}_`);
 
     // 更新相机FOV为配置值
     camera.fov = modelConfig.value.camera.fov;
@@ -1089,6 +1102,66 @@ const handleKeyPress = (event) => {
   }
 };
 
+// 处理鼠标点击
+const onMouseClick = (event) => {
+  // 计算鼠标在标准化设备坐标中的位置
+  // (-1 到 +1)
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  // 更新射线
+  raycaster.setFromCamera(mouse, camera);
+
+  // 获取与射线相交的对象
+  const intersects = raycaster.intersectObject(model, true);
+
+  if (intersects.length > 0) {
+    const clickedObject = intersects[0].object;
+    
+    // 如果之前有选中的物体，恢复其材质
+    if (selectedObject.value && selectedObject.value.originalMaterial) {
+      selectedObject.value.material = selectedObject.value.originalMaterial;
+    }
+
+    // 保存新选中物体的原始材质
+    if (!clickedObject.originalMaterial) {
+      clickedObject.originalMaterial = clickedObject.material.clone();
+    }
+
+    // 创建高亮材质
+    const highlightMaterial = clickedObject.originalMaterial.clone();
+    highlightMaterial.emissive = new THREE.Color(0x666666);
+    highlightMaterial.emissiveIntensity = 0.5;
+
+    // 应用高亮材质
+    clickedObject.material = highlightMaterial;
+    selectedObject.value = clickedObject;
+
+    console.log('点击了模型:', clickedObject.name || '未命名物体');
+    // 这里可以添加你的点击处理逻辑
+  } else {
+    // 如果点击空白处，取消选中
+    if (selectedObject.value && selectedObject.value.originalMaterial) {
+      selectedObject.value.material = selectedObject.value.originalMaterial;
+      selectedObject.value = null;
+    }
+  }
+};
+
+// 给模型的所有子物体添加名称（可选）
+const setupModelInteractivity = (object, prefix = '') => {
+  let index = 0;
+  object.traverse((child) => {
+    if (child.isMesh) {
+      // 如果物体没有名字，给它一个默认名字
+      if (!child.name) {
+        child.name = `${prefix}object_${index++}`;
+      }
+    }
+  });
+};
+
 // 生命周期
 onMounted(() => {
   console.log("🚀 组件挂载，开始初始化...");
@@ -1112,6 +1185,11 @@ onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
   document.removeEventListener("fullscreenchange", handleFullscreenChange);
   document.removeEventListener("keydown", handleKeyPress);
+  
+  // 移除点击事件监听
+  if (renderer) {
+    renderer.domElement.removeEventListener('click', onMouseClick);
+  }
 
   // 清理Three.js资源
   if (renderer) {
