@@ -2,20 +2,20 @@
 export const hallModels = {
   // 第一个展厅
   hall1: {
-    id: "hall1",
+    id: 73,
     name: "第一展厅",
     description: "First Whisper 展厅模型",
     path: "assets/models/hall-models/1-first-whisper-with-exhibits-edited.glb",
-    scale: 1,
-    position: { x: 0, y: 0, z: 0 },
-    rotation: { x: 0, y: 0, z: 0 },
+    scale: 50, // 增大整体模型的比例
+    position: { x: -0.2, y: -0.4, z: -1 },
+    rotation: { x: 0, y: -0.6, z: 0 },
     camera: {
-      position: { x: 0, y: 0.004, z: 0 }, // 把距离减半，更靠近模型
-      target: { x: 0, y: 0, z: 0 },
+      position: { x: 0.2, y: 2, z: -0.3 }, // 相机位置设置为更容易理解的实际尺寸
+      target: { x: 0.2, y: 0, z: -0.3 }, // 看向展厅中心
       rotation: { x: 0, y: 0, z: 0 },
-      fov: 85, // 稍微增加视场角
-      autoFit: true,
-      fitMultiplier: 200, // 增大显示尺寸
+      fov: 45,
+      autoFit: false, // 关闭自动适应，使用固定比例
+      fitMultiplier: 1,
     },
   },
   // 其他展厅配置...
@@ -23,23 +23,23 @@ export const hallModels = {
 
 // 相机控制配置
 export const cameraDefaults = {
-  fov: 45,
-  near: 0.1,
+  fov: 75, // 增大视场角以看到更多内容
+  near: 0.001,
   far: 1000,
-  eyeHeight: 1.6,
-  moveSpeed: 0.005, // 减小移动速度，使移动更精确
+  eyeHeight: 1.6, // 保持标准人眼高度
+  moveSpeed: 0.01, // 增加移动速度，使移动更流畅
   rotateSpeed: 0.5,
   dampingFactor: 0.05,
 };
 
 // 控制器限制配置
 export const controlsLimits = {
-  minPolarAngle: Math.PI / 6, // 30度，允许更高的视角
-  maxPolarAngle: (Math.PI * 5) / 6, // 150度，允许更低的视角
+  minPolarAngle: Math.PI / 2, // 90度，锁定视角水平
+  maxPolarAngle: Math.PI / 2, // 90度，锁定视角水平
   minAzimuthAngle: -Infinity,
   maxAzimuthAngle: Infinity,
-  enableZoom: true,
-  enablePan: true,
-  minDistance: 3, // 允许更近的距离
-  maxDistance: 30, // 限制最远距离以防模型太小
+  enableZoom: false, // 禁用缩放
+  enablePan: false, // 禁用平移
+  minDistance: 3, // 保持最小距离限制
+  maxDistance: 30, // 保持最大距离限制
 };
