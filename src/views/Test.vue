@@ -38,7 +38,6 @@
           <div class="view-controls">
             <!-- 模型选择器 -->
             <div class="model-selector">
-              <label for="hall-select">选择展厅:</label>
               <select
                 id="hall-select"
                 v-model="currentHallId"
@@ -46,45 +45,11 @@
                 class="hall-select"
               >
                 <option v-for="(hall, id) in hallModels" :key="id" :value="id">
-                  {{ hall.name }} - {{ hall.description }}
+                  {{ hall.name }}
                 </option>
               </select>
             </div>
-
-            <button @click="switchToTestScene" class="control-btn">
-              程序化场景
-            </button>
-            <button @click="setPresetView('front')" class="control-btn">
-              正视图
-            </button>
-            <button @click="setPresetView('top')" class="control-btn">
-              俯视图
-            </button>
-            <button @click="setPresetView('side')" class="control-btn">
-              侧视图
-            </button>
-            <button @click="rotateModel(180)" class="control-btn">
-              旋转180°
-            </button>
-            <button @click="demonstratePositionDifference" class="control-btn">
-              演示位置差异
-            </button>
-            <button @click="toggleAxes" class="control-btn">
-              {{ showAxes ? "隐藏坐标轴" : "显示坐标轴" }}
-            </button>
-            <button @click="toggleBoundingBox" class="control-btn">
-              {{ showBoundingBox ? "隐藏边界框" : "显示边界框" }}
-            </button>
             <button @click="resetView" class="control-btn">重置视角</button>
-            <button @click="logCurrentConfig" class="control-btn">
-              输出配置
-            </button>
-            <button @click="saveCurrentConfig" class="control-btn save-btn">
-              保存当前配置
-            </button>
-            <button @click="toggleFullscreen" class="control-btn">
-              {{ isFullscreen ? "退出全屏" : "全屏" }}
-            </button>
           </div>
         </div>
       </div>
@@ -111,25 +76,11 @@ const isLoading = ref(true);
 const hasError = ref(false);
 const errorMessage = ref("");
 const loadingProgress = ref(0);
-const isFullscreen = ref(false);
 const modelContainer = ref(null);
 const currentModel = ref(null);
-const showBoundingBox = ref(false);
-const showAxes = ref(true);
-const selectedObject = ref(null);
 
 // Three.js 相关变量
-let sceneManager,
-  cameraController,
-  camera,
-  renderer,
-  model,
-  boundingBoxHelper,
-  axesHelper,
-  raycaster,
-  mouse,
-  hoveredObject,
-  originalMaterials = new Map(); // 存储原始材质
+let sceneManager, cameraController, camera, renderer, model;
 
 // 当前选择的模型ID
 const currentHallId = ref("hall1");
@@ -158,74 +109,11 @@ const initScene = () => {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   modelContainer.value.appendChild(renderer.domElement);
 
-  // 初始化射线检测器
-  raycaster = new THREE.Raycaster();
-  mouse = new THREE.Vector2();
-
   // 创建相机控制器
   cameraController = new CameraController(camera, renderer.domElement);
 };
 
-// 处理鼠标点击事件
-const onMouseClick = (event) => {
-  // 计算鼠标在画布中的归一化坐标
-  const rect = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-  // 更新射线
-  raycaster.setFromCamera(mouse, camera);
-
-  // 检测相交的对象
-  const intersects = raycaster.intersectObject(model, true);
-  if (intersects.length > 0) {
-    // 如果有选中的对象，可以在这里处理选中逻辑
-    selectedObject.value = intersects[0].object;
-    console.log("选中对象:", selectedObject.value);
-  } else {
-    // 如果没有选中对象，清除选中状态
-    selectedObject.value = null;
-  }
-};
-
-// 添加鼠标移动事件处理
-const onMouseMove = (event) => {
-  if (!model) return;
-
-  // 计算鼠标在画布中的归一化坐标
-  const rect = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-  // 更新射线
-  raycaster.setFromCamera(mouse, camera);
-
-  // 检测相交的对象
-  const intersects = raycaster.intersectObject(model, true);
-
-  // 如果之前有高亮的对象，恢复其原始材质
-  if (hoveredObject) {
-    const originalMaterial = originalMaterials.get(hoveredObject);
-    if (originalMaterial) {
-      hoveredObject.material = originalMaterial;
-    }
-    hoveredObject = null;
-  }
-
-  // 高亮新的相交对象
-  if (intersects.length > 0) {
-    hoveredObject = intersects[0].object;
-    // 存储原始材质
-    if (!originalMaterials.has(hoveredObject)) {
-      originalMaterials.set(hoveredObject, hoveredObject.material.clone());
-    }
-    // 创建高亮材质
-    const highlightMaterial = hoveredObject.material.clone();
-    highlightMaterial.emissive = new THREE.Color(0x666666);
-    highlightMaterial.emissiveIntensity = 0.5;
-    hoveredObject.material = highlightMaterial;
-  }
-};
+// 核心功能已删除
 
 // 加载模型
 const loadModel = async () => {
@@ -300,7 +188,6 @@ const setupModel = () => {
   currentModel.value = modelConfig.value;
 
   setupCameraView();
-  updateAxesSize();
 };
 
 // 动画循环
@@ -322,51 +209,6 @@ const handleResize = () => {
 
   // 更新渲染器大小
   renderer.setSize(window.innerWidth, window.innerHeight);
-};
-
-// 处理全屏变化
-const handleFullscreenChange = () => {
-  isFullscreen.value = !!document.fullscreenElement;
-};
-
-// 切换全屏
-const toggleFullscreen = async () => {
-  if (!document.fullscreenElement) {
-    try {
-      await modelContainer.value.requestFullscreen();
-    } catch (error) {
-      console.error("全屏切换失败:", error);
-    }
-  } else {
-    try {
-      await document.exitFullscreen();
-    } catch (error) {
-      console.error("退出全屏失败:", error);
-    }
-  }
-};
-
-// 设置预设视角
-const setPresetView = (viewType) => {
-  if (!camera || !model) return;
-
-  switch (viewType) {
-    case "front":
-      camera.position.set(0, cameraDefaults.eyeHeight, 5);
-      break;
-    case "top":
-      camera.position.set(0, 10, 0);
-      break;
-    case "side":
-      camera.position.set(5, cameraDefaults.eyeHeight, 0);
-      break;
-  }
-
-  // 更新相机朝向
-  camera.lookAt(0, cameraDefaults.eyeHeight, 0);
-  if (cameraController) {
-    cameraController.update();
-  }
 };
 
 // 重置视角
@@ -428,55 +270,6 @@ const setupCameraView = () => {
   }
 };
 
-// 更新坐标轴大小
-const updateAxesSize = () => {
-  if (!model || !showAxes.value) return;
-
-  if (axesHelper) {
-    sceneManager.removeObject(axesHelper);
-  }
-
-  // 根据模型大小设置坐标轴尺寸
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3());
-  const maxSize = Math.max(size.x, size.y, size.z);
-
-  axesHelper = new THREE.AxesHelper(maxSize);
-  sceneManager.addObject(axesHelper);
-};
-
-// 切换显示坐标轴
-const toggleAxes = () => {
-  showAxes.value = !showAxes.value;
-  if (showAxes.value) {
-    updateAxesSize();
-  } else if (axesHelper) {
-    sceneManager.removeObject(axesHelper);
-    axesHelper = null;
-  }
-};
-
-// 切换显示边界框
-const toggleBoundingBox = () => {
-  showBoundingBox.value = !showBoundingBox.value;
-  if (!model) return;
-
-  if (showBoundingBox.value) {
-    boundingBoxHelper = new THREE.BoxHelper(model, 0xffff00);
-    sceneManager.addObject(boundingBoxHelper);
-  } else if (boundingBoxHelper) {
-    sceneManager.removeObject(boundingBoxHelper);
-    boundingBoxHelper = null;
-  }
-};
-
-// 旋转模型
-const rotateModel = (degrees) => {
-  if (!model) return;
-  const radians = THREE.MathUtils.degToRad(degrees);
-  model.rotation.y += radians;
-};
-
 // 切换场景
 const switchHall = () => {
   loadModel();
@@ -492,68 +285,15 @@ const retryLoad = () => {
   loadModel();
 };
 
-// 记录当前配置
-const logCurrentConfig = () => {
-  if (!model || !camera) return;
-
-  console.log({
-    position: {
-      x: model.position.x,
-      y: model.position.y,
-      z: model.position.z,
-    },
-    rotation: {
-      x: model.rotation.x,
-      y: model.rotation.y,
-      z: model.rotation.z,
-    },
-    scale: model.scale.x,
-    camera: {
-      position: {
-        x: camera.position.x,
-        y: camera.position.y,
-        z: camera.position.z,
-      },
-      rotation: {
-        x: camera.rotation.x,
-        y: camera.rotation.y,
-        z: camera.rotation.z,
-      },
-      fov: camera.fov,
-    },
-  });
-};
-
-// 保存当前配置
-const saveCurrentConfig = () => {
-  // 这里可以实现保存配置的逻辑
-  logCurrentConfig();
-};
-
 // 生命周期钩子
 onMounted(() => {
   initScene();
   loadModel();
   window.addEventListener("resize", handleResize);
-  document.addEventListener("fullscreenchange", handleFullscreenChange);
-  // 添加鼠标移动事件监听
-  if (renderer?.domElement) {
-    renderer.domElement.addEventListener("mousemove", onMouseMove);
-  }
 });
 
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
-  document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  // 移除事件监听器
-  if (renderer?.domElement) {
-    renderer.domElement.removeEventListener("click", onMouseClick);
-    renderer.domElement.removeEventListener("mousemove", onMouseMove);
-  }
-
-  // 清理材质Map
-  originalMaterials.clear();
-
   if (cameraController) {
     cameraController.dispose();
   }
@@ -783,12 +523,10 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.model-selector label {
-  display: block;
-  color: white;
-  font-size: 14px;
-  margin-bottom: 5px;
-  font-weight: bold;
+.model-selector {
+  margin: 0;
+  padding: 0;
+  flex: 1;
 }
 
 .hall-select {
