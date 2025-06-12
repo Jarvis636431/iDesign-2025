@@ -188,10 +188,15 @@ const loadModel = async () => {
     isLoading.value = true;
     hasError.value = false;
 
-    // 确保路径正确
-    const fullPath = new URL(modelConfig.value.path, import.meta.env.BASE_URL)
-      .href;
+    // 正确处理路径
+    const modelPath = modelConfig.value.path;
+    const fullPath = modelPath.startsWith("http")
+      ? modelPath
+      : window.location.origin + import.meta.env.BASE_URL + modelPath;
+
     console.log("完整模型路径:", fullPath);
+    console.log("BASE_URL:", import.meta.env.BASE_URL);
+    console.log("原始路径:", modelPath);
 
     // 加载模型
     model = await sceneManager.loadModel(fullPath, (event) => {
