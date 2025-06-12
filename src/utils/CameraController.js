@@ -19,24 +19,25 @@ export class CameraController {
 
   setupControls() {
     // 基本设置
-    this.controls.enableDamping = true;
-    this.controls.dampingFactor = cameraDefaults.dampingFactor;
+    this.controls.enableDamping = false; // 禁用阻尼效果
+    this.controls.dampingFactor = 0;
 
-    // 设置旋转速度
-    this.controls.rotateSpeed = cameraDefaults.rotateSpeed;
+    // 禁用鼠标旋转
+    this.controls.enableRotate = false;
+    this.controls.rotateSpeed = 0;
 
-    // 允许缩放，但限制范围
-    this.controls.enableZoom = true;
-    this.controls.minDistance = 0.01; // 允许非常近的观察距离
-    this.controls.maxDistance = 0.5; // 限制最远距离以保持视角
+    // 禁用缩放
+    this.controls.enableZoom = false;
+    this.controls.minDistance = 0.01;
+    this.controls.maxDistance = 0.5;
 
-    // 限制垂直旋转，但给予一定自由度
-    this.controls.minPolarAngle = Math.PI / 6; // 30度
-    this.controls.maxPolarAngle = (Math.PI * 5) / 6; // 150度
+    // 固定视角
+    this.controls.minPolarAngle = Math.PI / 2; // 90度，固定水平视角
+    this.controls.maxPolarAngle = Math.PI / 2; // 90度，固定水平视角
 
-    // 启用平移，但限制垂直平移
-    this.controls.enablePan = true;
-    this.controls.screenSpacePanning = true;
+    // 禁用平移
+    this.controls.enablePan = false;
+    this.controls.screenSpacePanning = false;
   }
 
   setupEventListeners() {
