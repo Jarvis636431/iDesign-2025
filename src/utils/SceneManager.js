@@ -132,22 +132,71 @@ export class SceneManager {
     }
   }
 
+  // 递归遍历模型释放资源
+  disposeObject(object) {
+    if (!object) return;
+
+    // 递归处理子对象
+    if (object.children && object.children.length > 0) {
+      object.children.forEach((child) => this.disposeObject(child));
+    }
+
+    // 释放几何体
+    if (object.geometry) {
+      object.geometry.dispose();
+    }
+
+    // 释放材质
+    if (object.material) {
+      if (Array.isArray(object.material)) {
+        object.material.forEach((material) => {
+          if (material.map) material.map.dispose();
+          if (material.lightMap) material.lightMap.dispose();
+          if (material.bumpMap) material.bumpMap.dispose();
+          if (material.normalMap) material.normalMap.dispose();
+          if (material.specularMap) material.specularMap.dispose();
+          if (material.envMap) material.envMap.dispose();
+          material.dispose();
+        });
+      } else {
+        if (object.material.map) object.material.map.dispose();
+        if (object.material.lightMap) object.material.lightMap.dispose();
+        if (object.material.bumpMap) object.material.bumpMap.dispose();
+        if (object.material.normalMap) object.material.normalMap.dispose();
+        if (object.material.specularMap) object.material.specularMap.dispose();
+        if (object.material.envMap) object.material.envMap.dispose();
+        object.material.dispose();
+      }
+    }
+  }
+
   addObject(object) {
     this.scene.add(object);
   }
 
   removeObject(object) {
+    if (!object) return;
+
+    // 从场景中移除
     this.scene.remove(object);
+
+    // 释放对象资源
+    this.disposeObject(object);
+
+    console.log("模型已清理完成");
   }
 
   clear() {
+    // 清理场景中的所有对象
     while (this.scene.children.length > 0) {
-      this.scene.remove(this.scene.children[0]);
+      const object = this.scene.children[0];
+      this.removeObject(object);
     }
   }
 
   dispose() {
     this.clear();
-    // Add any additional cleanup here
+    this.scene = null;
+    console.log("场景管理器已完全释放");
   }
 }

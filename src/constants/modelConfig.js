@@ -78,7 +78,7 @@ export const hallModels = {
     name: "第五展厅",
     description: "Crowned Woods 展厅模型",
     path: "assets/models/hall-models/5.glb",
-    scale: 50, // 增大整体模型的比例
+    scale: 0.05, // 增大整体模型的比例
     position: { x: -0.2, y: -0.4, z: -1 },
     rotation: { x: 0, y: -0.6, z: 0 },
     camera: {
