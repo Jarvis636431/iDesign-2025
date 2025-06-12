@@ -289,7 +289,6 @@ const switchHall = async () => {
 
     // 加载新模型
     await loadModel();
-
   } catch (error) {
     console.error("切换展厅失败:", error);
     hasError.value = true;
