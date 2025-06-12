@@ -10,12 +10,12 @@ export const hallModels = {
     position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
     camera: {
-      position: { x: -0.055, y: 0.004, z: -0.0055 }, // 把距离减半，更靠近模型
+      position: { x: 0, y: 0.004, z: 0 }, // 把距离减半，更靠近模型
       target: { x: 0, y: 0, z: 0 },
-      rotation: { x: -3.139, y: -1.046, z: -3.139 },
+      rotation: { x: 0, y: 0, z: 0 },
       fov: 85, // 稍微增加视场角
       autoFit: true,
-      fitMultiplier: 2, // 增大显示尺寸
+      fitMultiplier: 200, // 增大显示尺寸
     },
   },
   // 其他展厅配置...
