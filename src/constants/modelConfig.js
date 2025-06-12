@@ -28,15 +28,15 @@ export const cameraDefaults = {
   eyeHeight: 1.6,
   moveSpeed: 0.05,
   rotateSpeed: 0.5,
-  dampingFactor: 0.05
+  dampingFactor: 0.05,
 };
 
 // 控制器限制配置
 export const controlsLimits = {
-  minPolarAngle: Math.PI / 2,  // 90度
-  maxPolarAngle: Math.PI / 2,  // 90度
+  minPolarAngle: Math.PI / 2, // 90度
+  maxPolarAngle: Math.PI / 2, // 90度
   minAzimuthAngle: -Infinity,
   maxAzimuthAngle: Infinity,
   enableZoom: false,
-  enablePan: false
+  enablePan: false,
 };

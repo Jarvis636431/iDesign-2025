@@ -1,6 +1,6 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { cameraDefaults, controlsLimits } from '../constants/modelConfig';
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { cameraDefaults, controlsLimits } from "../constants/modelConfig";
 
 export class CameraController {
   constructor(camera, domElement) {
@@ -10,9 +10,9 @@ export class CameraController {
       moveForward: false,
       moveBackward: false,
       moveLeft: false,
-      moveRight: false
+      moveRight: false,
     };
-    
+
     this.setupControls();
     this.setupEventListeners();
   }
@@ -21,36 +21,36 @@ export class CameraController {
     // 基本设置
     this.controls.enableDamping = true;
     this.controls.dampingFactor = cameraDefaults.dampingFactor;
-    
+
     // 应用限制
     Object.assign(this.controls, controlsLimits);
-    
+
     // 设置旋转速度
     this.controls.rotateSpeed = cameraDefaults.rotateSpeed;
   }
 
   setupEventListeners() {
     // 键盘事件监听
-    window.addEventListener('keydown', this.handleKeyDown.bind(this));
-    window.addEventListener('keyup', this.handleKeyUp.bind(this));
+    window.addEventListener("keydown", this.handleKeyDown.bind(this));
+    window.addEventListener("keyup", this.handleKeyUp.bind(this));
   }
 
   handleKeyDown(event) {
     switch (event.code) {
-      case 'KeyW':
-      case 'ArrowUp':
+      case "KeyW":
+      case "ArrowUp":
         this.moveState.moveForward = true;
         break;
-      case 'KeyS':
-      case 'ArrowDown':
+      case "KeyS":
+      case "ArrowDown":
         this.moveState.moveBackward = true;
         break;
-      case 'KeyA':
-      case 'ArrowLeft':
+      case "KeyA":
+      case "ArrowLeft":
         this.moveState.moveLeft = true;
         break;
-      case 'KeyD':
-      case 'ArrowRight':
+      case "KeyD":
+      case "ArrowRight":
         this.moveState.moveRight = true;
         break;
     }
@@ -58,20 +58,20 @@ export class CameraController {
 
   handleKeyUp(event) {
     switch (event.code) {
-      case 'KeyW':
-      case 'ArrowUp':
+      case "KeyW":
+      case "ArrowUp":
         this.moveState.moveForward = false;
         break;
-      case 'KeyS':
-      case 'ArrowDown':
+      case "KeyS":
+      case "ArrowDown":
         this.moveState.moveBackward = false;
         break;
-      case 'KeyA':
-      case 'ArrowLeft':
+      case "KeyA":
+      case "ArrowLeft":
         this.moveState.moveLeft = false;
         break;
-      case 'KeyD':
-      case 'ArrowRight':
+      case "KeyD":
+      case "ArrowRight":
         this.moveState.moveRight = false;
         break;
     }
@@ -97,8 +97,14 @@ export class CameraController {
         this.controls.target.addScaledVector(forward, cameraDefaults.moveSpeed);
       }
       if (this.moveState.moveBackward) {
-        this.camera.position.addScaledVector(forward, -cameraDefaults.moveSpeed);
-        this.controls.target.addScaledVector(forward, -cameraDefaults.moveSpeed);
+        this.camera.position.addScaledVector(
+          forward,
+          -cameraDefaults.moveSpeed
+        );
+        this.controls.target.addScaledVector(
+          forward,
+          -cameraDefaults.moveSpeed
+        );
       }
       if (this.moveState.moveLeft) {
         this.camera.position.addScaledVector(right, -cameraDefaults.moveSpeed);
@@ -114,8 +120,8 @@ export class CameraController {
   }
 
   dispose() {
-    window.removeEventListener('keydown', this.handleKeyDown.bind(this));
-    window.removeEventListener('keyup', this.handleKeyUp.bind(this));
+    window.removeEventListener("keydown", this.handleKeyDown.bind(this));
+    window.removeEventListener("keyup", this.handleKeyUp.bind(this));
     this.controls.dispose();
   }
 }
