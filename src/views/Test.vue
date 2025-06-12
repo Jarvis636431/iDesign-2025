@@ -155,10 +155,31 @@ const initScene = () => {
   // 初始化射线检测器
   raycaster = new THREE.Raycaster();
   mouse = new THREE.Vector2();
-  renderer.domElement.addEventListener("click", onMouseClick);
 
   // 创建相机控制器
   cameraController = new CameraController(camera, renderer.domElement);
+};
+
+// 处理鼠标点击事件
+const onMouseClick = (event) => {
+  // 计算鼠标在画布中的归一化坐标
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  // 更新射线
+  raycaster.setFromCamera(mouse, camera);
+
+  // 检测相交的对象
+  const intersects = raycaster.intersectObject(model, true);
+  if (intersects.length > 0) {
+    // 如果有选中的对象，可以在这里处理选中逻辑
+    selectedObject.value = intersects[0].object;
+    console.log("选中对象:", selectedObject.value);
+  } else {
+    // 如果没有选中对象，清除选中状态
+    selectedObject.value = null;
+  }
 };
 
 // 加载模型
@@ -167,17 +188,24 @@ const loadModel = async () => {
     isLoading.value = true;
     hasError.value = false;
 
+    // 确保路径正确
+    const fullPath = new URL(modelConfig.value.path, import.meta.env.BASE_URL)
+      .href;
+    console.log("完整模型路径:", fullPath);
+
     // 加载模型
-    model = await sceneManager.loadModel(
-      import.meta.env.BASE_URL + modelConfig.value.path,
-      (progress) => {
-        if (progress.lengthComputable) {
-          loadingProgress.value = Math.round(
-            (progress.loaded / progress.total) * 100
-          );
-        }
+    model = await sceneManager.loadModel(fullPath, (event) => {
+      // 确保即使 lengthComputable 为 false 也能显示进度
+      if (event.lengthComputable) {
+        loadingProgress.value = Math.round((event.loaded / event.total) * 100);
+      } else if (event.loaded) {
+        // 如果无法计算总大小，至少显示已加载的字节数
+        loadingProgress.value = Math.min(
+          Math.round((event.loaded / 1048576) * 10), // 假设平均模型大小约10MB
+          99 // 保持在99%以防止提前显示100%
+        );
       }
-    );
+    });
 
     // 设置模型属性
     setupModel();
@@ -187,7 +215,7 @@ const loadModel = async () => {
   } catch (error) {
     console.error("模型加载失败:", error);
     hasError.value = true;
-    errorMessage.value = error.message;
+    errorMessage.value = error.message || "未知错误";
     isLoading.value = false;
   }
 };
@@ -224,6 +252,207 @@ const animate = () => {
   renderer.render(sceneManager.scene, camera);
 };
 
+// 处理窗口大小变化
+const handleResize = () => {
+  if (!camera || !renderer || !modelContainer.value) return;
+
+  // 更新相机宽高比
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  // 更新渲染器大小
+  renderer.setSize(window.innerWidth, window.innerHeight);
+};
+
+// 处理全屏变化
+const handleFullscreenChange = () => {
+  isFullscreen.value = !!document.fullscreenElement;
+};
+
+// 切换全屏
+const toggleFullscreen = async () => {
+  if (!document.fullscreenElement) {
+    try {
+      await modelContainer.value.requestFullscreen();
+    } catch (error) {
+      console.error("全屏切换失败:", error);
+    }
+  } else {
+    try {
+      await document.exitFullscreen();
+    } catch (error) {
+      console.error("退出全屏失败:", error);
+    }
+  }
+};
+
+// 设置预设视角
+const setPresetView = (viewType) => {
+  if (!camera || !model) return;
+
+  switch (viewType) {
+    case "front":
+      camera.position.set(0, cameraDefaults.eyeHeight, 5);
+      break;
+    case "top":
+      camera.position.set(0, 10, 0);
+      break;
+    case "side":
+      camera.position.set(5, cameraDefaults.eyeHeight, 0);
+      break;
+  }
+
+  // 更新相机朝向
+  camera.lookAt(0, cameraDefaults.eyeHeight, 0);
+  if (cameraController) {
+    cameraController.update();
+  }
+};
+
+// 重置视角
+const resetView = () => {
+  if (!camera || !cameraController) return;
+
+  camera.position.set(
+    modelConfig.value.camera.position.x,
+    modelConfig.value.camera.position.y,
+    modelConfig.value.camera.position.z
+  );
+  camera.lookAt(
+    modelConfig.value.camera.target.x,
+    modelConfig.value.camera.target.y,
+    modelConfig.value.camera.target.z
+  );
+  cameraController.update();
+};
+
+// 设置相机视图
+const setupCameraView = () => {
+  if (!camera || !model) return;
+
+  // 设置相机初始位置
+  camera.position.set(
+    modelConfig.value.camera.position.x,
+    modelConfig.value.camera.position.y,
+    modelConfig.value.camera.position.z
+  );
+
+  // 设置相机目标点
+  camera.lookAt(
+    modelConfig.value.camera.target.x,
+    modelConfig.value.camera.target.y,
+    modelConfig.value.camera.target.z
+  );
+
+  // 更新相机视场角
+  if (modelConfig.value.camera.fov) {
+    camera.fov = modelConfig.value.camera.fov;
+    camera.updateProjectionMatrix();
+  }
+};
+
+// 更新坐标轴大小
+const updateAxesSize = () => {
+  if (!model || !showAxes.value) return;
+
+  if (axesHelper) {
+    sceneManager.removeObject(axesHelper);
+  }
+
+  // 根据模型大小设置坐标轴尺寸
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const maxSize = Math.max(size.x, size.y, size.z);
+
+  axesHelper = new THREE.AxesHelper(maxSize);
+  sceneManager.addObject(axesHelper);
+};
+
+// 切换显示坐标轴
+const toggleAxes = () => {
+  showAxes.value = !showAxes.value;
+  if (showAxes.value) {
+    updateAxesSize();
+  } else if (axesHelper) {
+    sceneManager.removeObject(axesHelper);
+    axesHelper = null;
+  }
+};
+
+// 切换显示边界框
+const toggleBoundingBox = () => {
+  showBoundingBox.value = !showBoundingBox.value;
+  if (!model) return;
+
+  if (showBoundingBox.value) {
+    boundingBoxHelper = new THREE.BoxHelper(model, 0xffff00);
+    sceneManager.addObject(boundingBoxHelper);
+  } else if (boundingBoxHelper) {
+    sceneManager.removeObject(boundingBoxHelper);
+    boundingBoxHelper = null;
+  }
+};
+
+// 旋转模型
+const rotateModel = (degrees) => {
+  if (!model) return;
+  const radians = THREE.MathUtils.degToRad(degrees);
+  model.rotation.y += radians;
+};
+
+// 切换场景
+const switchHall = () => {
+  loadModel();
+};
+
+// 返回主页
+const goBack = () => {
+  router.push("/");
+};
+
+// 重试加载
+const retryLoad = () => {
+  loadModel();
+};
+
+// 记录当前配置
+const logCurrentConfig = () => {
+  if (!model || !camera) return;
+
+  console.log({
+    position: {
+      x: model.position.x,
+      y: model.position.y,
+      z: model.position.z,
+    },
+    rotation: {
+      x: model.rotation.x,
+      y: model.rotation.y,
+      z: model.rotation.z,
+    },
+    scale: model.scale.x,
+    camera: {
+      position: {
+        x: camera.position.x,
+        y: camera.position.y,
+        z: camera.position.z,
+      },
+      rotation: {
+        x: camera.rotation.x,
+        y: camera.rotation.y,
+        z: camera.rotation.z,
+      },
+      fov: camera.fov,
+    },
+  });
+};
+
+// 保存当前配置
+const saveCurrentConfig = () => {
+  // 这里可以实现保存配置的逻辑
+  logCurrentConfig();
+};
+
 // 生命周期钩子
 onMounted(() => {
   initScene();
@@ -235,6 +464,10 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
   document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  // 移除鼠标点击事件监听器
+  if (renderer?.domElement) {
+    renderer.domElement.removeEventListener("click", onMouseClick);
+  }
 
   if (cameraController) {
     cameraController.dispose();
