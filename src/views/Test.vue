@@ -271,8 +271,34 @@ const setupCameraView = () => {
 };
 
 // 切换场景
-const switchHall = () => {
-  loadModel();
+const switchHall = async () => {
+  try {
+    // 重置状态
+    isLoading.value = true;
+    hasError.value = false;
+    errorMessage.value = "";
+    loadingProgress.value = 0;
+
+    // 保存当前模型引用并清理
+    const oldModel = model;
+    model = null;
+    if (oldModel) {
+      console.log("正在清理旧模型...");
+      sceneManager.removeObject(oldModel);
+    }
+
+    // 加载新模型
+    await loadModel();
+
+  } catch (error) {
+    console.error("切换展厅失败:", error);
+    hasError.value = true;
+    errorMessage.value = error.message || "切换展厅失败";
+  } finally {
+    if (hasError.value) {
+      isLoading.value = false;
+    }
+  }
 };
 
 // 返回主页
