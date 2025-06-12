@@ -519,18 +519,20 @@ onUnmounted(() => {
 
 <style scoped>
 .exhibition-test-page {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  inset: 0;
   overflow: hidden;
   background: #000;
-  position: relative;
 }
 
 /* 修改模型框架样式，去掉边距和圆角 */
 .model-frame {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   margin: 0;
   background: transparent;
   border-radius: 0;
@@ -672,12 +674,15 @@ onUnmounted(() => {
   border-radius: 10px;
   margin: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1rem 2rem;
+  padding: 1rem;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  gap: 1rem;
   z-index: 100;
   color: white;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .back-button {
@@ -764,12 +769,15 @@ onUnmounted(() => {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .control-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
+  white-space: nowrap;
   color: white;
   border-radius: 6px;
   cursor: pointer;
@@ -795,9 +803,11 @@ onUnmounted(() => {
 /* 移动端适配 */
 @media (max-width: 768px) {
   .control-panel {
-    padding: 0.8rem 1rem;
-    flex-direction: column;
-    gap: 0.8rem;
+    padding: 0.8rem;
+    margin: 0;
+    border-radius: 0;
+    max-height: 50vh;
+    overflow-y: auto;
   }
 
   .model-info {
