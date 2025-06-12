@@ -127,7 +127,9 @@ let sceneManager,
   boundingBoxHelper,
   axesHelper,
   raycaster,
-  mouse;
+  mouse,
+  hoveredObject,
+  originalMaterials = new Map(); // 存储原始材质
 
 // 当前选择的模型ID
 const currentHallId = ref("hall1");
@@ -183,6 +185,45 @@ const onMouseClick = (event) => {
   } else {
     // 如果没有选中对象，清除选中状态
     selectedObject.value = null;
+  }
+};
+
+// 添加鼠标移动事件处理
+const onMouseMove = (event) => {
+  if (!model) return;
+
+  // 计算鼠标在画布中的归一化坐标
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  // 更新射线
+  raycaster.setFromCamera(mouse, camera);
+
+  // 检测相交的对象
+  const intersects = raycaster.intersectObject(model, true);
+
+  // 如果之前有高亮的对象，恢复其原始材质
+  if (hoveredObject) {
+    const originalMaterial = originalMaterials.get(hoveredObject);
+    if (originalMaterial) {
+      hoveredObject.material = originalMaterial;
+    }
+    hoveredObject = null;
+  }
+
+  // 高亮新的相交对象
+  if (intersects.length > 0) {
+    hoveredObject = intersects[0].object;
+    // 存储原始材质
+    if (!originalMaterials.has(hoveredObject)) {
+      originalMaterials.set(hoveredObject, hoveredObject.material.clone());
+    }
+    // 创建高亮材质
+    const highlightMaterial = hoveredObject.material.clone();
+    highlightMaterial.emissive = new THREE.Color(0x666666);
+    highlightMaterial.emissiveIntensity = 0.5;
+    hoveredObject.material = highlightMaterial;
   }
 };
 
@@ -495,15 +536,23 @@ onMounted(() => {
   loadModel();
   window.addEventListener("resize", handleResize);
   document.addEventListener("fullscreenchange", handleFullscreenChange);
+  // 添加鼠标移动事件监听
+  if (renderer?.domElement) {
+    renderer.domElement.addEventListener("mousemove", onMouseMove);
+  }
 });
 
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
   document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  // 移除鼠标点击事件监听器
+  // 移除事件监听器
   if (renderer?.domElement) {
     renderer.domElement.removeEventListener("click", onMouseClick);
+    renderer.domElement.removeEventListener("mousemove", onMouseMove);
   }
+
+  // 清理材质Map
+  originalMaterials.clear();
 
   if (cameraController) {
     cameraController.dispose();
