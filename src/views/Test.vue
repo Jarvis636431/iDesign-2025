@@ -98,7 +98,11 @@ import { useRouter } from "vue-router";
 import * as THREE from "three";
 import { SceneManager } from "../utils/SceneManager";
 import { CameraController } from "../utils/CameraController";
-import { hallModels, cameraDefaults } from "../constants/modelConfig";
+import {
+  hallModels,
+  cameraDefaults,
+  controlsLimits,
+} from "../constants/modelConfig";
 
 const router = useRouter();
 
@@ -227,7 +231,17 @@ const loadModel = async () => {
 
 // 设置模型
 const setupModel = () => {
-  if (!model) return;
+  if (!model) {
+    console.error("模型未加载");
+    return;
+  }
+
+  console.log("正在设置模型属性...");
+  console.log("配置:", {
+    scale: modelConfig.value.scale,
+    position: modelConfig.value.position,
+    rotation: modelConfig.value.rotation,
+  });
 
   model.scale.setScalar(modelConfig.value.scale);
   model.position.set(
@@ -333,7 +347,17 @@ const resetView = () => {
 
 // 设置相机视图
 const setupCameraView = () => {
-  if (!camera || !model) return;
+  if (!camera || !model) {
+    console.error("相机或模型未就绪");
+    return;
+  }
+
+  console.log("正在设置相机视图...");
+  console.log("相机配置:", {
+    position: modelConfig.value.camera.position,
+    target: modelConfig.value.camera.target,
+    fov: modelConfig.value.camera.fov,
+  });
 
   // 设置相机初始位置
   camera.position.set(
@@ -353,6 +377,13 @@ const setupCameraView = () => {
   if (modelConfig.value.camera.fov) {
     camera.fov = modelConfig.value.camera.fov;
     camera.updateProjectionMatrix();
+  }
+
+  if (cameraController) {
+    // 设置控制器限制
+    Object.assign(cameraController.controls, controlsLimits);
+    cameraController.update();
+    console.log("相机控制器更新完成");
   }
 };
 

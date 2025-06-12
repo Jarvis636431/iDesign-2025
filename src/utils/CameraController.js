@@ -22,11 +22,21 @@ export class CameraController {
     this.controls.enableDamping = true;
     this.controls.dampingFactor = cameraDefaults.dampingFactor;
 
-    // 应用限制
-    Object.assign(this.controls, controlsLimits);
-
     // 设置旋转速度
     this.controls.rotateSpeed = cameraDefaults.rotateSpeed;
+
+    // 允许缩放，但限制范围
+    this.controls.enableZoom = true;
+    this.controls.minDistance = 0.01; // 允许非常近的观察距离
+    this.controls.maxDistance = 0.5; // 限制最远距离以保持视角
+
+    // 限制垂直旋转，但给予一定自由度
+    this.controls.minPolarAngle = Math.PI / 6; // 30度
+    this.controls.maxPolarAngle = (Math.PI * 5) / 6; // 150度
+
+    // 启用平移，但限制垂直平移
+    this.controls.enablePan = true;
+    this.controls.screenSpacePanning = true;
   }
 
   setupEventListeners() {
