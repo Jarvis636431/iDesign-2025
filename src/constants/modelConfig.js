@@ -42,12 +42,12 @@ export const hallModels = {
     name: "第三展厅",
     description: "Unveiled Horizons 展厅模型",
     path: "assets/models/hall-models/3.glb",
-    scale: 0.2, // 增大整体模型的比例
-    position: { x: -0.2, y: -0.4, z: -1 },
-    rotation: { x: 0, y: -0.6, z: 0 },
+    scale: 0.9, // 增大整体模型的比例
+    position: { x: 0, y: -0.55, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
     camera: {
-      position: { x: 0.2, y: 2, z: -0.3 }, // 相机位置设置为更容易理解的实际尺寸
-      target: { x: 0.2, y: 0, z: -0.3 }, // 看向展厅中心
+      position: { x: 0, y: 0, z: 0 }, // 相机位置设置为更容易理解的实际尺寸
+      target: { x: 0.4, y: 0, z: 0 }, // 看向展厅中心
       rotation: { x: 0, y: 0, z: 0 },
       fov: 45,
       autoFit: false, // 关闭自动适应，使用固定比例
