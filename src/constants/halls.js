@@ -60,11 +60,11 @@ export const halls = [
       "assets/images/halls/hall-borders/mobile-border74.png",
     model: {
       path: "assets/models/hall-models/2.glb",
-      scale: 150,
+      scale: 200, // 增加模型大小
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 }, // 重置模型旋转
       camera: {
-        position: { x: 5, y: 2, z: 1 }, // 将相机拉近，调整到更合适的观看距离
+        position: { x: 5, y: 2, z: 0 }, // 将相机拉近，调整到更合适的观看距离
         target: { x: 0, y: 0, z: 0 }, // 将目标点对准模型中心
         rotation: { x: 0, y: 0, z: 0 },
         fov: 45,
