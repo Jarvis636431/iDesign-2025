@@ -132,9 +132,27 @@ export class SceneManager {
     }
   }
 
-  // 递归遍历模型释放资源
+  // 递归处理模型属性
+  traverseModel(object) {
+    if (!object) return;
+
+    // 设置模型及其子元素为可交互
+    object.userData = object.userData || {};
+    object.userData.clickable = true;
+
+    // 递归处理子对象
+    if (object.children && object.children.length > 0) {
+      object.children.forEach((child) => this.traverseModel(child));
+    }
+  }
+
+  // 递归清理资源但保留交互性
   disposeObject(object) {
     if (!object) return;
+
+    // 保存交互相关的属性
+    const userData = object.userData;
+    const clickable = object.userData?.clickable;
 
     // 递归处理子对象
     if (object.children && object.children.length > 0) {
@@ -168,22 +186,23 @@ export class SceneManager {
         object.material.dispose();
       }
     }
+
+    // 恢复交互相关的属性
+    object.userData = userData;
+    if (clickable) {
+      object.userData.clickable = clickable;
+    }
   }
 
   addObject(object) {
+    // 添加对象前设置交互属性
+    this.traverseModel(object);
     this.scene.add(object);
   }
 
   removeObject(object) {
     if (!object) return;
-
-    // 从场景中移除
     this.scene.remove(object);
-
-    // 释放对象资源
-    this.disposeObject(object);
-
-    console.log("模型已清理完成");
   }
 
   clear() {

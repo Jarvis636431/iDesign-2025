@@ -61,7 +61,7 @@ export const hallModels = {
     description: "Winding Trails 展厅模型",
     path: "assets/models/hall-models/4.glb",
     scale: 500, // 增大整体模型的比例
-    position: { x: 10, y: 0, z: 0 },
+    position: { x: -1, y: 0, z: 0 },
     rotation: { x: 0, y: -0.6, z: 0 },
     camera: {
       position: { x: 0.2, y: 2, z: 0 }, // 相机位置设置为更容易理解的实际尺寸
