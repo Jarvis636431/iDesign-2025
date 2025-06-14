@@ -6,6 +6,7 @@ import VideoSection from "../components/sections/VideoSection.vue";
 import ExhibitionSection from "../components/sections/ExhibitionSection.vue";
 import GraduatesSection from "../components/sections/GraduatesSection.vue";
 import TeamSection from "../components/sections/TeamSection.vue";
+import EndSection from "../components/sections/EndSection.vue";
 import TransitionSlide from "../components/slides/TransitionSlide.vue";
 import TransitionSlideBetweenExhibitionAndGraduates from "../components/slides/TransitionSlideBetweenExhibitionAndGraduates.vue";
 
@@ -172,6 +173,13 @@ onMounted(() => {
         >
           {{ isEnglish ? "Exhibition Planner" : "年展组" }}
         </div>
+        <div
+          class="nav-item"
+          :class="{ active: currentSection === 'end' }"
+          @click="scrollToSection('end')"
+        >
+          {{ isEnglish ? "End" : "结束页" }}
+        </div>
         <div class="nav-item test-link" @click="goToTest">
           {{ isEnglish ? "Test Page" : "测试页面" }}
         </div>
@@ -221,6 +229,11 @@ onMounted(() => {
         />
         <TeamSection
           id="team"
+          class="content-section"
+          :is-english="isEnglish"
+        />
+        <EndSection
+          id="end"
           class="content-section"
           :is-english="isEnglish"
         />
