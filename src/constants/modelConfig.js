@@ -4,7 +4,6 @@ export const hallModels = {
   hall1: {
     id: 73,
     name: "第一展厅",
-    description: "First Whisper 展厅模型",
     path: "assets/models/hall-models/1.glb",
     scale: 50, // 增大整体模型的比例
     position: { x: -0.2, y: -0.4, z: -1 },
@@ -22,7 +21,6 @@ export const hallModels = {
   hall2: {
     id: 74,
     name: "第二展厅",
-    description: "Second Whisper 展厅模型",
     path: "assets/models/hall-models/2.glb",
     scale: 50, // 增大整体模型的比例
     position: { x: -0.2, y: -0.4, z: -1 },
@@ -40,7 +38,6 @@ export const hallModels = {
   hall3: {
     id: 75,
     name: "第三展厅",
-    description: "Unveiled Horizons 展厅模型",
     path: "assets/models/hall-models/3.glb",
     scale: 0.9, // 增大整体模型的比例
     position: { x: 0, y: -0.5, z: 0 },
@@ -58,7 +55,6 @@ export const hallModels = {
   hall4: {
     id: 76,
     name: "第四展厅",
-    description: "Winding Trails 展厅模型",
     path: "assets/models/hall-models/4.glb",
     scale: 500, // 增大整体模型的比例
     position: { x: -1, y: 0, z: 0 },

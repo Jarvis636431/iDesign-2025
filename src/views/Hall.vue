@@ -50,6 +50,12 @@
               </select>
             </div>
             <button @click="resetView" class="control-btn">重置视角</button>
+            <button
+              @click="enterInformation"
+              class="control-btn information-btn"
+            >
+              查看展品
+            </button>
           </div>
         </div>
       </div>
@@ -68,6 +74,8 @@ import {
   cameraDefaults,
   controlsLimits,
 } from "../constants/modelConfig";
+import { halls } from "../constants/halls";
+import axios from "axios"; // 导入 axios
 
 const router = useRouter();
 
@@ -78,6 +86,12 @@ const errorMessage = ref("");
 const loadingProgress = ref(0);
 const modelContainer = ref(null);
 const currentModel = ref(null);
+
+// 获取当前展厅对应的信息
+const currentHallInfo = computed(() => {
+  const currentId = currentHallId.value.replace("hall", "");
+  return halls.find((h) => h.id === Number(currentId));
+});
 
 // Three.js 相关变量
 let sceneManager, cameraController, camera, renderer, model;
@@ -297,6 +311,38 @@ const switchHall = async () => {
     if (hasError.value) {
       isLoading.value = false;
     }
+  }
+};
+
+// 进入展品展示
+const enterInformation = async () => {
+  if (!currentHallInfo.value) return;
+
+  isLoading.value = true;
+  try {
+    const res = await axios.get(
+      "http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists",
+      {
+        params: {
+          per_page: 1,
+          current_page: 1,
+          category_id: currentHallInfo.value.id,
+        },
+      }
+    );
+
+    let firstExhibitId = "";
+    if (res.data?.data?.[0]?.id) {
+      firstExhibitId = res.data.data[0].id;
+    }
+
+    router.push(
+      `/2025/information/${firstExhibitId}?hallId=${currentHallInfo.value.id}`
+    );
+  } catch {
+    router.push(`/2025/information/?hallId=${currentHallInfo.value.id}`);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -610,6 +656,16 @@ onUnmounted(() => {
 
 .save-btn:hover {
   background: rgba(40, 167, 69, 1) !important;
+}
+
+.information-btn {
+  background: rgba(47, 163, 176, 0.8) !important;
+  border-color: rgba(47, 163, 176, 0.5) !important;
+  font-weight: 500;
+}
+
+.information-btn:hover {
+  background: rgba(47, 163, 176, 1) !important;
 }
 
 /* 移动端适配 */
