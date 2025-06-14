@@ -173,9 +173,6 @@ onMounted(() => {
         >
           {{ isEnglish ? "Exhibition Planner" : "年展组" }}
         </div>
-        <div class="nav-item hall-link" @click="goToHall">
-          {{ isEnglish ? "Hall View" : "展厅视图" }}
-        </div>
       </div>
       <div class="language-switch" @click="toggleLanguage">
         {{ isEnglish ? "CN" : "EN" }}
