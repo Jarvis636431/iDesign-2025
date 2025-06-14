@@ -132,12 +132,12 @@ export const halls = [
       "assets/images/halls/hall-borders/mobile-border76.png",
     model: {
       path: "assets/models/hall-models/4.glb",
-      scale: 500, // 修正缩放比例
-      position: { x: -1, y: 0, z: 0 },
-      rotation: { x: 0, y: -0.6, z: 0 },
+      scale: 1000, // 增加模型大小
+      position: { x: 0, y: 0, z: 0 }, // 模型居中
+      rotation: { x: 0, y: -2.9, z: 0 }, // 水平面内顺时针旋转约45度
       camera: {
-        position: { x: 0.2, y: 2, z: 0 },
-        target: { x: 0.2, y: 0, z: -0.3 },
+        position: { x: 0, y: 1, z: 0 }, // 进一步拉近相机距离，降低视角高度
+        target: { x: 0, y: 0, z: 0 }, // 将视角对准模型中心
         rotation: { x: 0, y: 0, z: 0 },
         fov: 45,
         autoFit: false,
