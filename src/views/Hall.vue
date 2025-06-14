@@ -32,8 +32,8 @@
             <span>←</span> 返回
           </button>
           <div class="model-info">
-            <h3>{{ currentModel?.name || "展场模型" }}</h3>
-            <p>{{ currentModel?.description || "虚拟展厅3D模型" }}</p>
+            <h3>{{ currentHallInfo?.name || "展场模型" }}</h3>
+            <p>{{ currentHallInfo?.enName || "Exhibition Hall" }}</p>
           </div>
           <div class="view-controls">
             <!-- 模型选择器 -->
@@ -44,8 +44,12 @@
                 @change="switchHall"
                 class="hall-select"
               >
-                <option v-for="(hall, id) in hallModels" :key="id" :value="id">
-                  {{ hall.name }}
+                <option
+                  v-for="(hall, index) in hallList"
+                  :key="hall.id"
+                  :value="`hall${index + 1}`"
+                >
+                  {{ hall.name }} | {{ hall.enName }}
                 </option>
               </select>
             </div>
@@ -74,10 +78,14 @@ import {
   cameraDefaults,
   controlsLimits,
   getHallByNumber,
+  getHallById,
 } from "../constants/halls";
 import axios from "axios"; // 导入 axios
 
 const router = useRouter();
+
+// Three.js 实例变量
+let sceneManager, cameraController, camera, renderer, model;
 
 // 响应式状态
 const isLoading = ref(true);
@@ -87,25 +95,41 @@ const loadingProgress = ref(0);
 const modelContainer = ref(null);
 const currentModel = ref(null);
 
+// 当前选择的模型ID
+const currentHallId = ref("hall1");
+
+// 获取所有展厅配置
+const hallList = computed(() => halls);
+
 // 获取当前展厅对应的信息
 const currentHallInfo = computed(() => {
   const hallNumber = parseInt(currentHallId.value.replace("hall", ""));
   return getHallByNumber(hallNumber);
 });
 
-// 获取当前模型配置
-const modelConfig = computed(() => currentHallInfo.value?.model);
-
-// 当前选择的模型ID
-const currentHallId = ref("hall1");
+// 更新模型信息
+const updateModelInfo = () => {
+  if (!currentHallInfo.value) return;
+  currentModel.value = {
+    name: currentHallInfo.value.name,
+    description: currentHallInfo.value.enName,
+    ...currentHallInfo.value.model,
+  };
+};
 
 // 初始化场景
-const initScene = () => {
-  if (!modelContainer.value) return;
+const initScene = async () => {
+  if (!modelContainer.value) {
+    throw new Error("模型容器未就绪");
+  }
 
+  console.log("创建场景管理器...");
   // 创建场景管理器
   sceneManager = new SceneManager(modelContainer.value);
+  // 设置透明背景
+  sceneManager.scene.background = null;
 
+  console.log("创建相机...");
   // 创建相机
   camera = new THREE.PerspectiveCamera(
     cameraDefaults.fov,
@@ -115,15 +139,36 @@ const initScene = () => {
   );
   camera.position.set(0, cameraDefaults.eyeHeight, 5);
 
+  console.log("创建渲染器...");
   // 创建渲染器
-  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: true, // 允许透明背景
+  });
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setClearColor(0x000000, 0); // 设置透明背景
+
+  // 清除之前的渲染器
+  if (modelContainer.value.children.length > 0) {
+    modelContainer.value.innerHTML = "";
+  }
+
   modelContainer.value.appendChild(renderer.domElement);
 
+  console.log("创建相机控制器...");
   // 创建相机控制器
   cameraController = new CameraController(camera, renderer.domElement);
+
+  // 设置控制器初始配置
+  if (controlsLimits) {
+    Object.assign(cameraController.controls, controlsLimits);
+  }
+
+  console.log("场景初始化完成");
+  return Promise.resolve();
 };
 
 // 加载模型
@@ -132,15 +177,24 @@ const loadModel = async () => {
     isLoading.value = true;
     hasError.value = false;
 
+    if (!currentHallInfo.value?.model) {
+      throw new Error("当前展厅模型配置不存在");
+    }
+
     // 正确处理路径
-    const modelPath = modelConfig.value.path;
+    const modelPath = currentHallInfo.value.model.path;
+    const baseURL = import.meta.env.BASE_URL || "/";
     const fullPath = modelPath.startsWith("http")
       ? modelPath
-      : window.location.origin + import.meta.env.BASE_URL + modelPath;
+      : `${baseURL}${modelPath}`;
 
-    console.log("完整模型路径:", fullPath);
-    console.log("BASE_URL:", import.meta.env.BASE_URL);
-    console.log("原始路径:", modelPath);
+    console.log("模型加载信息:", {
+      baseURL,
+      modelPath,
+      fullPath,
+      currentHallId: currentHallId.value,
+      currentHallInfo: currentHallInfo.value,
+    });
 
     // 加载模型
     model = await sceneManager.loadModel(fullPath, (event) => {
@@ -164,40 +218,39 @@ const loadModel = async () => {
   } catch (error) {
     console.error("模型加载失败:", error);
     hasError.value = true;
-    errorMessage.value = error.message || "未知错误";
+    errorMessage.value = `模型加载失败: ${error.message || "未知错误"}`;
     isLoading.value = false;
   }
 };
 
 // 设置模型
 const setupModel = () => {
-  if (!model) {
-    console.error("模型未加载");
+  if (!model || !currentHallInfo.value?.model) {
+    console.error("模型未加载或模型配置不存在");
     return;
   }
 
   console.log("正在设置模型属性...");
   console.log("配置:", {
-    scale: modelConfig.value.scale,
-    position: modelConfig.value.position,
-    rotation: modelConfig.value.rotation,
+    scale: currentHallInfo.value.model.scale,
+    position: currentHallInfo.value.model.position,
+    rotation: currentHallInfo.value.model.rotation,
   });
 
-  model.scale.setScalar(modelConfig.value.scale);
+  model.scale.setScalar(currentHallInfo.value.model.scale);
   model.position.set(
-    modelConfig.value.position.x,
-    modelConfig.value.position.y,
-    modelConfig.value.position.z
+    currentHallInfo.value.model.position.x,
+    currentHallInfo.value.model.position.y,
+    currentHallInfo.value.model.position.z
   );
   model.rotation.set(
-    modelConfig.value.rotation.x,
-    modelConfig.value.rotation.y,
-    modelConfig.value.rotation.z
+    currentHallInfo.value.model.rotation.x,
+    currentHallInfo.value.model.rotation.y,
+    currentHallInfo.value.model.rotation.z
   );
 
   sceneManager.addObject(model);
-  currentModel.value = modelConfig.value;
-
+  updateModelInfo();
   setupCameraView();
 };
 
@@ -224,52 +277,52 @@ const handleResize = () => {
 
 // 重置视角
 const resetView = () => {
-  if (!camera || !cameraController) return;
+  if (!camera || !cameraController || !currentHallInfo.value?.model) return;
 
   camera.position.set(
-    modelConfig.value.camera.position.x,
-    modelConfig.value.camera.position.y,
-    modelConfig.value.camera.position.z
+    currentHallInfo.value.model.camera.position.x,
+    currentHallInfo.value.model.camera.position.y,
+    currentHallInfo.value.model.camera.position.z
   );
   camera.lookAt(
-    modelConfig.value.camera.target.x,
-    modelConfig.value.camera.target.y,
-    modelConfig.value.camera.target.z
+    currentHallInfo.value.model.camera.target.x,
+    currentHallInfo.value.model.camera.target.y,
+    currentHallInfo.value.model.camera.target.z
   );
   cameraController.update();
 };
 
 // 设置相机视图
 const setupCameraView = () => {
-  if (!camera || !model) {
-    console.error("相机或模型未就绪");
+  if (!camera || !model || !currentHallInfo.value?.model) {
+    console.error("相机或模型未就绪或模型配置不存在");
     return;
   }
 
   console.log("正在设置相机视图...");
   console.log("相机配置:", {
-    position: modelConfig.value.camera.position,
-    target: modelConfig.value.camera.target,
-    fov: modelConfig.value.camera.fov,
+    position: currentHallInfo.value.model.camera.position,
+    target: currentHallInfo.value.model.camera.target,
+    fov: currentHallInfo.value.model.camera.fov,
   });
 
   // 设置相机初始位置
   camera.position.set(
-    modelConfig.value.camera.position.x,
-    modelConfig.value.camera.position.y,
-    modelConfig.value.camera.position.z
+    currentHallInfo.value.model.camera.position.x,
+    currentHallInfo.value.model.camera.position.y,
+    currentHallInfo.value.model.camera.position.z
   );
 
   // 设置相机目标点
   camera.lookAt(
-    modelConfig.value.camera.target.x,
-    modelConfig.value.camera.target.y,
-    modelConfig.value.camera.target.z
+    currentHallInfo.value.model.camera.target.x,
+    currentHallInfo.value.model.camera.target.y,
+    currentHallInfo.value.model.camera.target.z
   );
 
   // 更新相机视场角
-  if (modelConfig.value.camera.fov) {
-    camera.fov = modelConfig.value.camera.fov;
+  if (currentHallInfo.value.model.camera.fov) {
+    camera.fov = currentHallInfo.value.model.camera.fov;
     camera.updateProjectionMatrix();
   }
 
@@ -354,10 +407,31 @@ const retryLoad = () => {
 };
 
 // 生命周期钩子
-onMounted(() => {
-  initScene();
-  loadModel();
-  window.addEventListener("resize", handleResize);
+onMounted(async () => {
+  try {
+    console.log("开始初始化...");
+    console.log("BASE_URL:", import.meta.env.BASE_URL);
+    console.log("当前路径:", window.location.pathname);
+    console.log("完整URL:", window.location.href);
+
+    await initScene();
+    console.log("场景初始化完成");
+
+    // 打印当前展厅信息
+    console.log("当前展厅信息:", {
+      currentHallId: currentHallId.value,
+      currentHallInfo: currentHallInfo.value,
+      modelConfig: modelConfig.value,
+    });
+
+    await loadModel();
+    console.log("模型加载完成");
+    window.addEventListener("resize", handleResize);
+  } catch (error) {
+    console.error("初始化失败:", error);
+    hasError.value = true;
+    errorMessage.value = `初始化失败: ${error.message || "未知错误"}`;
+  }
 });
 
 onUnmounted(() => {

@@ -10,16 +10,29 @@ export class SceneManager {
   }
 
   setupScene() {
-    this.scene.background = new THREE.Color(0xf0f0f0);
+    // 移除默认背景色，使用透明背景
+    this.scene.background = null;
 
     // 添加光源
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     this.scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 10, 5);
+    // 添加方向光
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 5, 5);
     directionalLight.castShadow = true;
+
+    // 设置阴影属性
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 500;
     this.scene.add(directionalLight);
+
+    // 添加辅助光源
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    fillLight.position.set(-5, 5, -5);
+    this.scene.add(fillLight);
   }
 
   async loadModel(modelPath, onProgress) {
