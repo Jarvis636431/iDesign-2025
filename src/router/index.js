@@ -12,9 +12,9 @@ const routes = [
     component: () => import("../views/Information.vue"),
   },
   {
-    path: "/2025/test",
-    name: "Test",
-    component: () => import("../views/Test.vue"),
+    path: "/2025/hall",
+    name: "Hall",
+    component: () => import("../views/Hall.vue"),
   },
   // 添加根路径重定向
   {

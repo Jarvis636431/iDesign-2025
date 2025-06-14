@@ -56,14 +56,14 @@ const scrollToSection = (sectionId) => {
   }
 };
 
-// 跳转到测试页面
-const goToTest = () => {
+// 跳转到展厅视图
+const goToHall = () => {
   // 关闭移动端菜单
   if (isMobile.value) {
     closeMenu();
   }
-  // 跳转到测试页面
-  window.open("/2025/test", "_blank");
+  // 跳转到展厅视图页面
+  window.open("/2025/hall", "_blank");
 };
 
 // 使用 IntersectionObserver 监测每个 section 的可见性
@@ -173,8 +173,8 @@ onMounted(() => {
         >
           {{ isEnglish ? "Exhibition Planner" : "年展组" }}
         </div>
-        <div class="nav-item test-link" @click="goToTest">
-          {{ isEnglish ? "Test Page" : "测试页面" }}
+        <div class="nav-item hall-link" @click="goToHall">
+          {{ isEnglish ? "Hall View" : "展厅视图" }}
         </div>
       </div>
       <div class="language-switch" @click="toggleLanguage">
@@ -311,7 +311,7 @@ onMounted(() => {
   border-radius: 2px;
 }
 
-.nav-item.test-link {
+.nav-item.hall-link {
   color: #ff6b6b;
   font-weight: 500;
   border: 1px solid #ff6b6b;
@@ -320,7 +320,7 @@ onMounted(() => {
   padding: 0.5rem 0.3rem;
 }
 
-.nav-item.test-link:hover {
+.nav-item.hall-link:hover {
   background-color: #ff6b6b;
   color: white;
 }
