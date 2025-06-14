@@ -192,30 +192,13 @@ const enterExhibition = (hall) => {
   // 显示加载状态
   isLoading.value = true;
 
-  // 2秒后执行跳转
+  // 1秒后执行跳转
   setTimeout(() => {
-    axios
-      .get("http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists", {
-        params: { per_page: 1, current_page: 1, category_id: hall.id },
-      })
-      .then((res) => {
-        let firstExhibitId = null;
-        if (res.data && res.data.data && res.data.data.length > 0) {
-          firstExhibitId = res.data.data[0].id;
-        }
-        // 跳转到information页面，带上展厅id和展品id
-        router.push(
-          `/2025/information/${firstExhibitId || ""}?hallId=${hall.id}`
-        );
-      })
-      .catch(() => {
-        // 请求失败也跳转，只带hallId
-        router.push(`/2025/information/?hallId=${hall.id}`);
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
-  }, 2000);
+    // 直接跳转到对应展厅
+    router.push(`/2025/hall/${hall.id}`).finally(() => {
+      isLoading.value = false;
+    });
+  }, 1000);
 };
 
 // 移动端检测 - 简化逻辑，主要基于用户代理和屏幕尺寸
@@ -326,7 +309,7 @@ const handleCarouselTouchEnd = (event) => {
           :key="activeHall.logo"
           :src="activeHall.logo"
           :alt="isEnglish ? activeHall.enName : activeHall.name"
-          class="hall-logo"
+          class="ha这个ll-logo"
           :style="{ cursor: customCursor }"
           @click="enterExhibition(activeHall)"
         />

@@ -20,14 +20,10 @@
     </div>
 
     <!-- 返回按钮 -->
-    <button @click="goBack" class="back-button">
-      <span>←</span> 返回
-    </button>
+    <button @click="goBack" class="back-button"><span>←</span> 返回</button>
 
     <!-- 查看展品按钮 -->
-    <button @click="enterInformation" class="exhibit-button">
-      查看展品
-    </button>
+    <button @click="enterInformation" class="exhibit-button">查看展品</button>
 
     <!-- 模型展示区域 -->
     <div class="model-frame">
@@ -41,8 +37,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import * as THREE from "three";
 import { SceneManager } from "../utils/SceneManager";
 import { CameraController } from "../utils/CameraController";
@@ -56,6 +52,7 @@ import {
 import axios from "axios"; // 导入 axios
 
 const router = useRouter();
+const route = useRoute();
 
 // Three.js 实例变量
 let sceneManager, cameraController, camera, renderer, model;
@@ -68,16 +65,15 @@ const loadingProgress = ref(0);
 const modelContainer = ref(null);
 const currentModel = ref(null);
 
-// 当前选择的模型ID
-const currentHallId = ref("hall1");
+// 获取路由中的展厅ID参数
+const currentHallId = computed(() => Number(route.params.id) || 73);
 
 // 获取所有展厅配置
 const hallList = computed(() => halls);
 
 // 获取当前展厅对应的信息
 const currentHallInfo = computed(() => {
-  const hallNumber = parseInt(currentHallId.value.replace("hall", ""));
-  return getHallByNumber(hallNumber);
+  return getHallById(currentHallId.value);
 });
 
 // 更新模型信息
@@ -306,39 +302,30 @@ const setupCameraView = () => {
   }
 };
 
-// 切换场景
+// 切换展厅
 const switchHall = async () => {
   try {
-    // 重置状态
-    isLoading.value = true;
-    hasError.value = false;
-    errorMessage.value = "";
-    loadingProgress.value = 0;
+    // 计算下一个展厅ID
+    const currentIndex = halls.findIndex(
+      (hall) => hall.id === currentHallId.value
+    );
+    const nextIndex = (currentIndex + 1) % halls.length;
+    const nextHall = halls[nextIndex];
 
-    // 保存当前模型引用并清理
-    const oldModel = model;
-    model = null;
-    if (oldModel) {
-      console.log("正在清理旧模型...");
-      sceneManager.removeObject(oldModel);
-    }
-
-    // 加载新模型
-    await loadModel();
+    // 跳转到下一个展厅
+    router.push(`/2025/hall/${nextHall.id}`);
   } catch (error) {
     console.error("切换展厅失败:", error);
     hasError.value = true;
     errorMessage.value = error.message || "切换展厅失败";
-  } finally {
-    if (hasError.value) {
-      isLoading.value = false;
-    }
   }
 };
 
 // 进入展品展示
 const enterInformation = async () => {
-  if (!currentHallInfo.value) return;
+  // 直接使用当前展厅ID
+  const hallId = currentHallId.value;
+  if (!hallId) return;
 
   isLoading.value = true;
   try {
@@ -348,7 +335,7 @@ const enterInformation = async () => {
         params: {
           per_page: 1,
           current_page: 1,
-          category_id: currentHallInfo.value.id,
+          category_id: hallId,
         },
       }
     );
@@ -358,11 +345,9 @@ const enterInformation = async () => {
       firstExhibitId = res.data.data[0].id;
     }
 
-    router.push(
-      `/2025/information/${firstExhibitId}?hallId=${currentHallInfo.value.id}`
-    );
+    router.push(`/2025/information/${firstExhibitId}?hallId=${hallId}`);
   } catch {
-    router.push(`/2025/information/?hallId=${currentHallInfo.value.id}`);
+    router.push(`/2025/information/?hallId=${hallId}`);
   } finally {
     isLoading.value = false;
   }
@@ -377,6 +362,28 @@ const goBack = () => {
 const retryLoad = () => {
   loadModel();
 };
+
+// 监听展厅ID变化
+watch(currentHallId, async (newId) => {
+  if (!newId) return;
+
+  // 重置状态
+  isLoading.value = true;
+  hasError.value = false;
+  errorMessage.value = "";
+  loadingProgress.value = 0;
+
+  // 保存当前模型引用并清理
+  const oldModel = model;
+  model = null;
+  if (oldModel) {
+    console.log("正在清理旧模型...");
+    sceneManager.removeObject(oldModel);
+  }
+
+  // 加载新模型
+  await loadModel();
+});
 
 // 生命周期钩子
 onMounted(async () => {
@@ -574,7 +581,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1.2rem;
-  background: #E77E37;
+  background: #e77e37;
   border: 2px solid rgba(255, 255, 255, 0.8);
   color: white;
   border-radius: 8px;
@@ -589,7 +596,7 @@ onUnmounted(() => {
 }
 
 .back-button:hover {
-  background: #D66B24;
+  background: #d66b24;
   border-color: #fff;
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(231, 126, 55, 0.3);
@@ -605,7 +612,7 @@ onUnmounted(() => {
   top: 20px;
   right: 20px;
   padding: 0.5rem 1.5rem;
-  background: #2FA3B0;
+  background: #2fa3b0;
   border: 2px solid rgba(255, 255, 255, 0.8);
   color: white;
   border-radius: 8px;
@@ -620,7 +627,7 @@ onUnmounted(() => {
 }
 
 .exhibit-button:hover {
-  background: #268D99;
+  background: #268d99;
   border-color: #fff;
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(47, 163, 176, 0.3);
