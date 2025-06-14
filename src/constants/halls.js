@@ -205,3 +205,16 @@ export const controlsLimits = {
   minDistance: 3, // 保持最小距离限制
   maxDistance: 30, // 保持最大距离限制
 };
+
+// 根据展厅编号获取展厅信息
+export function getHallByNumber(number) {
+  if (!number || number < 1 || number > halls.length) {
+    return null;
+  }
+  return halls[number - 1];
+}
+
+// 根据展厅ID获取展厅信息
+export function getHallById(id) {
+  return halls.find((hall) => hall.id === id) || null;
+}

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { cameraDefaults, controlsLimits } from "../constants/modelConfig";
+import { cameraDefaults, controlsLimits } from "../constants/halls";
 
 export class CameraController {
   constructor(camera, domElement) {

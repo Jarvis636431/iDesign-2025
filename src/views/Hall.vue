@@ -421,7 +421,6 @@ onMounted(async () => {
     console.log("当前展厅信息:", {
       currentHallId: currentHallId.value,
       currentHallInfo: currentHallInfo.value,
-      modelConfig: modelConfig.value,
     });
 
     await loadModel();
