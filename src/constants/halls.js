@@ -1,4 +1,4 @@
-// 展厅基础信息配置，可全局复用
+// 展厅基础信息和模型配置
 export const halls = [
   {
     id: 73,
@@ -21,7 +21,21 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border73.png",
-    model: "",
+    // 整合模型配置
+    model: {
+      path: "assets/models/hall-models/1.glb",
+      scale: 50,
+      position: { x: -0.2, y: -0.4, z: -1 },
+      rotation: { x: 0, y: -0.6, z: 0 },
+      camera: {
+        position: { x: 0.2, y: 2, z: -0.3 },
+        target: { x: 0.2, y: 0, z: -0.3 },
+        rotation: { x: 0, y: 0, z: 0 },
+        fov: 45,
+        autoFit: false,
+        fitMultiplier: 1,
+      },
+    },
   },
   {
     id: 74,
@@ -44,7 +58,20 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border74.png",
-    model: "",
+    model: {
+      path: "assets/models/hall-models/2.glb",
+      scale: 50,
+      position: { x: 0, y: -0.4, z: -1 },
+      rotation: { x: 0, y: -0.6, z: 0 },
+      camera: {
+        position: { x: 0.2, y: 2, z: -0.3 },
+        target: { x: 0.2, y: 0, z: -0.3 },
+        rotation: { x: 0, y: 0, z: 0 },
+        fov: 45,
+        autoFit: false,
+        fitMultiplier: 1,
+      },
+    },
   },
   {
     id: 75,
@@ -67,7 +94,20 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border75.png",
-    model: "",
+    model: {
+      path: "assets/models/hall-models/3.glb",
+      scale: 0.9, // 修正缩放比例
+      position: { x: 0, y: -0.5, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      camera: {
+        position: { x: 0, y: 0, z: 0 },
+        target: { x: 0.4, y: 0, z: 0 },
+        rotation: { x: 0, y: 0, z: 0 },
+        fov: 45,
+        autoFit: false,
+        fitMultiplier: 1,
+      },
+    },
   },
   {
     id: 76,
@@ -90,7 +130,20 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border76.png",
-    model: "",
+    model: {
+      path: "assets/models/hall-models/4.glb",
+      scale: 500, // 修正缩放比例
+      position: { x: -1, y: 0, z: 0 },
+      rotation: { x: 0, y: -0.6, z: 0 },
+      camera: {
+        position: { x: 0.2, y: 2, z: 0 },
+        target: { x: 0.2, y: 0, z: -0.3 },
+        rotation: { x: 0, y: 0, z: 0 },
+        fov: 45,
+        autoFit: false,
+        fitMultiplier: 1,
+      },
+    },
   },
   {
     id: 77,
@@ -113,6 +166,42 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border77.png",
-    model: "",
+    model: {
+      path: "assets/models/hall-models/5.glb",
+      scale: 0.05, // 修正缩放比例
+      position: { x: 0.7, y: -0.3, z: -1 },
+      rotation: { x: 0, y: -0.6, z: 0 },
+      camera: {
+        position: { x: 0.2, y: 0, z: -0.3 },
+        target: { x: 0.2, y: 0, z: -0.3 },
+        rotation: { x: 0, y: 0, z: 0 },
+        fov: 45,
+        autoFit: false,
+        fitMultiplier: 1,
+      },
+    },
   },
 ];
+
+// 更新相机默认配置
+export const cameraDefaults = {
+  fov: 75, // 增大视场角以看到更多内容
+  near: 0.001,
+  far: 1000,
+  eyeHeight: 1.6, // 保持标准人眼高度
+  moveSpeed: 0.01, // 增加移动速度，使移动更流畅
+  rotateSpeed: 0.5,
+  dampingFactor: 0.05,
+};
+
+// 更新控制器限制配置
+export const controlsLimits = {
+  minPolarAngle: Math.PI / 2, // 90度，锁定视角水平
+  maxPolarAngle: Math.PI / 2, // 90度，锁定视角水平
+  minAzimuthAngle: -Infinity,
+  maxAzimuthAngle: Infinity,
+  enableZoom: false, // 禁用缩放
+  enablePan: false, // 禁用平移
+  minDistance: 3, // 保持最小距离限制
+  maxDistance: 30, // 保持最大距离限制
+};

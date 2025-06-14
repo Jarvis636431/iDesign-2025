@@ -70,11 +70,11 @@ import * as THREE from "three";
 import { SceneManager } from "../utils/SceneManager";
 import { CameraController } from "../utils/CameraController";
 import {
-  hallModels,
+  halls,
   cameraDefaults,
   controlsLimits,
-} from "../constants/modelConfig";
-import { halls } from "../constants/halls";
+  getHallByNumber,
+} from "../constants/halls";
 import axios from "axios"; // 导入 axios
 
 const router = useRouter();
@@ -89,16 +89,15 @@ const currentModel = ref(null);
 
 // 获取当前展厅对应的信息
 const currentHallInfo = computed(() => {
-  const currentId = currentHallId.value.replace("hall", "");
-  return halls.find((h) => h.id === Number(currentId));
+  const hallNumber = parseInt(currentHallId.value.replace("hall", ""));
+  return getHallByNumber(hallNumber);
 });
 
-// Three.js 相关变量
-let sceneManager, cameraController, camera, renderer, model;
+// 获取当前模型配置
+const modelConfig = computed(() => currentHallInfo.value?.model);
 
 // 当前选择的模型ID
 const currentHallId = ref("hall1");
-const modelConfig = computed(() => hallModels[currentHallId.value]);
 
 // 初始化场景
 const initScene = () => {
@@ -126,8 +125,6 @@ const initScene = () => {
   // 创建相机控制器
   cameraController = new CameraController(camera, renderer.domElement);
 };
-
-// 核心功能已删除
 
 // 加载模型
 const loadModel = async () => {
