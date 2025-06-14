@@ -189,7 +189,7 @@ export const cameraDefaults = {
   near: 0.001,
   far: 1000,
   eyeHeight: 1.6, // 保持标准人眼高度
-  moveSpeed: 0.01, // 增加移动速度，使移动更流畅
+  moveSpeed: 0.02, // 增加移动速度，使移动更流畅
   rotateSpeed: 0.5,
   dampingFactor: 0.05,
 };

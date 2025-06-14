@@ -22,9 +22,9 @@ export class CameraController {
     this.controls.enableDamping = false; // 禁用阻尼效果
     this.controls.dampingFactor = 0;
 
-    // 禁用鼠标旋转
-    this.controls.enableRotate = false;
-    this.controls.rotateSpeed = 0;
+    // 启用鼠标旋转
+    this.controls.enableRotate = true;
+    this.controls.rotateSpeed = cameraDefaults.rotateSpeed; // 使用配置中的旋转速度
 
     // 禁用缩放
     this.controls.enableZoom = false;
