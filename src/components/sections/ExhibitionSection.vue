@@ -309,7 +309,7 @@ const handleCarouselTouchEnd = (event) => {
           :key="activeHall.logo"
           :src="activeHall.logo"
           :alt="isEnglish ? activeHall.enName : activeHall.name"
-          class="ha这个ll-logo"
+          class="hall-logo"
           :style="{ cursor: customCursor }"
           @click="enterExhibition(activeHall)"
         />
@@ -525,8 +525,8 @@ const handleCarouselTouchEnd = (event) => {
   right: 50px; /* 留出一些间距 */
   top: 45%;
   transform: translateY(-50%);
-  width: 65%;
-  height: 70vh;
+  width: 60%; /* 减小宽度 */
+  height: 60vh; /* 减小高度 */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -545,8 +545,8 @@ const handleCarouselTouchEnd = (event) => {
 
 .hall-logo {
   position: absolute;
-  max-height: 70vh;
-  max-width: 100%;
+  max-height: 55vh; /* 缩小最大高度 */
+  max-width: 80%; /* 缩小最大宽度 */
   width: auto;
   height: auto;
   object-fit: contain;
@@ -831,8 +831,8 @@ const handleCarouselTouchEnd = (event) => {
   }
 
   .carousel-logo {
-    max-height: 100%;
-    max-width: 100%;
+    max-height: 80%; /* 缩小最大高度 */
+    max-width: 80%; /* 缩小最大宽度 */
     width: auto;
     height: auto;
     object-fit: contain;
