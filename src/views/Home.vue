@@ -173,13 +173,6 @@ onMounted(() => {
         >
           {{ isEnglish ? "Exhibition Planner" : "年展组" }}
         </div>
-        <div
-          class="nav-item"
-          :class="{ active: currentSection === 'end' }"
-          @click="scrollToSection('end')"
-        >
-          {{ isEnglish ? "End" : "结束页" }}
-        </div>
         <div class="nav-item test-link" @click="goToTest">
           {{ isEnglish ? "Test Page" : "测试页面" }}
         </div>
@@ -232,11 +225,7 @@ onMounted(() => {
           class="content-section"
           :is-english="isEnglish"
         />
-        <EndSection
-          id="end"
-          class="content-section"
-          :is-english="isEnglish"
-        />
+        <EndSection id="end" class="content-section" :is-english="isEnglish" />
       </div>
     </main>
   </div>
