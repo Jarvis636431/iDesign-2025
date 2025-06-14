@@ -19,50 +19,23 @@
       </div>
     </div>
 
+    <!-- 返回按钮 -->
+    <button @click="goBack" class="back-button">
+      <span>←</span> 返回
+    </button>
+
+    <!-- 查看展品按钮 -->
+    <button @click="enterInformation" class="exhibit-button">
+      查看展品
+    </button>
+
     <!-- 模型展示区域 -->
     <div class="model-frame">
       <div
         v-show="!isLoading && !hasError"
         class="model-container"
         ref="modelContainer"
-      >
-        <!-- 控制面板 -->
-        <div class="control-panel">
-          <button @click="goBack" class="back-button">
-            <span>←</span> 返回
-          </button>
-          <div class="model-info">
-            <h3>{{ currentHallInfo?.name || "展场模型" }}</h3>
-            <p>{{ currentHallInfo?.enName || "Exhibition Hall" }}</p>
-          </div>
-          <div class="view-controls">
-            <!-- 模型选择器 -->
-            <div class="model-selector">
-              <select
-                id="hall-select"
-                v-model="currentHallId"
-                @change="switchHall"
-                class="hall-select"
-              >
-                <option
-                  v-for="(hall, index) in hallList"
-                  :key="hall.id"
-                  :value="`hall${index + 1}`"
-                >
-                  {{ hall.name }} | {{ hall.enName }}
-                </option>
-              </select>
-            </div>
-            <button @click="resetView" class="control-btn">重置视角</button>
-            <button
-              @click="enterInformation"
-              class="control-btn information-btn"
-            >
-              查看展品
-            </button>
-          </div>
-        </div>
-      </div>
+      ></div>
     </div>
   </div>
 </template>
@@ -126,8 +99,8 @@ const initScene = async () => {
   console.log("创建场景管理器...");
   // 创建场景管理器
   sceneManager = new SceneManager(modelContainer.value);
-  // 设置透明背景
-  sceneManager.scene.background = null;
+  // 设置白色背景
+  sceneManager.scene.background = new THREE.Color(0xffffff);
 
   console.log("创建相机...");
   // 创建相机
@@ -143,13 +116,12 @@ const initScene = async () => {
   // 创建渲染器
   renderer = new THREE.WebGLRenderer({
     antialias: true,
-    alpha: true, // 允许透明背景
   });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.setClearColor(0x000000, 0); // 设置透明背景
+  renderer.setClearColor(0xffffff, 1); // 设置白色背景
 
   // 清除之前的渲染器
   if (modelContainer.value.children.length > 0) {
@@ -448,28 +420,29 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 修改场景背景和基础样式 */
 .exhibition-test-page {
   width: 100%;
   height: 100%;
   position: fixed;
   inset: 0;
   overflow: hidden;
-  background: #000;
+  background: #fff;
 }
 
-/* 修改模型框架样式，去掉边距和圆角 */
 .model-frame {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   margin: 0;
-  background: transparent;
+  background: #fff;
   border-radius: 0;
   overflow: hidden;
   box-shadow: none;
   border: none;
   padding: 0;
+  z-index: 1; /* 确保在按钮下层 */
 }
 
 .model-container {
@@ -477,7 +450,7 @@ onUnmounted(() => {
   height: 100%;
   position: relative;
   border-radius: 0;
-  background: transparent;
+  background: #fff;
   overflow: hidden;
 }
 
@@ -592,210 +565,81 @@ onUnmounted(() => {
   color: white;
 }
 
-/* 控制面板 */
-.control-panel {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 10px;
-  margin: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-  z-index: 100;
-  color: white;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
+/* 返回按钮样式 */
 .back-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1.2rem;
+  background: #E77E37;
+  border: 2px solid rgba(255, 255, 255, 0.8);
   color: white;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  font-weight: 500;
+  z-index: 100; /* 确保在模型上层 */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(231, 126, 55, 0.2);
 }
 
 .back-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: #D66B24;
+  border-color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(231, 126, 55, 0.3);
 }
 
 .back-button span {
   font-size: 1.2rem;
 }
 
-.model-info {
-  flex: 1;
-  text-align: center;
-  margin: 0 2rem;
-}
-
-.model-info h3 {
-  margin: 0 0 0.3rem 0;
-  font-size: 1.2rem;
-  font-weight: 500;
-}
-
-.model-info p {
-  margin: 0;
-  opacity: 0.7;
-  font-size: 0.9rem;
-}
-
-/* 模型选择器样式 */
-.model-selector {
-  margin: 10px 0;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.model-selector {
-  margin: 0;
-  padding: 0;
-  flex: 1;
-}
-
-.hall-select {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #333;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.hall-select:hover {
-  background: rgba(255, 255, 255, 1);
-  border-color: #007bff;
-}
-
-.hall-select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.view-controls {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-.control-btn {
-  padding: 0.4rem 0.8rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  white-space: nowrap;
+/* 查看展品按钮样式 */
+.exhibit-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 0.5rem 1.5rem;
+  background: #2FA3B0;
+  border: 2px solid rgba(255, 255, 255, 0.8);
   color: white;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.9rem;
-}
-
-.control-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.save-btn {
-  background: rgba(40, 167, 69, 0.9) !important;
-  color: white !important;
-  font-weight: bold;
-  border-color: rgba(40, 167, 69, 0.5) !important;
-}
-
-.save-btn:hover {
-  background: rgba(40, 167, 69, 1) !important;
-}
-
-.information-btn {
-  background: rgba(47, 163, 176, 0.8) !important;
-  border-color: rgba(47, 163, 176, 0.5) !important;
+  font-size: 1rem;
   font-weight: 500;
+  z-index: 100; /* 确保在模型上层 */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(47, 163, 176, 0.2);
 }
 
-.information-btn:hover {
-  background: rgba(47, 163, 176, 1) !important;
+.exhibit-button:hover {
+  background: #268D99;
+  border-color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(47, 163, 176, 0.3);
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-  .control-panel {
-    padding: 0.8rem;
-    margin: 0;
-    border-radius: 0;
-    max-height: 50vh;
-    overflow-y: auto;
-  }
-
-  .model-info {
-    margin: 0;
-    order: -1;
-  }
-
-  .model-info h3 {
-    font-size: 1rem;
-  }
-
-  .model-info p {
-    font-size: 0.8rem;
-  }
-
-  .view-controls {
-    justify-content: center;
-  }
-
   .back-button {
-    position: absolute;
-    top: 0.8rem;
-    left: 1rem;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-  }
-
-  .loading-content h2 {
-    font-size: 1.2rem;
-  }
-
-  .loading-content p {
-    font-size: 1rem;
-  }
-
-  .error-content {
-    padding: 1rem;
-  }
-
-  .error-content h2 {
-    font-size: 1.2rem;
-  }
-
-  .retry-btn,
-  .back-btn {
-    padding: 0.6rem 1.2rem;
+    top: 15px;
+    left: 15px;
+    padding: 0.5rem 1rem;
     font-size: 0.9rem;
-    display: block;
-    width: 100%;
-    margin: 0.5rem 0;
+  }
+
+  .exhibit-button {
+    top: 15px;
+    right: 15px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.9rem;
   }
 }
 </style>
