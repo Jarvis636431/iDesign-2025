@@ -33,6 +33,26 @@
         ref="modelContainer"
       ></div>
     </div>
+
+    <!-- 移动端虚拟方向键 -->
+    <div class="virtual-controls">
+      <div class="control-row">
+        <button @touchstart="handleVirtualKey('KeyW', true)" @touchend="handleVirtualKey('KeyW', false)" class="control-btn up">
+          <span>↑</span>
+        </button>
+      </div>
+      <div class="control-row">
+        <button @touchstart="handleVirtualKey('KeyA', true)" @touchend="handleVirtualKey('KeyA', false)" class="control-btn left">
+          <span>←</span>
+        </button>
+        <button @touchstart="handleVirtualKey('KeyS', true)" @touchend="handleVirtualKey('KeyS', false)" class="control-btn down">
+          <span>↓</span>
+        </button>
+        <button @touchstart="handleVirtualKey('KeyD', true)" @touchend="handleVirtualKey('KeyD', false)" class="control-btn right">
+          <span>→</span>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -363,6 +383,24 @@ const retryLoad = () => {
   loadModel();
 };
 
+// 处理虚拟按键事件
+const handleVirtualKey = (keyCode, isKeyDown) => {
+  if (!cameraController) return;
+  
+  // 创建一个模拟的键盘事件
+  const event = {
+    code: keyCode,
+    preventDefault: () => {}
+  };
+
+  // 根据按键状态调用相应的处理方法
+  if (isKeyDown) {
+    cameraController.handleKeyDown(event);
+  } else {
+    cameraController.handleKeyUp(event);
+  }
+};
+
 // 监听展厅ID变化
 watch(currentHallId, async (newId) => {
   if (!newId) return;
@@ -633,6 +671,45 @@ onUnmounted(() => {
   box-shadow: 0 6px 12px rgba(47, 163, 176, 0.3);
 }
 
+/* 虚拟方向键样式 */
+.virtual-controls {
+  display: none; /* 默认在PC端隐藏 */
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 100;
+}
+
+.control-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 5px 0;
+}
+
+.control-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.control-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.95);
+}
+
 /* 移动端适配 */
 @media (max-width: 768px) {
   .back-button {
@@ -647,6 +724,59 @@ onUnmounted(() => {
     right: 15px;
     padding: 0.5rem 1.2rem;
     font-size: 0.9rem;
+  }
+
+  .virtual-controls {
+    display: block; /* 在移动端显示虚拟按键 */
+  }
+
+  .control-row {
+    display: flex;
+    justify-content: center;
+    margin: 0.2rem 0;
+  }
+
+  .control-btn {
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .control-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .control-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  .up {
+    background: linear-gradient(180deg, #4caf50 0%, #81c784 100%);
+  }
+
+  .down {
+    background: linear-gradient(0deg, #f44336 0%, #e57373 100%);
+  }
+
+  .left {
+    background: linear-gradient(90deg, #2196f3 0%, #64b5f6 100%);
+  }
+
+  .right {
+    background: linear-gradient(270deg, #ff9800 0%, #ffb74d 100%);
   }
 }
 </style>
