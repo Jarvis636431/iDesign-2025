@@ -2,24 +2,19 @@ import { createRouter, createWebHashHistory } from "vue-router";
 
 const routes = [
   {
-    path: "/2025/",
+    path: "/",
     name: "Home",
     component: () => import("../views/Home.vue"),
   },
   {
-    path: "/2025/information",
+    path: "/information",
     name: "Information",
     component: () => import("../views/Information.vue"),
   },
   {
-    path: "/2025/hall",
+    path: "/hall",
     name: "Hall",
     component: () => import("../views/Hall.vue"),
-  },
-  // 添加根路径重定向
-  {
-    path: "/",
-    redirect: "/2025/",
   },
 ];
 

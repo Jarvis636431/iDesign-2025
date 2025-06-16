@@ -195,7 +195,7 @@ const enterExhibition = (hall) => {
   // 1秒后执行跳转
   setTimeout(() => {
     // 使用查询参数进行跳转
-    router.push(`/2025/hall?id=${hall.id}`).finally(() => {
+    router.push(`/hall?id=${hall.id}`).finally(() => {
       isLoading.value = false;
     });
   }, 1000);

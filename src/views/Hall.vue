@@ -349,7 +349,7 @@ const switchHall = async () => {
     const nextHall = halls[nextIndex];
 
     // 跳转到下一个展厅
-    router.push(`/2025/hall?id=${nextHall.id}`);
+    router.push(`/hall?id=${nextHall.id}`);
   } catch (error) {
     console.error("切换展厅失败:", error);
     hasError.value = true;
@@ -381,9 +381,9 @@ const enterInformation = async () => {
       firstExhibitId = res.data.data[0].id;
     }
 
-    router.push(`/2025/information?id=${firstExhibitId}&hallId=${hallId}`);
+    router.push(`/information?id=${firstExhibitId}&hallId=${hallId}`);
   } catch {
-    router.push(`/2025/information?hallId=${hallId}`);
+    router.push(`/information?hallId=${hallId}`);
   } finally {
     isLoading.value = false;
   }

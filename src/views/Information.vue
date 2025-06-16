@@ -154,7 +154,7 @@ const goToExhibit = (direction) => {
   }
   const nextId = exhibits.value[newIdx]?.id;
   router.push({
-    path: "/2025/information",
+    path: "/information",
     query: {
       id: nextId,
       hallId: hallId.value,
