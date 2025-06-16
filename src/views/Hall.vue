@@ -37,18 +37,34 @@
     <!-- 移动端虚拟方向键 -->
     <div class="virtual-controls">
       <div class="control-row">
-        <button @touchstart="handleVirtualKey('KeyW', true)" @touchend="handleVirtualKey('KeyW', false)" class="control-btn up">
+        <button
+          @touchstart="handleVirtualKey('KeyW', true)"
+          @touchend="handleVirtualKey('KeyW', false)"
+          class="control-btn up"
+        >
           <span>↑</span>
         </button>
       </div>
       <div class="control-row">
-        <button @touchstart="handleVirtualKey('KeyA', true)" @touchend="handleVirtualKey('KeyA', false)" class="control-btn left">
+        <button
+          @touchstart="handleVirtualKey('KeyA', true)"
+          @touchend="handleVirtualKey('KeyA', false)"
+          class="control-btn left"
+        >
           <span>←</span>
         </button>
-        <button @touchstart="handleVirtualKey('KeyS', true)" @touchend="handleVirtualKey('KeyS', false)" class="control-btn down">
+        <button
+          @touchstart="handleVirtualKey('KeyS', true)"
+          @touchend="handleVirtualKey('KeyS', false)"
+          class="control-btn down"
+        >
           <span>↓</span>
         </button>
-        <button @touchstart="handleVirtualKey('KeyD', true)" @touchend="handleVirtualKey('KeyD', false)" class="control-btn right">
+        <button
+          @touchstart="handleVirtualKey('KeyD', true)"
+          @touchend="handleVirtualKey('KeyD', false)"
+          class="control-btn right"
+        >
           <span>→</span>
         </button>
       </div>
@@ -86,7 +102,7 @@ const modelContainer = ref(null);
 const currentModel = ref(null);
 
 // 获取路由中的展厅ID参数
-const currentHallId = computed(() => Number(route.params.id) || 73);
+const currentHallId = computed(() => Number(route.query.id) || 73);
 
 // 获取所有展厅配置
 const hallList = computed(() => halls);
@@ -333,7 +349,7 @@ const switchHall = async () => {
     const nextHall = halls[nextIndex];
 
     // 跳转到下一个展厅
-    router.push(`/2025/hall/${nextHall.id}`);
+    router.push(`/2025/hall?id=${nextHall.id}`);
   } catch (error) {
     console.error("切换展厅失败:", error);
     hasError.value = true;
@@ -365,9 +381,9 @@ const enterInformation = async () => {
       firstExhibitId = res.data.data[0].id;
     }
 
-    router.push(`/2025/information/${firstExhibitId}?hallId=${hallId}`);
+    router.push(`/2025/information?id=${firstExhibitId}&hallId=${hallId}`);
   } catch {
-    router.push(`/2025/information/?hallId=${hallId}`);
+    router.push(`/2025/information?hallId=${hallId}`);
   } finally {
     isLoading.value = false;
   }
@@ -386,11 +402,11 @@ const retryLoad = () => {
 // 处理虚拟按键事件
 const handleVirtualKey = (keyCode, isKeyDown) => {
   if (!cameraController) return;
-  
+
   // 创建一个模拟的键盘事件
   const event = {
     code: keyCode,
-    preventDefault: () => {}
+    preventDefault: () => {},
   };
 
   // 根据按键状态调用相应的处理方法

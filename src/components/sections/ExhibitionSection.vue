@@ -194,8 +194,8 @@ const enterExhibition = (hall) => {
 
   // 1秒后执行跳转
   setTimeout(() => {
-    // 直接跳转到对应展厅
-    router.push(`/2025/hall/${hall.id}`).finally(() => {
+    // 使用查询参数进行跳转
+    router.push(`/2025/hall?id=${hall.id}`).finally(() => {
       isLoading.value = false;
     });
   }, 1000);

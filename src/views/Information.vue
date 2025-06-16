@@ -23,7 +23,7 @@ const showFullscreen = ref(false); // 全屏展示状态
 const isMobile = ref(false); // 移动端检测
 
 const hallId = computed(() => parseInt(route.query.hallId));
-const currentId = computed(() => parseInt(route.params.id));
+const currentId = computed(() => parseInt(route.query.id));
 const hallInfo = computed(() => hallConfigs.find((h) => h.id === hallId.value));
 const hallColor = computed(() => hallInfo.value?.color || "#2FA3B0");
 
