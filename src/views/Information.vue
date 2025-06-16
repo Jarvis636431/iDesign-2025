@@ -153,7 +153,13 @@ const goToExhibit = (direction) => {
     newIdx = idx > 0 ? idx - 1 : exhibits.value.length - 1;
   }
   const nextId = exhibits.value[newIdx]?.id;
-  router.push(`/2025/information/${nextId}?hallId=${hallId.value}`);
+  router.push({
+    path: "/2025/information",
+    query: {
+      id: nextId,
+      hallId: hallId.value,
+    },
+  });
 
   // 切换展品后滚动到顶部
   setTimeout(() => {
