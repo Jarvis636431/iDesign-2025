@@ -1,60 +1,66 @@
 <template>
   <div class="author-cards-container">
-    <div 
-      v-for="(author, index) in visibleAuthors" 
+    <div
+      v-for="(author, index) in visibleAuthors"
       :key="index"
       class="author-card"
-      :style="{ 
+      :style="{
         zIndex: index,
-        '--hall-color': hallColor
+        '--hall-color': hallColor,
       }"
       @mouseenter="activeCard = index"
       @mouseleave="activeCard = null"
     >
-      <div 
+      <div
         class="author-avatar"
-        :style="author.avatar ? {
-          backgroundImage: `url(${author.avatar})` // author.avatar 字段实际来自 author.url
-        } : {}"
+        :style="
+          author.avatar
+            ? {
+                backgroundImage: `url(${author.avatar})`, // author.avatar 字段实际来自 author.url
+              }
+            : {}
+        "
       >
-        <span v-if="!author.avatar" class="author-initial">{{ author.zh_names?.[0] || '?' }}</span>
+        <span v-if="!author.avatar" class="author-initial">{{
+          author.zh_names?.[0] || "?"
+        }}</span>
       </div>
-      <div class="author-info" :class="{ 'active': activeCard === index }">
+      <div class="author-info" :class="{ active: activeCard === index }">
         <div class="author-name">{{ author.zh_names }}</div>
-        <div class="author-grade">{{ author.grade || '未知年级' }}</div>
+        <div class="author-grade">{{ author.grade || "未知年级" }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 const props = defineProps({
   authors: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   hallColor: {
     type: String,
-    default: '#2FA3B0'
-  }
-})
+    default: "#2FA3B0",
+  },
+});
 
-const activeCard = ref(null)
-const showAllAuthors = ref(false)
+const activeCard = ref(null);
+const showAllAuthors = ref(false);
 
 const visibleAuthors = computed(() => {
-  return props.authors.slice(0, 5)
-})
+  return props.authors.slice(0, 5);
+});
 
 const hiddenAuthors = computed(() => {
-  return props.authors.slice(5)
-})
+  return props.authors.slice(5);
+});
 
 const hasMoreAuthors = computed(() => {
-  return props.authors.length > 5
-})
+  return props.authors.length > 5;
+});
 </script>
 
 <style scoped>
@@ -70,8 +76,8 @@ const hasMoreAuthors = computed(() => {
   position: relative;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-left: -10px; /* 改为右侧叠加，减小叠加面积 */
-  
+  margin-right: -10px; /* 改为右侧叠加，减小叠加面积 */
+
   &:last-child {
     margin-right: 0;
   }
@@ -83,10 +89,8 @@ const hasMoreAuthors = computed(() => {
       transform: scale(1.1);
       border: 2px solid var(--hall-color); /* 保持边框宽度一致 */
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬浮时加强阴影 */
-      
-      &::before {
-        opacity: 0; /* 悬浮时显示真实头像 */
-      }
+
+      /* 移除::before的opacity变化，因为现在默认就是透明的 */
     }
 
     .author-info {
@@ -96,7 +100,7 @@ const hasMoreAuthors = computed(() => {
     }
   }
 
-  &:nth-child(n+6) {
+  &:nth-child(n + 6) {
     display: none;
   }
 }
@@ -105,7 +109,7 @@ const hasMoreAuthors = computed(() => {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: #d9d9d9; /* 默认灰色圆形 */
+  background: #f0f0f0; /* 默认浅灰色，与初始字母背景一致 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,18 +121,18 @@ const hasMoreAuthors = computed(() => {
   z-index: 6;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     background: #d9d9d9;
     border-radius: 50%;
     transition: opacity 0.3s ease;
-    opacity: 1;
+    opacity: 0; /* 默认透明，显示真实头像 */
   }
 }
 
 .author-initial {
-  opacity: 0; /* 默认隐藏初始字母 */
+  opacity: 1; /* 默认显示初始字母（当没有头像时） */
   font-size: 1.2rem; /* 增大字体大小，从 1rem 改为 1.2rem */
   font-weight: bold;
   color: #666;
@@ -140,10 +144,12 @@ const hasMoreAuthors = computed(() => {
   background: #f0f0f0;
   border-radius: 50%;
   transition: opacity 0.3s ease;
+  z-index: 1; /* 确保在头像背景之上 */
 }
 
-.author-card:hover .author-initial {
-  opacity: 1; /* 悬浮时显示初始字母 */
+/* 当有头像时，隐藏初始字母 */
+.author-avatar[style*="background-image"] .author-initial {
+  opacity: 0;
 }
 
 .author-info {
@@ -201,5 +207,4 @@ const hasMoreAuthors = computed(() => {
 .author-card:hover {
   transform: translateY(-5px);
 }
-
 </style>
