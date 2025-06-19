@@ -5,7 +5,7 @@
       :key="index"
       class="author-card"
       :style="{
-        zIndex: index,
+        zIndex: visibleAuthors.length - index,
         '--hall-color': hallColor,
       }"
       @mouseenter="activeCard = index"
