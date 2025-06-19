@@ -1730,15 +1730,23 @@ onUnmounted(() => {
   }
 
   .vertical-text {
-    font-size: 1.8rem; /* 移动端字体稍小 */
+    font-size: 1.4rem; /* 移动端字体调小 - 从1.8rem减小到1.4rem */
     writing-mode: horizontal-tb; /* 移动端改为水平排列 */
     text-orientation: mixed;
     font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif; /* 移动端也使用苹方字体 */
   }
 
+  /* 移动端英文诗歌样式调整 */
+  .english-poem.horizontal-text {
+    font-size: 1rem !important; /* 移动端英文诗歌字体调小 - 从2.5rem减小到1.6rem */
+    line-height: auto; /* 调整行高适应小字体 */
+    letter-spacing: 0.03em; /* 调整字母间距 */
+  }
+
   .text-top-left,
   .text-bottom-right {
-    padding: 2rem; /* 移动端减少padding */
+    padding: 1.5rem; /* 移动端进一步减少padding，适应小字体 */
+    gap: 1rem; /* 减少文字行之间的间距 */
   }
 
   .text-top-left {
