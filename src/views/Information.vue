@@ -1253,6 +1253,7 @@ const wrapText = (ctx, text, maxWidth) => {
     text-align: left;
     line-height: 1.5;
     margin: 0.3rem 0;
+    max-height: 100px;
   }
 
   /* 底部作者和教师信息 - 两端对齐 */
