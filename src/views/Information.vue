@@ -852,7 +852,7 @@ const wrapText = (ctx, text, maxWidth) => {
   align-items: center;
   justify-content: center;
   background: #f8f8f8;
-  border-radius: 32px;
+  border-radius: 0px;
   box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.08);
   width: 580px; /* 增加宽度，从 480px 改为 580px */
   height: 580px; /* 增加高度，从 480px 改为 580px */
@@ -872,7 +872,7 @@ const wrapText = (ctx, text, maxWidth) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24px;
+  border-radius: 8px;
   overflow: hidden;
   background: #fff;
   position: relative;
@@ -881,8 +881,8 @@ const wrapText = (ctx, text, maxWidth) => {
 /* 放大镜按钮 */
 .fullscreen-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 0px;
+  right: 0px;
   width: 36px;
   height: 36px;
   border: none;
@@ -913,7 +913,7 @@ const wrapText = (ctx, text, maxWidth) => {
   height: 100%;
   object-fit: cover;
   aspect-ratio: 1/1;
-  border-radius: 24px;
+  border-radius: 8px; /* 从24px改为8px，圆角更小 */
   background: #f8f8f8;
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.06);
   cursor: pointer;
@@ -935,7 +935,7 @@ const wrapText = (ctx, text, maxWidth) => {
   align-items: center;
   justify-content: center;
   background: #fff0f0;
-  border-radius: 24px;
+  border-radius: 8px; /* 从24px改为8px，圆角更小 */
 }
 
 .desc-section {
@@ -1184,7 +1184,7 @@ const wrapText = (ctx, text, maxWidth) => {
     max-width: none;
     max-height: none;
     margin: 0;
-    border-radius: 16px;
+    border-radius: 8px; /* 从16px改为8px，圆角更小 */
     order: 1;
     position: relative;
   }
@@ -1195,7 +1195,7 @@ const wrapText = (ctx, text, maxWidth) => {
     left: 0;
     width: 100%;
     height: 100%;
-    border-radius: 12px;
+    border-radius: 6px; /* 从12px改为6px，圆角更小 */
   }
 
   /* 移动端详情区域 - 下方 */

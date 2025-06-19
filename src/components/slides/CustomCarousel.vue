@@ -1,17 +1,17 @@
 <script setup>
-import { ref, computed, watch, defineExpose } from 'vue';
-import ModelViewer from '@/components/three/ModelViewer.vue';
+import { ref, computed, watch, defineExpose } from "vue";
+import ModelViewer from "@/components/three/ModelViewer.vue";
 
 const props = defineProps({
   slides: {
     type: Array,
     required: true,
-    default: () => []
+    default: () => [],
   },
   hallColor: {
     type: String,
-    default: '#2FA3B0'
-  }
+    default: "#2FA3B0",
+  },
 });
 
 const currentSlideIndex = ref(0);
@@ -26,12 +26,15 @@ const currentSlide = computed(() => {
   return props.slides[currentSlideIndex.value];
 });
 
-function prevSlideExecute() { // Renamed to avoid conflict if we name the exposed one 'prev'
+function prevSlideExecute() {
+  // Renamed to avoid conflict if we name the exposed one 'prev'
   if (totalSlides.value === 0) return;
-  currentSlideIndex.value = (currentSlideIndex.value - 1 + totalSlides.value) % totalSlides.value;
+  currentSlideIndex.value =
+    (currentSlideIndex.value - 1 + totalSlides.value) % totalSlides.value;
 }
 
-function nextSlideExecute() { // Renamed to avoid conflict
+function nextSlideExecute() {
+  // Renamed to avoid conflict
   if (totalSlides.value === 0) return;
   currentSlideIndex.value = (currentSlideIndex.value + 1) % totalSlides.value;
 }
@@ -46,65 +49,78 @@ function goToSlide(index) {
 defineExpose({
   prev: prevSlideExecute,
   next: nextSlideExecute,
-  goToSlide // Exposing goToSlide as well, might be useful
+  goToSlide, // Exposing goToSlide as well, might be useful
 });
 
-watch(() => props.slides, (newSlides, oldSlides) => {
-  // Only reset if the actual content of slides might have changed identity,
-  // or if the current index becomes invalid.
-  // A simple heuristic: if length changes, or if current item's src changes.
-  let resetIndex = false;
-  if (newSlides.length !== oldSlides.length) {
-    resetIndex = true;
-  } else if (currentSlide.value && newSlides[currentSlideIndex.value] && newSlides[currentSlideIndex.value].src !== currentSlide.value.src) {
-    // If the slide at the current index has a different src, likely a full content change
-    resetIndex = true;
-  }
+watch(
+  () => props.slides,
+  (newSlides, oldSlides) => {
+    // Only reset if the actual content of slides might have changed identity,
+    // or if the current index becomes invalid.
+    // A simple heuristic: if length changes, or if current item's src changes.
+    let resetIndex = false;
+    if (newSlides.length !== oldSlides.length) {
+      resetIndex = true;
+    } else if (
+      currentSlide.value &&
+      newSlides[currentSlideIndex.value] &&
+      newSlides[currentSlideIndex.value].src !== currentSlide.value.src
+    ) {
+      // If the slide at the current index has a different src, likely a full content change
+      resetIndex = true;
+    }
 
-  if (resetIndex || currentSlideIndex.value >= newSlides.length) {
-     currentSlideIndex.value = 0;
-  }
-}, { deep: true });
-
+    if (resetIndex || currentSlideIndex.value >= newSlides.length) {
+      currentSlideIndex.value = 0;
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <template>
   <div class="custom-carousel-wrapper">
     <div class="slide-display-area" v-if="currentSlide">
-      <div :key="currentSlide.type + '-' + currentSlide.src" class="slide-content-inner">
+      <div
+        :key="currentSlide.type + '-' + currentSlide.src"
+        class="slide-content-inner"
+      >
         <template v-if="currentSlide.type === 'model'">
           <ModelViewer
             :modelUrl="currentSlide.src"
             :key="currentSlideIndex + '-' + currentSlide.src + '-model'"
-            style="width:100%;height:100%;border-radius:24px;overflow:hidden;"
+            style="
+              width: 100%;
+              height: 100%;
+              border-radius: 8px;
+              overflow: hidden;
+            "
           ></ModelViewer>
         </template>
         <template v-else-if="currentSlide.type === 'video'">
-          <video 
-            :src="currentSlide.src" 
-            controls 
-            class="carousel-video" 
-            @error="() => alert('视频加载失败！\n'+currentSlide.src)" 
+          <video
+            :src="currentSlide.src"
+            controls
+            class="carousel-video"
+            @error="() => alert('视频加载失败！\n' + currentSlide.src)"
             :key="currentSlideIndex + '-' + currentSlide.src + '-video'"
           ></video>
         </template>
         <template v-else-if="currentSlide.type === 'image'">
-          <img 
-            :src="currentSlide.src" 
-            :alt="'Slide ' + currentSlideIndex" 
-            class="carousel-image" 
-            @error="() => alert('图片加载失败！\n'+currentSlide.src)" 
+          <img
+            :src="currentSlide.src"
+            :alt="'Slide ' + currentSlideIndex"
+            class="carousel-image"
+            @error="() => alert('图片加载失败！\n' + currentSlide.src)"
             :key="currentSlideIndex + '-' + currentSlide.src + '-image'"
-          >
+          />
         </template>
         <div v-else class="slide-type-unknown">
           未知类型的幻灯片: {{ currentSlide.type }}
         </div>
       </div>
     </div>
-    <div v-else class="no-slides-available">
-      无可用幻灯片
-    </div>
+    <div v-else class="no-slides-available">无可用幻灯片</div>
 
     <div class="slide-indicators" v-if="totalSlides > 1">
       <span
@@ -112,7 +128,9 @@ watch(() => props.slides, (newSlides, oldSlides) => {
         :key="'dot-' + index"
         :class="['slide-dot', { active: index === currentSlideIndex }]"
         @click="goToSlide(index)"
-        :style="{ background: index === currentSlideIndex ? hallColor : '#ccc' }"
+        :style="{
+          background: index === currentSlideIndex ? hallColor : '#ccc',
+        }"
       ></span>
     </div>
   </div>
@@ -127,9 +145,9 @@ watch(() => props.slides, (newSlides, oldSlides) => {
   align-items: center;
   justify-content: center;
   position: relative;
-  border-radius: 24px; /* Consistent with .exhibit-image-inner */
-  overflow: hidden;    /* Consistent with .exhibit-image-inner */
-  background: #fff;    /* Consistent with .exhibit-image-inner */
+  border-radius: 8px; /* 从24px改为8px，圆角更小 */
+  overflow: hidden; /* Consistent with .exhibit-image-inner */
+  background: #fff; /* Consistent with .exhibit-image-inner */
 }
 
 .slide-display-area {
@@ -154,7 +172,7 @@ watch(() => props.slides, (newSlides, oldSlides) => {
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: 24px; /* Match ModelViewer style for consistency */
+  border-radius: 8px; /* 从24px改为8px，圆角更小 */
 }
 
 .no-slides-available,
@@ -191,7 +209,8 @@ watch(() => props.slides, (newSlides, oldSlides) => {
 }
 
 /* If ModelViewer.vue itself doesn't ensure 100% width/height for its root, this can help */
-:deep(.model-viewer-container-class-if-any) { /* Replace with actual class if ModelViewer has one */
+:deep(.model-viewer-container-class-if-any) {
+  /* Replace with actual class if ModelViewer has one */
   width: 100%;
   height: 100%;
 }
