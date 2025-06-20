@@ -3,9 +3,25 @@
     <!-- 加载状态 -->
     <div v-if="isLoading" class="loading-overlay">
       <div class="loading-content">
-        <div class="loading-spinner"></div>
-        <h2>正在加载展场模型...</h2>
-        <p>{{ loadingProgress }}%</p>
+        <div class="loading-icon">
+          <img
+            :src="currentHallInfo?.icon"
+            :alt="currentHallInfo?.name"
+            class="loading-hall-icon"
+          />
+          <div class="loading-text">Loading...</div>
+        </div>
+        <div class="loading-description" :style="{ color: currentHallInfo?.color }">
+          <div class="loading-desc-text">
+            <p
+              v-for="(sentence, index) in formatDesc(currentHallInfo)"
+              :key="index"
+              class="loading-desc-line"
+            >
+              {{ sentence }}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -111,6 +127,13 @@ const hallList = computed(() => halls);
 const currentHallInfo = computed(() => {
   return getHallById(currentHallId.value);
 });
+
+// 展厅描述格式化
+const formatDesc = (hall) => {
+  if (!hall) return [];
+  const desc = hall.desc || hall.enDesc || '';
+  return desc.split('|').filter(Boolean).map(line => line.trim());
+};
 
 // 更新模型信息
 const updateModelInfo = () => {
@@ -522,7 +545,9 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(255, 255, 255, 0.1); /* 半透明白色背景 */
+  backdrop-filter: blur(20px); /* 毛玻璃效果 */
+  -webkit-backdrop-filter: blur(20px); /* Safari兼容 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -534,35 +559,52 @@ onUnmounted(() => {
   color: white;
 }
 
-.loading-spinner {
-  width: 60px;
-  height: 60px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid #fff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 2rem;
+.loading-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: pulse 2s ease-in-out infinite;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.loading-hall-icon {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.2));
 }
 
-.loading-content h2 {
-  margin: 0 0 1rem 0;
-  font-size: 1.5rem;
-  font-weight: 300;
-}
-
-.loading-content p {
-  margin: 0;
+.loading-text {
   font-size: 1.2rem;
-  opacity: 0.8;
+  color: #fff;
+  font-weight: normal;
+  letter-spacing: 0.1em;
+}
+
+.loading-description {
+  max-width: 600px;
+  margin-top: 3rem;
+}
+
+.loading-desc-text {
+  max-width: 800px;
+  text-align: center;
+}
+
+.loading-desc-line {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 0.8rem;
+  opacity: 0.9;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* 错误状态 */
@@ -793,6 +835,20 @@ onUnmounted(() => {
 
   .right {
     background: linear-gradient(270deg, #ff9800 0%, #ffb74d 100%);
+  }
+
+  .loading-hall-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .loading-description {
+    margin-top: 2rem;
+  }
+
+  .loading-desc-line {
+    font-size: 1rem;
+    margin-bottom: 0.6rem;
   }
 }
 </style>
