@@ -21,6 +21,8 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border73.png",
+    backgroundImage:
+      import.meta.env.BASE_URL + "assets/images/halls/hall-bgs/73.png",
     // 整合模型配置
     model: {
       path: "assets/models/hall-models/1.glb",
@@ -58,6 +60,8 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border74.png",
+    backgroundImage:
+      import.meta.env.BASE_URL + "assets/images/halls/hall-bgs/74.png",
     model: {
       path: "assets/models/hall-models/2.glb",
       scale: 250, // 增加模型大小
@@ -94,6 +98,8 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border75.png",
+    backgroundImage:
+      import.meta.env.BASE_URL + "assets/images/halls/hall-bgs/75.png",
     model: {
       path: "assets/models/hall-models/3.glb",
       scale: 0.9, // 修正缩放比例
@@ -130,6 +136,8 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border76.png",
+    backgroundImage:
+      import.meta.env.BASE_URL + "assets/images/halls/hall-bgs/76.png",
     model: {
       path: "assets/models/hall-models/4.glb",
       scale: 1000, // 增加模型大小
@@ -166,6 +174,8 @@ export const halls = [
     mobileBorder:
       import.meta.env.BASE_URL +
       "assets/images/halls/hall-borders/mobile-border77.png",
+    backgroundImage:
+      import.meta.env.BASE_URL + "assets/images/halls/hall-bgs/77.png",
     model: {
       path: "assets/models/hall-models/5.glb",
       scale: 0.05, // 修正缩放比例
