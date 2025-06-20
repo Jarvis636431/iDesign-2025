@@ -61,7 +61,10 @@ const checkMobile = () => {
 // 计算文字的transform样式
 const textTransformStyle = computed(() => {
   if (isMobile.value) {
-    return { transform: "translateX(0px)", transition: "none" };
+    return {
+      transform: `translateY(${parallaxOffset.value}px)`,
+      transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
+    };
   }
   return {
     transform: `translateX(${parallaxOffset.value}px)`,
@@ -70,10 +73,15 @@ const textTransformStyle = computed(() => {
 });
 
 const handleScroll = () => {
-  if (isMobile.value) return;
-  // 横向滚动，取scrollLeft
-  const scrollLeft = window.scrollX || window.pageXOffset || document.documentElement.scrollLeft || 0;
-  parallaxOffset.value = -scrollLeft * 0.3;
+  if (isMobile.value) {
+    // 移动端纵向视差
+    const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+    parallaxOffset.value = -scrollTop * 0.3;
+  } else {
+    // PC端横向视差
+    const scrollLeft = window.scrollX || window.pageXOffset || document.documentElement.scrollLeft || 0;
+    parallaxOffset.value = -scrollLeft * 0.3;
+  }
 };
 
 onMounted(() => {
