@@ -26,6 +26,9 @@ const hallId = computed(() => parseInt(route.query.hallId));
 const currentId = computed(() => parseInt(route.query.id));
 const hallInfo = computed(() => hallConfigs.find((h) => h.id === hallId.value));
 const hallColor = computed(() => hallInfo.value?.color || "#2FA3B0");
+const hallBackgroundColor = computed(
+  () => hallInfo.value?.backgroundColor || "#D5f7ec"
+);
 
 const exhibits = ref([]);
 const loading = ref(false);
@@ -497,7 +500,13 @@ const wrapText = (ctx, text, maxWidth) => {
 <template>
   <div class="information-page">
     <button class="back-button" @click="goToHome">返回</button>
-    <div class="background-blur"></div>
+    <div
+      class="background-blur"
+      :style="{
+        backgroundColor: hallBackgroundColor,
+        background: `linear-gradient(135deg, ${hallBackgroundColor} 0%, ${hallBackgroundColor}dd 100%)`,
+      }"
+    ></div>
     <div v-if="loading">展品加载中...</div>
     <div v-else-if="error">{{ error }}</div>
     <div v-else-if="!exhibitInfo">
@@ -763,10 +772,29 @@ const wrapText = (ctx, text, maxWidth) => {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: url("/assets/images/background.jpg") no-repeat center center;
-  background-size: cover;
-  filter: blur(16px);
+  /* 使用动态背景色，通过Vue的style绑定 */
+  background-color: #d5f7ec; /* 默认背景色，会被Vue的style覆盖 */
+  /* 增强高斯模糊效果 */
+  filter: blur(20px) saturate(1.2) brightness(1.1);
+  /* 添加背景纹理效果 */
+  background-image: radial-gradient(
+      circle at 20% 50%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(255, 255, 255, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(255, 255, 255, 0.06) 0%,
+      transparent 50%
+    );
   pointer-events: none;
+  /* 确保模糊边缘不被裁切 */
+  transform: scale(1.1);
 }
 
 .navigation-container {
@@ -1132,6 +1160,12 @@ const wrapText = (ctx, text, maxWidth) => {
     align-items: flex-start;
     justify-content: flex-start;
     overflow-y: auto;
+  }
+
+  /* 移动端背景模糊优化 */
+  .background-blur {
+    filter: blur(15px) saturate(1.1) brightness(1.05);
+    transform: scale(1.05); /* 移动端稍微减少缩放 */
   }
 
   .navigation-container {
