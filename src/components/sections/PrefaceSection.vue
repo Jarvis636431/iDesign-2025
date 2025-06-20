@@ -18,12 +18,11 @@ const cursorX = ref(0);
 const cursorY = ref(0);
 const showCursor = ref(false);
 
-// 视差滚动相关
-const scrollY = ref(0);
-const part2ScrollOffset = ref(0);
-
 // 圆盘半径
 const circleRadius = 75;
+
+// 视差滚动相关
+const parallaxOffset = ref(0);
 
 // 计算clip-path样式
 const clipPathStyle = computed(() => {
@@ -52,29 +51,6 @@ const handleMouseLeave = () => {
   document.body.style.cursor = "auto"; // 恢复默认光标
 };
 
-// 滚动处理函数
-const handleScroll = () => {
-  scrollY.value = window.scrollY;
-
-  if (part2Ref.value) {
-    const rect = part2Ref.value.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
-
-    // 计算第二部分在视窗中的位置
-    const elementTop = rect.top;
-    const elementHeight = rect.height;
-
-    // 当元素在视窗中时计算视差偏移
-    if (elementTop < windowHeight && elementTop + elementHeight > 0) {
-      // 视差因子：文字移动速度是背景的0.5倍（更慢）
-      const parallaxFactor = 0.5;
-      const scrollProgress =
-        (windowHeight - elementTop) / (windowHeight + elementHeight);
-      part2ScrollOffset.value = scrollProgress * 100 * (1 - parallaxFactor);
-    }
-  }
-};
-
 // 移动端检测
 const isMobile = ref(false);
 
@@ -84,19 +60,21 @@ const checkMobile = () => {
 
 // 计算文字的transform样式
 const textTransformStyle = computed(() => {
-  // 移动端禁用视差效果
   if (isMobile.value) {
-    return {
-      transform: "translateY(0px)",
-      transition: "none",
-    };
+    return { transform: "translateX(0px)", transition: "none" };
   }
-
   return {
-    transform: `translateY(${part2ScrollOffset.value}px)`,
-    transition: "transform 0.1s ease-out",
+    transform: `translateX(${parallaxOffset.value}px)`,
+    transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
   };
 });
+
+const handleScroll = () => {
+  if (isMobile.value) return;
+  // 横向滚动，取scrollLeft
+  const scrollLeft = window.scrollX || window.pageXOffset || document.documentElement.scrollLeft || 0;
+  parallaxOffset.value = -scrollLeft * 0.3;
+};
 
 onMounted(() => {
   // 初始化移动端检测
@@ -109,9 +87,7 @@ onMounted(() => {
     part3Ref.value.addEventListener("mouseleave", handleMouseLeave);
   }
 
-  // 添加滚动监听
   window.addEventListener("scroll", handleScroll);
-  // 初始计算一次
   handleScroll();
 });
 
@@ -125,7 +101,6 @@ onUnmounted(() => {
     part3Ref.value.removeEventListener("mouseleave", handleMouseLeave);
   }
 
-  // 移除滚动监听
   window.removeEventListener("scroll", handleScroll);
   document.body.style.cursor = "auto"; // 确保恢复光标
 });
