@@ -117,7 +117,16 @@ const handleTouchStart = (event) => {
 
 const handleTouchMove = (event) => {
   if (!isDragging) return;
-  event.preventDefault();
+  
+  const currentX = event.touches[0].clientX;
+  const currentY = event.touches[0].clientY;
+  const deltaX = currentX - startX;
+  const deltaY = currentY - startY;
+  
+  // 只有在水平滑动时才阻止默认行为
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    event.preventDefault();
+  }
 };
 
 const handleTouchEnd = (event) => {
@@ -636,7 +645,8 @@ onUnmounted(() => {
     width: 100vw !important;
     height: calc(100vh - 60px); /* 减去导航栏高度 */
     background: #fff0ca; /* 保持原有背景颜色 */
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: visible; /* 允许竖直滚动 */
   }
 
   .desktop-layout {
