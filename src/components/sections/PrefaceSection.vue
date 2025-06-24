@@ -1965,6 +1965,22 @@ onUnmounted(() => {
     left: 0;
     width: 100%;
     height: 40%;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow: hidden;
+  }
+
+  /* 渐变背景层 */
+  .hidden-content-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: linear-gradient(
       to bottom,
       rgba(255, 255, 255, 0) 0%,
@@ -1974,13 +1990,8 @@ onUnmounted(() => {
       rgba(255, 255, 255, 0.95) 85%,
       rgba(255, 255, 255, 0) 100%
     );
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    position: relative;
-    overflow: hidden;
+    z-index: 10;
+    pointer-events: none;
   }
 
   /* 移动端隐藏logo调整 */
@@ -2000,7 +2011,7 @@ onUnmounted(() => {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 2;
+    z-index: 15;
     text-align: center;
     width: 300px;
     height: 300px;
