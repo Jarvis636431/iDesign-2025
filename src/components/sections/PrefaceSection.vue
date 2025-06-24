@@ -21,13 +21,28 @@ const showCursor = ref(false);
 // 圆盘半径
 const circleRadius = 75;
 
+// 移动端圆盘半径（更大一些）
+const mobileCircleRadius = 120;
+
+// 移动端触摸相关
+const showMobileHidden = ref(false);
+const touchStartTime = ref(0);
+const isLongPressing = ref(false);
+
 // 视差滚动相关
 const parallaxOffset = ref(0);
 
 // 计算clip-path样式
 const clipPathStyle = computed(() => {
-  if (!showCursor.value) return "circle(0px at 50% 50%)";
-  return `circle(${circleRadius}px at ${cursorX.value}px ${cursorY.value}px)`;
+  if (isMobile.value) {
+    // 移动端：根据showMobileHidden状态显示，使用更大的半径
+    if (!showMobileHidden.value) return "circle(0px at 50% 50%)";
+    return `circle(${mobileCircleRadius}px at ${cursorX.value}px ${cursorY.value}px)`;
+  } else {
+    // 桌面端：根据鼠标状态显示
+    if (!showCursor.value) return "circle(0px at 50% 50%)";
+    return `circle(${circleRadius}px at ${cursorX.value}px ${cursorY.value}px)`;
+  }
 });
 
 // 鼠标移动处理
@@ -56,6 +71,72 @@ const isMobile = ref(false);
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth <= 768;
+};
+
+// 移动端触摸事件处理
+let longPressTimer = null;
+
+const handleTouchStart = (event) => {
+  if (!isMobile.value) return;
+  touchStartTime.value = Date.now();
+  const touch = event.touches[0];
+  const rect = part3Ref.value.getBoundingClientRect();
+  cursorX.value = touch.clientX - rect.left;
+  cursorY.value = touch.clientY - rect.top;
+  
+  // 设置长按定时器
+  longPressTimer = setTimeout(() => {
+    isLongPressing.value = true;
+  }, 300); // 300ms后显示长按指示器
+};
+
+const clearLongPressTimer = () => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+  isLongPressing.value = false;
+};
+
+const handleTouchEnd = (event) => {
+  if (!isMobile.value) return;
+  const touchDuration = Date.now() - touchStartTime.value;
+  
+  // 清除长按定时器
+  clearLongPressTimer();
+  
+  // 长按超过500ms触发隐藏层显示/隐藏
+  if (touchDuration >= 500) {
+    // 更新触摸结束时的位置
+    const touch = event.changedTouches[0];
+    const rect = part3Ref.value.getBoundingClientRect();
+    cursorX.value = touch.clientX - rect.left;
+    cursorY.value = touch.clientY - rect.top;
+    
+    showMobileHidden.value = !showMobileHidden.value;
+    event.preventDefault();
+  }
+};
+
+const handleTouchMove = (event) => {
+  if (!isMobile.value) return;
+  
+  // 如果移动距离太大，取消长按
+  const touch = event.touches[0];
+  const rect = part3Ref.value.getBoundingClientRect();
+  const newX = touch.clientX - rect.left;
+  const newY = touch.clientY - rect.top;
+  const distance = Math.sqrt(Math.pow(newX - cursorX.value, 2) + Math.pow(newY - cursorY.value, 2));
+  
+  if (distance > 20) {
+    clearLongPressTimer();
+  }
+  
+  // 更新位置（如果隐藏层已显示）
+  if (showMobileHidden.value) {
+    cursorX.value = newX;
+    cursorY.value = newY;
+  }
 };
 
 // 计算文字的transform样式
@@ -90,9 +171,15 @@ onMounted(() => {
   window.addEventListener("resize", checkMobile);
 
   if (part3Ref.value) {
+    // 桌面端鼠标事件
     part3Ref.value.addEventListener("mousemove", handleMouseMove);
     part3Ref.value.addEventListener("mouseenter", handleMouseEnter);
     part3Ref.value.addEventListener("mouseleave", handleMouseLeave);
+    
+    // 移动端触摸事件
+    part3Ref.value.addEventListener("touchstart", handleTouchStart, { passive: false });
+    part3Ref.value.addEventListener("touchend", handleTouchEnd, { passive: false });
+    part3Ref.value.addEventListener("touchmove", handleTouchMove, { passive: false });
   }
 
   window.addEventListener("scroll", handleScroll);
@@ -104,9 +191,15 @@ onUnmounted(() => {
   window.removeEventListener("resize", checkMobile);
 
   if (part3Ref.value) {
+    // 移除桌面端鼠标事件
     part3Ref.value.removeEventListener("mousemove", handleMouseMove);
     part3Ref.value.removeEventListener("mouseenter", handleMouseEnter);
     part3Ref.value.removeEventListener("mouseleave", handleMouseLeave);
+    
+    // 移除移动端触摸事件
+    part3Ref.value.removeEventListener("touchstart", handleTouchStart);
+    part3Ref.value.removeEventListener("touchend", handleTouchEnd);
+    part3Ref.value.removeEventListener("touchmove", handleTouchMove);
   }
 
   window.removeEventListener("scroll", handleScroll);
@@ -223,6 +316,11 @@ onUnmounted(() => {
             <div class="guide-text-line" :class="{ 'english-text': isEnglish }">
               {{ isEnglish ? "exhibition" : "五方展区" }}
             </div>
+            
+            <!-- 移动端长按提示 -->
+            <div v-if="isMobile && !showMobileHidden" class="mobile-hint">
+              {{ isEnglish ? "Long press to explore" : "长按探索更多" }}
+            </div>
           </div>
 
           <!-- 隐藏层 - 圆盘内显示的内容 -->
@@ -292,6 +390,16 @@ onUnmounted(() => {
               left: cursorX + 'px',
               top: cursorY + 'px',
               opacity: showCursor ? 1 : 0,
+            }"
+          ></div>
+          
+          <!-- 移动端长按指示器 -->
+          <div
+            v-if="isMobile && isLongPressing"
+            class="long-press-indicator"
+            :style="{
+              left: cursorX + 'px',
+              top: cursorY + 'px',
             }"
           ></div>
         </div>
@@ -1754,13 +1862,70 @@ onUnmounted(() => {
     font-size: 72px !important; /* 移动端"风中之林"字体大小 */
   }
 
-  /* 移动端禁用圆盘效果 */
-  .hidden-layer {
-    display: none;
-  }
-
+  /* 移动端启用圆盘效果，但隐藏自定义光标 */
   .custom-cursor {
     display: none;
+  }
+  
+  /* 移动端隐藏层样式调整 */
+  .hidden-layer {
+    display: block;
+  }
+  
+  /* 移动端小白色圆盘位置调整 */
+  .small-white-circle {
+    left: 50%; /* 移动端居中显示 */
+  }
+  
+  /* 移动端隐藏文字位置调整 */
+  .hidden-text {
+    left: 50%; /* 移动端居中显示 */
+  }
+  
+  /* 移动端隐藏文字字体调整 */
+  .hidden-text .guide-text-line {
+    font-size: 1.2rem; /* 移动端字体稍小 */
+    margin-bottom: 0.3rem;
+  }
+  
+  /* 移动端长按提示样式 */
+  .mobile-hint {
+    font-size: 1rem;
+    color: #ffe29a;
+    margin-top: 2rem;
+    opacity: 0.8;
+    animation: pulse 2s infinite;
+    font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  
+  /* 移动端长按指示器样式 */
+  .long-press-indicator {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border: 3px solid #ffe29a;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 5;
+    transform: translate(-50%, -50%);
+    animation: longPressRipple 0.6s ease-out;
+    background: rgba(255, 226, 154, 0.1);
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 0.4; }
+  }
+  
+  @keyframes longPressRipple {
+    0% {
+      transform: translate(-50%, -50%) scale(0.5);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.8;
+    }
   }
 
   .image-text-combo {
