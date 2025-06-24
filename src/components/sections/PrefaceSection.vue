@@ -76,11 +76,11 @@ const handleScroll = () => {
   if (isMobile.value) {
     // 移动端纵向视差
     const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-    parallaxOffset.value = -scrollTop * 0.3;
+    parallaxOffset.value = -scrollTop * 0.8;
   } else {
     // PC端横向视差
     const scrollLeft = window.scrollX || window.pageXOffset || document.documentElement.scrollLeft || 0;
-    parallaxOffset.value = -scrollLeft * 0.3;
+    parallaxOffset.value = -scrollLeft * 0.8;
   }
 };
 
@@ -1776,10 +1776,11 @@ onUnmounted(() => {
     justify-content: center;
   }
 
-  /* 移动端禁用视差效果 */
+  /* 移动端启用视差效果 */
   .parallax-text {
-    transform: none !important;
-    transition: none !important;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
   }
 }
 
