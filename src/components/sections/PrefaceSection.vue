@@ -1977,8 +1977,8 @@ onUnmounted(() => {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    max-width: 60%;
-    max-height: 40%;
+    max-width: 130%;
+    max-height: 130%;
     z-index: 1;
   }
 
