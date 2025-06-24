@@ -306,7 +306,7 @@ const handleCarouselTouchEnd = (event) => {
       @touchstart="handleTouchStart"
       @touchmove="handleTouchMove"
       @touchend="handleTouchEnd"
-      @wheel="handleWheel"
+      @wheel.passive="handleWheel"
     >
       <transition-group name="slide-fade" tag="div" class="logo-container">
         <img
