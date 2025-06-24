@@ -21,9 +21,6 @@ const showCursor = ref(false);
 // 圆盘半径
 const circleRadius = 75;
 
-// 移动端圆盘半径（更大一些）
-const mobileCircleRadius = 120;
-
 // 移动端触摸相关
 const showMobileHidden = ref(false);
 const touchStartTime = ref(0);
@@ -35,9 +32,9 @@ const parallaxOffset = ref(0);
 // 计算clip-path样式
 const clipPathStyle = computed(() => {
   if (isMobile.value) {
-    // 移动端：根据showMobileHidden状态显示，使用更大的半径
+    // 移动端：长按后直接展示所有隐藏内容，不使用圆形遮罩
     if (!showMobileHidden.value) return "circle(0px at 50% 50%)";
-    return `circle(${mobileCircleRadius}px at ${cursorX.value}px ${cursorY.value}px)`;
+    return "none";
   } else {
     // 桌面端：根据鼠标状态显示
     if (!showCursor.value) return "circle(0px at 50% 50%)";
@@ -83,7 +80,7 @@ const handleTouchStart = (event) => {
   const rect = part3Ref.value.getBoundingClientRect();
   cursorX.value = touch.clientX - rect.left;
   cursorY.value = touch.clientY - rect.top;
-  
+
   // 设置长按定时器
   longPressTimer = setTimeout(() => {
     isLongPressing.value = true;
@@ -101,10 +98,10 @@ const clearLongPressTimer = () => {
 const handleTouchEnd = (event) => {
   if (!isMobile.value) return;
   const touchDuration = Date.now() - touchStartTime.value;
-  
+
   // 清除长按定时器
   clearLongPressTimer();
-  
+
   // 长按超过500ms触发隐藏层显示/隐藏
   if (touchDuration >= 500) {
     // 更新触摸结束时的位置
@@ -112,7 +109,7 @@ const handleTouchEnd = (event) => {
     const rect = part3Ref.value.getBoundingClientRect();
     cursorX.value = touch.clientX - rect.left;
     cursorY.value = touch.clientY - rect.top;
-    
+
     showMobileHidden.value = !showMobileHidden.value;
     event.preventDefault();
   }
@@ -120,18 +117,20 @@ const handleTouchEnd = (event) => {
 
 const handleTouchMove = (event) => {
   if (!isMobile.value) return;
-  
+
   // 如果移动距离太大，取消长按
   const touch = event.touches[0];
   const rect = part3Ref.value.getBoundingClientRect();
   const newX = touch.clientX - rect.left;
   const newY = touch.clientY - rect.top;
-  const distance = Math.sqrt(Math.pow(newX - cursorX.value, 2) + Math.pow(newY - cursorY.value, 2));
-  
+  const distance = Math.sqrt(
+    Math.pow(newX - cursorX.value, 2) + Math.pow(newY - cursorY.value, 2)
+  );
+
   if (distance > 20) {
     clearLongPressTimer();
   }
-  
+
   // 更新位置（如果隐藏层已显示）
   if (showMobileHidden.value) {
     cursorX.value = newX;
@@ -156,11 +155,19 @@ const textTransformStyle = computed(() => {
 const handleScroll = () => {
   if (isMobile.value) {
     // 移动端纵向视差
-    const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+    const scrollTop =
+      window.scrollY ||
+      window.pageYOffset ||
+      document.documentElement.scrollTop ||
+      0;
     parallaxOffset.value = -scrollTop * 0.8;
   } else {
     // PC端横向视差
-    const scrollLeft = window.scrollX || window.pageXOffset || document.documentElement.scrollLeft || 0;
+    const scrollLeft =
+      window.scrollX ||
+      window.pageXOffset ||
+      document.documentElement.scrollLeft ||
+      0;
     parallaxOffset.value = -scrollLeft * 0.8;
   }
 };
@@ -175,11 +182,17 @@ onMounted(() => {
     part3Ref.value.addEventListener("mousemove", handleMouseMove);
     part3Ref.value.addEventListener("mouseenter", handleMouseEnter);
     part3Ref.value.addEventListener("mouseleave", handleMouseLeave);
-    
+
     // 移动端触摸事件
-    part3Ref.value.addEventListener("touchstart", handleTouchStart, { passive: false });
-    part3Ref.value.addEventListener("touchend", handleTouchEnd, { passive: false });
-    part3Ref.value.addEventListener("touchmove", handleTouchMove, { passive: false });
+    part3Ref.value.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+    part3Ref.value.addEventListener("touchend", handleTouchEnd, {
+      passive: false,
+    });
+    part3Ref.value.addEventListener("touchmove", handleTouchMove, {
+      passive: false,
+    });
   }
 
   window.addEventListener("scroll", handleScroll);
@@ -195,7 +208,7 @@ onUnmounted(() => {
     part3Ref.value.removeEventListener("mousemove", handleMouseMove);
     part3Ref.value.removeEventListener("mouseenter", handleMouseEnter);
     part3Ref.value.removeEventListener("mouseleave", handleMouseLeave);
-    
+
     // 移除移动端触摸事件
     part3Ref.value.removeEventListener("touchstart", handleTouchStart);
     part3Ref.value.removeEventListener("touchend", handleTouchEnd);
@@ -316,7 +329,7 @@ onUnmounted(() => {
             <div class="guide-text-line" :class="{ 'english-text': isEnglish }">
               {{ isEnglish ? "exhibition" : "五方展区" }}
             </div>
-            
+
             <!-- 移动端长按提示 -->
             <div v-if="isMobile && !showMobileHidden" class="mobile-hint">
               {{ isEnglish ? "Long press to explore" : "长按探索更多" }}
@@ -325,62 +338,119 @@ onUnmounted(() => {
 
           <!-- 隐藏层 - 圆盘内显示的内容 -->
           <div class="hidden-layer" :style="{ clipPath: clipPathStyle }">
-            <!-- 1. 大白色圆盘背景 (最底层) -->
-            <div class="large-white-circle"></div>
+            <!-- 桌面端：圆盘布局 -->
+            <template v-if="!isMobile">
+              <!-- 1. 大白色圆盘背景 (最底层) -->
+              <div class="large-white-circle"></div>
 
-            <!-- 2. color-logo (第二层) -->
-            <div class="logo-container">
-              <img
-                src="/assets/images/logos/color-logo.svg"
-                alt="Color Logo"
-                class="color-logo"
-              />
-            </div>
+              <!-- 2. color-logo (第二层) -->
+              <div class="logo-container">
+                <img
+                  src="/assets/images/logos/color-logo.svg"
+                  alt="Color Logo"
+                  class="color-logo"
+                />
+              </div>
 
-            <!-- 3. 小白色圆盘 (第三层) -->
-            <div class="small-white-circle"></div>
+              <!-- 3. 小白色圆盘 (第三层) -->
+              <div class="small-white-circle"></div>
 
-            <!-- 4. 文字 (最顶层) -->
-            <div class="guide-text-container hidden-text">
-              <div
-                class="guide-text-line"
-                :class="{ 'english-text': isEnglish }"
-              >
-                {{ isEnglish ? "Wind's journey" : "既是风的旅程" }}
+              <!-- 4. 文字 (最顶层) -->
+              <div class="guide-text-container hidden-text">
+                <div
+                  class="guide-text-line"
+                  :class="{ 'english-text': isEnglish }"
+                >
+                  {{ isEnglish ? "Wind's journey" : "既是风的旅程" }}
+                </div>
+                <div
+                  class="guide-text-line"
+                  :class="{ 'english-text': isEnglish }"
+                >
+                  {{
+                    isEnglish
+                      ? "design's evolving stride"
+                      : "亦是思维与设计的演化足迹"
+                  }}
+                </div>
+                <div
+                  class="guide-text-line"
+                  :class="{ 'english-text': isEnglish }"
+                >
+                  {{ isEnglish ? "Or pause and hear" : "或穿行" }}
+                </div>
+                <div
+                  class="guide-text-line"
+                  :class="{ 'english-text': isEnglish }"
+                >
+                  {{ isEnglish ? "if you so please" : "或驻足" }}
+                </div>
+                <div
+                  class="guide-text-line"
+                  :class="{ 'english-text': isEnglish }"
+                >
+                  {{
+                    isEnglish
+                      ? "Each growing tale upon the breeze."
+                      : "您可静听作品的生长故事"
+                  }}
+                </div>
               </div>
-              <div
-                class="guide-text-line"
-                :class="{ 'english-text': isEnglish }"
-              >
-                {{
-                  isEnglish
-                    ? "design's evolving stride"
-                    : "亦是思维与设计的演化足迹"
-                }}
+            </template>
+
+            <!-- 移动端：横向渐变布局 -->
+            <template v-else>
+              <div class="hidden-content-area">
+                <!-- color-logo -->
+                <img
+                  src="/assets/images/logos/color-logo.svg"
+                  alt="Color Logo"
+                  class="color-logo"
+                />
+
+                <!-- 文字内容 -->
+                <div class="hidden-text">
+                  <div
+                    class="guide-text-line"
+                    :class="{ 'english-text': isEnglish }"
+                  >
+                    {{ isEnglish ? "Wind's journey" : "既是风的旅程" }}
+                  </div>
+                  <div
+                    class="guide-text-line"
+                    :class="{ 'english-text': isEnglish }"
+                  >
+                    {{
+                      isEnglish
+                        ? "design's evolving stride"
+                        : "亦是思维与设计的演化足迹"
+                    }}
+                  </div>
+                  <div
+                    class="guide-text-line"
+                    :class="{ 'english-text': isEnglish }"
+                  >
+                    {{ isEnglish ? "Or pause and hear" : "或穿行" }}
+                  </div>
+                  <div
+                    class="guide-text-line"
+                    :class="{ 'english-text': isEnglish }"
+                  >
+                    {{ isEnglish ? "if you so please" : "或驻足" }}
+                  </div>
+                  <div
+                    class="guide-text-line"
+                    :class="{ 'english-text': isEnglish }"
+                  >
+                    {{
+                      isEnglish
+                        ? "Each growing tale upon the breeze."
+                        : "您可静听作品的生长故事"
+                    }}
+                  </div>
+                </div>
               </div>
-              <div
-                class="guide-text-line"
-                :class="{ 'english-text': isEnglish }"
-              >
-                {{ isEnglish ? "Or pause and hear" : "或穿行" }}
-              </div>
-              <div
-                class="guide-text-line"
-                :class="{ 'english-text': isEnglish }"
-              >
-                {{ isEnglish ? "if you so please" : "或驻足" }}
-              </div>
-              <div
-                class="guide-text-line"
-                :class="{ 'english-text': isEnglish }"
-              >
-                {{
-                  isEnglish
-                    ? "Each growing tale upon the breeze."
-                    : "您可静听作品的生长故事"
-                }}
-              </div>
-            </div>
+            </template>
           </div>
 
           <!-- 自定义光标 -->
@@ -392,7 +462,7 @@ onUnmounted(() => {
               opacity: showCursor ? 1 : 0,
             }"
           ></div>
-          
+
           <!-- 移动端长按指示器 -->
           <div
             v-if="isMobile && isLongPressing"
@@ -1866,28 +1936,71 @@ onUnmounted(() => {
   .custom-cursor {
     display: none;
   }
-  
+
   /* 移动端隐藏层样式调整 */
   .hidden-layer {
     display: block;
   }
-  
-  /* 移动端小白色圆盘位置调整 */
+
+  /* 移动端隐藏区域改为横向布局 */
   .small-white-circle {
-    left: 50%; /* 移动端居中显示 */
+    display: none; /* 移动端不显示白色圆盘 */
   }
-  
-  /* 移动端隐藏文字位置调整 */
-  .hidden-text {
-    left: 50%; /* 移动端居中显示 */
+
+  /* 移动端隐藏内容区域 */
+  .hidden-content-area {
+    position: absolute;
+    top: 20%;
+    left: 0;
+    width: 100%;
+    height: 60%;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.95) 15%,
+      rgba(255, 255, 255, 1) 20%,
+      rgba(255, 255, 255, 1) 80%,
+      rgba(255, 255, 255, 0.95) 85%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
   }
-  
-  /* 移动端隐藏文字字体调整 */
-  .hidden-text .guide-text-line {
-    font-size: 1.2rem; /* 移动端字体稍小 */
+
+  /* 移动端隐藏logo调整 */
+  .hidden-content-area .color-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 60%;
+    max-height: 40%;
+    z-index: 1;
+  }
+
+  /* 移动端隐藏文字调整 */
+  .hidden-content-area .hidden-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    text-align: center;
+    width: auto;
+    height: auto;
+    padding: 0;
+  }
+
+  .hidden-content-area .hidden-text .guide-text-line {
+    font-size: 1.2rem;
     margin-bottom: 0.3rem;
+    color: #333333;
   }
-  
+
   /* 移动端长按提示样式 */
   .mobile-hint {
     font-size: 1rem;
@@ -1897,7 +2010,7 @@ onUnmounted(() => {
     animation: pulse 2s infinite;
     font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
   }
-  
+
   /* 移动端长按指示器样式 */
   .long-press-indicator {
     position: absolute;
@@ -1911,12 +2024,17 @@ onUnmounted(() => {
     animation: longPressRipple 0.6s ease-out;
     background: rgba(255, 226, 154, 0.1);
   }
-  
+
   @keyframes pulse {
-    0%, 100% { opacity: 0.8; }
-    50% { opacity: 0.4; }
+    0%,
+    100% {
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 0.4;
+    }
   }
-  
+
   @keyframes longPressRipple {
     0% {
       transform: translate(-50%, -50%) scale(0.5);
