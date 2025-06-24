@@ -29,7 +29,9 @@ const hallColor = computed(() => hallInfo.value?.color || "#2FA3B0");
 const hallBackgroundColor = computed(
   () => hallInfo.value?.backgroundColor || "#D5f7ec"
 );
-const hallBackgroundImage = computed(() => hallInfo.value?.backgroundImage || '');
+const hallBackgroundImage = computed(
+  () => hallInfo.value?.backgroundImage || ""
+);
 
 const exhibits = ref([]);
 const loading = ref(false);
@@ -435,12 +437,39 @@ const generateShareCard = () => {
     function drawBottomContent() {
       const bottomY = imageY + imageHeight + 20;
 
-      // 绘制图标行
-      ctx.font = "20px Arial";
-      ctx.fillText("❤️", cardX + 20, bottomY + 20);
-      ctx.fillText("💬", cardX + 60, bottomY + 20);
-      ctx.fillText("📤", cardX + 100, bottomY + 20);
-      ctx.fillText("🔖", cardX + cardWidth - 40, bottomY + 20);
+      // 绘制图标行 - 使用图片图标
+      const iconSize = 20;
+      const iconY = bottomY + 5;
+
+      // 创建图标图片
+      const iconImg = new Image();
+      iconImg.onload = () => {
+        // 绘制四个图标，增加间距
+        const iconSpacing = 50; // 增加图标间距
+        ctx.drawImage(iconImg, cardX + 30, iconY, iconSize, iconSize);
+        ctx.drawImage(
+          iconImg,
+          cardX + 30 + iconSpacing,
+          iconY,
+          iconSize,
+          iconSize
+        );
+        ctx.drawImage(
+          iconImg,
+          cardX + 30 + iconSpacing * 2,
+          iconY,
+          iconSize,
+          iconSize
+        );
+        ctx.drawImage(
+          iconImg,
+          cardX + cardWidth - 50,
+          iconY,
+          iconSize,
+          iconSize
+        );
+      };
+      iconImg.src = "/assets/images/icons/share.png";
 
       // 绘制作品标题
       ctx.fillStyle = "#333333";
@@ -504,7 +533,9 @@ const wrapText = (ctx, text, maxWidth) => {
     <div
       class="background-blur"
       :style="{
-        backgroundImage: hallBackgroundImage ? `url(${hallBackgroundImage})` : undefined,
+        backgroundImage: hallBackgroundImage
+          ? `url(${hallBackgroundImage})`
+          : undefined,
         filter: 'blur(20px) saturate(1.2) brightness(1.1)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -654,11 +685,7 @@ const wrapText = (ctx, text, maxWidth) => {
           <!-- 卡片头部 -->
           <div class="share-card-header">
             <div class="share-card-logo">
-              <img
-                v-if="hallInfo && hallInfo.icon"
-                :src="hallInfo.icon"
-                alt="展厅图标"
-              />
+              <img src="/assets/images/avatar.png" alt="展厅图标" />
             </div>
             <div class="share-card-title">
               <div class="share-card-main-title">天津大学第11届设计年展</div>
@@ -681,10 +708,34 @@ const wrapText = (ctx, text, maxWidth) => {
           <!-- 卡片底部信息 -->
           <div class="share-card-footer">
             <div class="share-card-icons">
-              <div class="share-icon">❤️</div>
-              <div class="share-icon">💬</div>
-              <div class="share-icon">📤</div>
-              <div class="share-icon bookmark">🔖</div>
+              <div class="share-icon">
+                <img
+                  src="/assets/images/icons/heart.png"
+                  alt="喜欢"
+                  class="icon-img"
+                />
+              </div>
+              <div class="share-icon">
+                <img
+                  src="/assets/images/icons/message.png"
+                  alt="评论"
+                  class="icon-img"
+                />
+              </div>
+              <div class="share-icon">
+                <img
+                  src="/assets/images/icons/send.png"
+                  alt="分享"
+                  class="icon-img"
+                />
+              </div>
+              <div class="share-icon bookmark">
+                <img
+                  src="/assets/images/icons/bookmark.png"
+                  alt="收藏"
+                  class="icon-img"
+                />
+              </div>
             </div>
 
             <div class="share-card-info">
@@ -719,10 +770,10 @@ const wrapText = (ctx, text, maxWidth) => {
             class="share-action-btn download-btn"
             @click="downloadShareCard"
           >
-            📥 下载照片
+            下载照片
           </button>
           <button class="share-action-btn copy-btn" @click="copyLink">
-            🔗 复制链接
+            复制链接
           </button>
         </div>
 
@@ -1443,12 +1494,12 @@ const wrapText = (ctx, text, maxWidth) => {
   }
 
   .share-actions {
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.75rem;
   }
 
   .share-action-btn {
-    padding: 0.75rem;
+    padding: 0.7rem;
     font-size: 0.9rem;
   }
 }
@@ -1469,8 +1520,8 @@ const wrapText = (ctx, text, maxWidth) => {
 }
 
 .share-card-logo img {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -1527,19 +1578,35 @@ const wrapText = (ctx, text, maxWidth) => {
 
 .share-card-icons {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
   margin-bottom: 1rem;
+  gap: 0.8rem;
 }
 
 .share-icon {
   font-size: 1.5rem;
   cursor: pointer;
   transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.share-icon .icon-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: grayscale(0.3);
+  transition: all 0.2s ease;
 }
 
 .share-icon:hover {
   transform: scale(1.1);
+}
+
+.share-icon:hover .icon-img {
+  filter: grayscale(0);
 }
 
 .share-icon.bookmark {
