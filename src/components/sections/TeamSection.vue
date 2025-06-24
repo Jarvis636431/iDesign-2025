@@ -31,11 +31,8 @@ const checkMobile = () => {
 onBeforeUnmount(() => {
   if (scrollHandler) {
     if (isMobile.value) {
-      // 移除所有移动端事件监听器
+      // 移除移动端滚动事件监听器
       window.removeEventListener("scroll", scrollHandler);
-      document.removeEventListener("scroll", scrollHandler);
-      document.body.removeEventListener("scroll", scrollHandler);
-      window.removeEventListener("touchmove", scrollHandler);
     } else {
       const scrollContainer = document.querySelector(".scroll-container");
       if (scrollContainer) {
@@ -103,14 +100,7 @@ const setupScrollHandler = () => {
           (windowHeight - sectionBounds.top) / (windowHeight * 1.5);
       }
 
-      // 临时调试日志
-      if (scrollProgress > 0) {
-        console.log(
-          `🔄 Continuous scroll progress: ${scrollProgress.toFixed(
-            2
-          )}, top: ${sectionBounds.top.toFixed(0)}`
-        );
-      }
+      // 滚动进度计算完成
 
       // 根据滚动进度更新所有卡片，基于宽度调整滚动速度
       rectangles.value = rectangles.value.map((rect, index) => {
@@ -147,14 +137,7 @@ const setupScrollHandler = () => {
             ? -100 + cardProgress * moveRange
             : 100 - cardProgress * moveRange;
 
-        // 调试信息：查看每个卡片的宽度和速度
-        console.log(
-          `Card ${rect.id}: width=${cardWidth.toFixed(
-            0
-          )}px, speedFactor=${widthSpeedFactor.toFixed(
-            2
-          )}, translateX=${newTranslateX.toFixed(2)}`
-        );
+        // 卡片动画计算完成
 
         return {
           ...rect,
@@ -164,13 +147,8 @@ const setupScrollHandler = () => {
       });
     };
 
-    // 添加多种滚动事件监听
+    // 移动端只监听window滚动事件
     window.addEventListener("scroll", scrollHandler, { passive: true });
-    document.addEventListener("scroll", scrollHandler, { passive: true });
-    document.body.addEventListener("scroll", scrollHandler, { passive: true });
-
-    // 添加触摸事件监听
-    window.addEventListener("touchmove", scrollHandler, { passive: true });
   } else {
     // PC端：原有的水平滚动逻辑
     const scrollContainer = document.querySelector(".scroll-container");
