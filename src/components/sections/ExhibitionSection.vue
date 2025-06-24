@@ -175,7 +175,11 @@ const handleTouchEnd = (event) => {
 const handleWheel = (event) => {
   // 确保是触摸板事件
   if (Math.abs(event.deltaY) < 50) return;
-
+  
+  // 阻止默认滚动行为
+  event.preventDefault();
+  event.stopPropagation();
+  
   if (event.deltaY > 0) {
     document.querySelector(".logo-container").classList.remove("reverse");
     nextHall();
@@ -183,8 +187,6 @@ const handleWheel = (event) => {
     document.querySelector(".logo-container").classList.add("reverse");
     prevHall();
   }
-
-  event.preventDefault();
 };
 
 // 进入展厅
@@ -304,7 +306,7 @@ const handleCarouselTouchEnd = (event) => {
       @touchstart="handleTouchStart"
       @touchmove="handleTouchMove"
       @touchend="handleTouchEnd"
-      @wheel.passive="handleWheel"
+      @wheel="handleWheel"
     >
       <transition-group name="slide-fade" tag="div" class="logo-container">
         <img
