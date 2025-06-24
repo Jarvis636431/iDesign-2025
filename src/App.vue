@@ -36,9 +36,12 @@ onMounted(() => {
       const isInVerticalScroll = target.closest(
         ".vertical-scroll, .allow-vertical"
       );
+      const isInExhibitionLogo = target.closest(
+        ".hall-logo-area, .exhibition-section"
+      );
 
-      // 如果在弹窗或明确需要垂直滚动的区域，不转换
-      if (isInModal || isInVerticalScroll) {
+      // 如果在弹窗、明确需要垂直滚动的区域或展厅logo区域，不转换
+      if (isInModal || isInVerticalScroll || isInExhibitionLogo) {
         return;
       }
 

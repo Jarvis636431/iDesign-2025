@@ -289,10 +289,6 @@ const handleCarouselTouchEnd = (event) => {
     v-if="!isMobile"
     class="exhibition-section"
     id="exhibition"
-    @touchstart="handleTouchStart"
-    @touchmove="handleTouchMove"
-    @touchend="handleTouchEnd"
-    @wheel.passive="handleWheel"
     :style="{ backgroundColor: activeHall.backgroundColor }"
   >
     <!-- 左上角标题 -->
@@ -303,7 +299,13 @@ const handleCarouselTouchEnd = (event) => {
     </div>
 
     <!-- 展厅Logo -->
-    <div class="hall-logo-area">
+    <div 
+      class="hall-logo-area"
+      @touchstart="handleTouchStart"
+      @touchmove="handleTouchMove"
+      @touchend="handleTouchEnd"
+      @wheel.passive="handleWheel"
+    >
       <transition-group name="slide-fade" tag="div" class="logo-container">
         <img
           :key="activeHall.logo"
@@ -532,6 +534,8 @@ const handleCarouselTouchEnd = (event) => {
   align-items: center;
   overflow: hidden;
   /* 移除了cursor设置，现在使用动态光标 */
+  /* 标识这是展厅交互区域，用于全局滚轮排除 */
+  z-index: 10;
 }
 
 .logo-container {
