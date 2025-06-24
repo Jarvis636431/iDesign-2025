@@ -1986,11 +1986,11 @@ onUnmounted(() => {
   /* 移动端隐藏logo调整 */
   .hidden-content-area .color-logo {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 46%;
+    left: 43%;
     transform: translate(-50%, -50%);
-    max-width: 130%;
-    max-height: 130%;
+    max-width: 180%;
+    max-height: 180%;
     z-index: 1;
   }
 
