@@ -224,7 +224,7 @@ const exhibitSlides = computed(() => {
 
 // 返回home页面并定位到exhibitionsection
 const goToHome = () => {
-  router.push("/2025#exhibition");
+  router.push("/#exhibition");
 };
 
 // 移动端触摸滑动支持
