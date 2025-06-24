@@ -25,7 +25,7 @@ onMounted(() => {
       // 检查是否为移动端
       const isMobile = window.innerWidth <= 768;
       if (isMobile) {
-        return; // 移动端不转换滚轮
+        return; // 移动端不转换滚轮，允许正常垂直滚动
       }
 
       // 检查是否在需要排除的元素内
@@ -39,9 +39,12 @@ onMounted(() => {
       const isInExhibitionLogo = target.closest(
         ".hall-logo-area, .exhibition-section"
       );
+      const isInTeamSection = target.closest(
+        ".team-container, .content-section"
+      );
 
-      // 如果在弹窗、明确需要垂直滚动的区域或展厅logo区域，不转换
-      if (isInModal || isInVerticalScroll || isInExhibitionLogo) {
+      // 如果在弹窗、明确需要垂直滚动的区域、展厅logo区域或团队section，不转换
+      if (isInModal || isInVerticalScroll || isInExhibitionLogo || isInTeamSection) {
         return;
       }
 

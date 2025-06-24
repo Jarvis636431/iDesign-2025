@@ -273,6 +273,7 @@ const easeInOutCubic = (x) => {
   position: relative;
   background-color: #052a1b;
   overflow: visible;
+  touch-action: pan-y; /* 允许垂直滚动，防止水平滚动 */
 }
 
 .team-container {

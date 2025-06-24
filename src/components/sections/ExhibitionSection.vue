@@ -175,11 +175,11 @@ const handleTouchEnd = (event) => {
 const handleWheel = (event) => {
   // 确保是触摸板事件
   if (Math.abs(event.deltaY) < 50) return;
-  
+
   // 阻止默认滚动行为
   event.preventDefault();
   event.stopPropagation();
-  
+
   if (event.deltaY > 0) {
     document.querySelector(".logo-container").classList.remove("reverse");
     nextHall();
@@ -301,7 +301,7 @@ const handleCarouselTouchEnd = (event) => {
     </div>
 
     <!-- 展厅Logo -->
-    <div 
+    <div
       class="hall-logo-area"
       @touchstart="handleTouchStart"
       @touchmove="handleTouchMove"
@@ -496,7 +496,7 @@ const handleCarouselTouchEnd = (event) => {
   max-width: 100vw !important; /* 添加最大宽度 */
   overflow: hidden;
   background-color: transparent;
-  touch-action: none; /* 防止触摸设备上的默认滚动行为 */
+  touch-action: pan-y; /* 允许垂直滚动，防止水平滚动 */
   display: block !important; /* 确保显示 */
   flex-shrink: 0 !important; /* 防止被压缩 */
 }
@@ -728,7 +728,7 @@ const handleCarouselTouchEnd = (event) => {
   .exhibition-section.mobile-layout {
     width: 100vw !important;
     height: auto !important; /* 改为自适应高度，允许滚动 */
-    min-height: calc(100vh - 60px); /* 最小高度 */
+    min-height: 100vh; /* 增加最小高度以产生滚动 */
     overflow-x: hidden;
     overflow-y: visible; /* 允许竖直滚动 */
     padding: 0;
