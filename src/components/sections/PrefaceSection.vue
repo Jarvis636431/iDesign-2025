@@ -317,7 +317,10 @@ onUnmounted(() => {
 
           <!-- 中间文字 - 正常层 -->
           <div class="guide-text-container">
-            <div class="guide-text-line" :class="{ 'english-text': isEnglish }">
+            <div
+              class="guide-text-line mobile-hidden"
+              :class="{ 'english-text': isEnglish }"
+            >
               {{ isEnglish ? "step inside the" : "您即将步入" }}
             </div>
             <div
@@ -326,7 +329,10 @@ onUnmounted(() => {
             >
               {{ isEnglish ? "Forest in Wind" : "风中之林" }}
             </div>
-            <div class="guide-text-line" :class="{ 'english-text': isEnglish }">
+            <div
+              class="guide-text-line mobile-hidden"
+              :class="{ 'english-text': isEnglish }"
+            >
               {{ isEnglish ? "exhibition" : "五方展区" }}
             </div>
 
@@ -1932,6 +1938,11 @@ onUnmounted(() => {
     font-size: 72px !important; /* 移动端"风中之林"字体大小 */
   }
 
+  /* 移动端隐藏指定文字 */
+  .mobile-hidden {
+    display: none;
+  }
+
   /* 移动端启用圆盘效果，但隐藏自定义光标 */
   .custom-cursor {
     display: none;
@@ -1950,10 +1961,10 @@ onUnmounted(() => {
   /* 移动端隐藏内容区域 */
   .hidden-content-area {
     position: absolute;
-    top: 20%;
+    top: 30%;
     left: 0;
     width: 100%;
-    height: 60%;
+    height: 40%;
     background: linear-gradient(
       to bottom,
       rgba(255, 255, 255, 0) 0%,
@@ -1969,6 +1980,7 @@ onUnmounted(() => {
     justify-content: center;
     padding: 2rem;
     position: relative;
+    overflow: hidden;
   }
 
   /* 移动端隐藏logo调整 */
@@ -1990,9 +2002,16 @@ onUnmounted(() => {
     transform: translate(-50%, -50%);
     z-index: 2;
     text-align: center;
-    width: auto;
-    height: auto;
-    padding: 0;
+    width: 300px;
+    height: 300px;
+    padding: 2rem;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
   }
 
   .hidden-content-area .hidden-text .guide-text-line {
