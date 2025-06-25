@@ -128,6 +128,11 @@ const route = useRoute();
 // Three.js 实例变量
 let sceneManager, cameraController, camera, renderer, model;
 
+// 鼠标交互相关
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let clickableObjects = []; // 存储可点击的对象
+
 // 响应式状态
 const isLoading = ref(true);
 const hasError = ref(false);
@@ -298,6 +303,137 @@ const setupModel = () => {
   sceneManager.addObject(model);
   updateModelInfo();
   setupCameraView();
+  
+  // 设置可点击对象
+  setupClickableObjects();
+};
+
+// 设置可点击对象
+const setupClickableObjects = () => {
+  if (!model) return;
+  
+  // 清空之前的可点击对象
+  clickableObjects = [];
+  
+  // 遍历模型的所有子对象，将它们添加到可点击对象列表中
+  model.traverse((child) => {
+    if (child.isMesh) {
+      // 为每个网格对象添加用户数据，用于识别
+      child.userData.clickable = true;
+      child.userData.originalColor = child.material.color ? child.material.color.clone() : null;
+      clickableObjects.push(child);
+    }
+  });
+  
+  console.log(`设置了 ${clickableObjects.length} 个可点击对象`);
+};
+
+// 处理鼠标点击事件
+const onMouseClick = (event) => {
+  // 计算鼠标位置（标准化设备坐标）
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  
+  // 更新射线
+  raycaster.setFromCamera(mouse, camera);
+  
+  // 检测与可点击对象的交集
+  const intersects = raycaster.intersectObjects(clickableObjects);
+  
+  if (intersects.length > 0) {
+    const clickedObject = intersects[0].object;
+    handleObjectClick(clickedObject, intersects[0]);
+  }
+};
+
+// 处理对象点击
+const handleObjectClick = (object, intersection) => {
+  console.log('点击了对象:', object.name || '未命名对象');
+  console.log('点击位置:', intersection.point);
+  
+  // 添加点击效果 - 改变颜色
+  if (object.material && object.material.color) {
+    // 保存原始颜色
+    if (!object.userData.originalColor) {
+      object.userData.originalColor = object.material.color.clone();
+    }
+    
+    // 临时改变颜色为高亮色
+    object.material.color.setHex(0xff6b6b); // 红色高亮
+    
+    // 1秒后恢复原始颜色
+    setTimeout(() => {
+      if (object.userData.originalColor) {
+        object.material.color.copy(object.userData.originalColor);
+      }
+    }, 1000);
+  }
+  
+  // 可以在这里添加更多的交互效果
+  // 比如显示信息面板、播放动画、跳转到详情页等
+  showObjectInfo(object);
+};
+
+// 显示对象信息（示例）
+const showObjectInfo = (object) => {
+  const objectName = object.name || '未命名对象';
+  const message = `您点击了: ${objectName}`;
+  
+  // 这里可以显示一个信息提示
+  // 可以使用 Vue 的响应式数据来显示信息面板
+  console.log(message);
+  
+  // 示例：显示浏览器原生提示（实际项目中可以用更好的UI组件）
+  // alert(message);
+};
+
+// 处理鼠标悬停效果
+const onMouseMove = (event) => {
+  // 计算鼠标位置
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  
+  // 更新射线
+  raycaster.setFromCamera(mouse, camera);
+  
+  // 检测悬停对象
+  const intersects = raycaster.intersectObjects(clickableObjects);
+  
+  // 重置所有对象的悬停状态
+  clickableObjects.forEach(obj => {
+    if (obj.userData.isHovered) {
+      obj.userData.isHovered = false;
+      // 恢复原始颜色（如果不是被点击状态）
+      if (obj.userData.originalColor && obj.material && obj.material.color) {
+        obj.material.color.copy(obj.userData.originalColor);
+      }
+    }
+  });
+  
+  // 设置悬停对象的高亮效果
+  if (intersects.length > 0) {
+    const hoveredObject = intersects[0].object;
+    hoveredObject.userData.isHovered = true;
+    
+    // 改变鼠标样式
+    renderer.domElement.style.cursor = 'pointer';
+    
+    // 轻微高亮效果
+    if (hoveredObject.material && hoveredObject.material.color) {
+      if (!hoveredObject.userData.originalColor) {
+        hoveredObject.userData.originalColor = hoveredObject.material.color.clone();
+      }
+      // 轻微提亮
+      const brightColor = hoveredObject.userData.originalColor.clone();
+      brightColor.multiplyScalar(1.2); // 提亮20%
+      hoveredObject.material.color.copy(brightColor);
+    }
+  } else {
+    // 恢复默认鼠标样式
+    renderer.domElement.style.cursor = 'default';
+  }
 };
 
 // 动画循环
@@ -500,7 +636,16 @@ onMounted(async () => {
 
     await loadModel();
     console.log("模型加载完成");
+    
+    // 添加事件监听器
     window.addEventListener("resize", handleResize);
+    
+    // 添加鼠标事件监听器
+    if (renderer && renderer.domElement) {
+      renderer.domElement.addEventListener('click', onMouseClick);
+      renderer.domElement.addEventListener('mousemove', onMouseMove);
+      console.log("鼠标交互事件监听器已添加");
+    }
   } catch (error) {
     console.error("初始化失败:", error);
     hasError.value = true;
@@ -509,7 +654,17 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  // 移除窗口事件监听器
   window.removeEventListener("resize", handleResize);
+  
+  // 移除鼠标事件监听器
+  if (renderer && renderer.domElement) {
+    renderer.domElement.removeEventListener('click', onMouseClick);
+    renderer.domElement.removeEventListener('mousemove', onMouseMove);
+    console.log("鼠标交互事件监听器已移除");
+  }
+  
+  // 清理Three.js资源
   if (cameraController) {
     cameraController.dispose();
   }
@@ -519,6 +674,9 @@ onUnmounted(() => {
   if (renderer) {
     renderer.dispose();
   }
+  
+  // 清理可点击对象数组
+  clickableObjects = [];
 });
 </script>
 
