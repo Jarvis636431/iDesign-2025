@@ -28,6 +28,7 @@ const isLongPressing = ref(false);
 
 // 视差滚动相关
 const parallaxOffset = ref(0);
+const parallaxOff = ref(false);
 const isScrollListenerActive = ref(false);
 let intersectionObserver = null;
 
@@ -146,6 +147,14 @@ const handleTouchMove = (event) => {
 
 // 计算文字的transform样式
 const textTransformStyle = computed(() => {
+  // 如果视差效果被禁用，返回默认样式
+  if (parallaxOff.value) {
+    return {
+      transform: isMobile.value ? 'translateY(0px)' : 'translateX(0px)',
+      transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
+    };
+  }
+  
   const style = isMobile.value
     ? {
         transform: `translateY(${parallaxOffset.value}px)`,
@@ -159,6 +168,7 @@ const textTransformStyle = computed(() => {
   console.log("🎨 [DEBUG] textTransformStyle:", {
     isMobile: isMobile.value,
     parallaxOffset: parallaxOffset.value,
+    parallaxOff: parallaxOff.value,
     transform: style.transform,
   });
 
@@ -174,23 +184,27 @@ const handleScroll = () => {
   });
 
   if (isMobile.value) {
-    // 移动端纵向视差
+    // 移动端竖直滚动
     const scrollTop =
       window.scrollY ||
       window.pageYOffset ||
       document.documentElement.scrollTop ||
       0;
-    parallaxOff.value = scrollTop * 0.1;
+    parallaxOffset.value = scrollTop * 2.0;
 
     console.log("📱 [DEBUG] Mobile scroll:", {
       scrollTop,
       parallaxOffset: parallaxOffset.value,
       windowScrollY: window.scrollY,
+      transform: `translateY(${parallaxOffset.value}px)`,
+      elementVisible: document.querySelector('.parallax-text') ? 'found' : 'not found',
+      parallaxOff: parallaxOff.value
     });
   } else {
-    // PC端横向视差
+    // PC端横向滚动
     const scrollContainer = document.querySelector(".scroll-container");
-    const scrollLeft = scrollContainer ? scrollContainer.scrollLeft : 0;
+    if (!scrollContainer) return;
+    const scrollLeft = scrollContainer.scrollLeft;
     parallaxOffset.value = scrollLeft * 0.1;
 
     console.log("💻 [DEBUG] Desktop scroll:", {
@@ -202,23 +216,37 @@ const handleScroll = () => {
 };
 
 const setupIntersectionObserver = () => {
-  if (!part2Ref.value) return;
+  console.log("👁️ [DEBUG] Setting up Intersection Observer");
+  if (!part2Ref.value) {
+    console.warn("⚠️ [DEBUG] part2Ref not found for Intersection Observer!");
+    return;
+  }
+  console.log("✅ [DEBUG] part2Ref found, creating observer");
 
   intersectionObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           console.log(
-            "👁️ [DEBUG] Part2 entered viewport, activating scroll listener"
+            "👁️ [DEBUG] Part2 entered viewport, activating scroll listener",
+            {
+              intersectionRatio: entry.intersectionRatio,
+              boundingClientRect: entry.boundingClientRect,
+              isMobile: isMobile.value
+            }
           );
           isScrollListenerActive.value = true;
+          parallaxOff.value = false; // 启用视差效果
           // 重置视差偏移
           parallaxOffset.value = 0;
+          console.log("✅ [DEBUG] Parallax enabled, parallaxOff:", parallaxOff.value);
         } else {
           console.log(
             "👁️ [DEBUG] Part2 left viewport, deactivating scroll listener"
           );
           isScrollListenerActive.value = false;
+          parallaxOff.value = true; // 禁用视差效果
+          console.log("❌ [DEBUG] Parallax disabled, parallaxOff:", parallaxOff.value);
         }
       });
     },
@@ -233,6 +261,10 @@ const setupIntersectionObserver = () => {
 
 onMounted(() => {
   console.log("🚀 [DEBUG] Component mounted");
+  console.log("📱 [DEBUG] Initial mobile check:", {
+    windowWidth: window.innerWidth,
+    isMobile: window.innerWidth <= 768
+  });
 
   // 初始化移动端检测
   checkMobile();
@@ -262,6 +294,15 @@ onMounted(() => {
   console.log("📜 [DEBUG] Adding scroll event listener");
   if (isMobile.value) {
     window.addEventListener("scroll", handleScroll);
+    // 立即检查一次滚动位置
+    setTimeout(() => {
+      console.log("📱 [DEBUG] Initial mobile scroll check:", {
+        scrollY: window.scrollY,
+        documentScrollTop: document.documentElement.scrollTop,
+        bodyScrollTop: document.body.scrollTop
+      });
+      handleScroll(); // 触发一次滚动处理
+    }, 100);
   } else {
     const scrollContainer = document.querySelector(".scroll-container");
     if (scrollContainer) {
