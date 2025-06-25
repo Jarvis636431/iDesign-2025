@@ -315,17 +315,43 @@ const setupClickableObjects = () => {
   // 清空之前的可点击对象
   clickableObjects = [];
   
+  let objectIndex = 0;
+  
   // 遍历模型的所有子对象，将它们添加到可点击对象列表中
   model.traverse((child) => {
     if (child.isMesh) {
       // 为每个网格对象添加用户数据，用于识别
       child.userData.clickable = true;
       child.userData.originalColor = child.material.color ? child.material.color.clone() : null;
+      
+      // 添加唯一标识符
+      child.userData.objectId = `object_${objectIndex++}`;
+      child.userData.objectType = child.material?.name || 'unknown';
+      child.userData.meshIndex = objectIndex - 1;
+      
+      // 如果对象没有名称，给它一个默认名称
+      if (!child.name) {
+        child.name = `Mesh_${objectIndex - 1}`;
+      }
+      
+      // 添加对象的几何信息
+      child.userData.geometryInfo = {
+        vertices: child.geometry?.attributes?.position?.count || 0,
+        faces: child.geometry?.index ? child.geometry.index.count / 3 : 0,
+        boundingBox: child.geometry?.boundingBox || null
+      };
+      
       clickableObjects.push(child);
     }
   });
   
   console.log(`设置了 ${clickableObjects.length} 个可点击对象`);
+  console.log('对象列表:', clickableObjects.map(obj => ({
+    name: obj.name,
+    id: obj.userData.objectId,
+    type: obj.userData.objectType,
+    vertices: obj.userData.geometryInfo.vertices
+  })));
 };
 
 // 处理鼠标点击事件
@@ -349,8 +375,23 @@ const onMouseClick = (event) => {
 
 // 处理对象点击
 const handleObjectClick = (object, intersection) => {
-  console.log('点击了对象:', object.name || '未命名对象');
+  console.log('=== 对象点击详情 ===');
+  console.log('对象名称:', object.name || '未命名对象');
+  console.log('唯一ID:', object.userData.objectId);
+  console.log('对象类型:', object.userData.objectType);
+  console.log('网格索引:', object.userData.meshIndex);
   console.log('点击位置:', intersection.point);
+  console.log('几何信息:', object.userData.geometryInfo);
+  console.log('Three.js UUID:', object.uuid); // Three.js内置的唯一标识符
+  console.log('材质信息:', {
+    type: object.material?.type,
+    name: object.material?.name,
+    color: object.material?.color?.getHexString()
+  });
+  console.log('==================');
+  
+  // 根据对象ID执行不同的交互逻辑
+  handleObjectInteraction(object);
   
   // 添加点击效果 - 改变颜色
   if (object.material && object.material.color) {
@@ -359,8 +400,9 @@ const handleObjectClick = (object, intersection) => {
       object.userData.originalColor = object.material.color.clone();
     }
     
-    // 临时改变颜色为高亮色
-    object.material.color.setHex(0xff6b6b); // 红色高亮
+    // 根据对象类型使用不同的高亮颜色
+    const highlightColor = getHighlightColorByType(object.userData.objectType);
+    object.material.color.setHex(highlightColor);
     
     // 1秒后恢复原始颜色
     setTimeout(() => {
@@ -370,23 +412,104 @@ const handleObjectClick = (object, intersection) => {
     }, 1000);
   }
   
-  // 可以在这里添加更多的交互效果
-  // 比如显示信息面板、播放动画、跳转到详情页等
+  // 显示对象信息
   showObjectInfo(object);
 };
 
+// 根据对象类型获取高亮颜色
+const getHighlightColorByType = (objectType) => {
+  const colorMap = {
+    'unknown': 0xff6b6b,    // 红色
+    'metal': 0x6b9eff,     // 蓝色
+    'wood': 0xffb366,      // 橙色
+    'glass': 0x66ffb3,     // 绿色
+    'fabric': 0xff66ff,    // 紫色
+    'plastic': 0xffff66    // 黄色
+  };
+  return colorMap[objectType] || 0xff6b6b;
+};
+
+// 根据对象执行特定的交互逻辑
+const handleObjectInteraction = (object) => {
+  const objectId = object.userData.objectId;
+  const objectType = object.userData.objectType;
+  
+  // 根据对象ID或类型执行不同的逻辑
+  switch (objectType) {
+    case 'metal':
+      console.log(`金属对象 ${objectId} 被点击 - 可以播放金属音效`);
+      break;
+    case 'wood':
+      console.log(`木质对象 ${objectId} 被点击 - 可以播放木质音效`);
+      break;
+    case 'glass':
+      console.log(`玻璃对象 ${objectId} 被点击 - 可以播放玻璃音效`);
+      break;
+    default:
+      console.log(`通用对象 ${objectId} 被点击`);
+  }
+  
+  // 也可以根据具体的对象ID执行特定逻辑
+  if (objectId === 'object_0') {
+    console.log('这是第一个对象，可以执行特殊操作');
+  }
+}
+
 // 显示对象信息（示例）
 const showObjectInfo = (object) => {
-  const objectName = object.name || '未命名对象';
-  const message = `您点击了: ${objectName}`;
+  const objectInfo = {
+    name: object.name || '未命名对象',
+    id: object.userData.objectId,
+    type: object.userData.objectType,
+    index: object.userData.meshIndex,
+    uuid: object.uuid,
+    vertices: object.userData.geometryInfo.vertices,
+    faces: object.userData.geometryInfo.faces
+  };
+  
+  const message = `您点击了: ${objectInfo.name} (ID: ${objectInfo.id})`;
   
   // 这里可以显示一个信息提示
   // 可以使用 Vue 的响应式数据来显示信息面板
+  console.log('对象详细信息:', objectInfo);
   console.log(message);
   
   // 示例：显示浏览器原生提示（实际项目中可以用更好的UI组件）
   // alert(message);
 };
+
+// 根据ID获取对象的辅助函数
+const getObjectById = (objectId) => {
+  return clickableObjects.find(obj => obj.userData.objectId === objectId);
+};
+
+// 根据名称获取对象的辅助函数
+const getObjectByName = (objectName) => {
+  return clickableObjects.find(obj => obj.name === objectName);
+};
+
+// 根据类型获取所有对象的辅助函数
+const getObjectsByType = (objectType) => {
+  return clickableObjects.filter(obj => obj.userData.objectType === objectType);
+};
+
+// 获取所有对象信息的辅助函数
+const getAllObjectsInfo = () => {
+  return clickableObjects.map(obj => ({
+    name: obj.name,
+    id: obj.userData.objectId,
+    type: obj.userData.objectType,
+    index: obj.userData.meshIndex,
+    uuid: obj.uuid,
+    vertices: obj.userData.geometryInfo.vertices,
+    faces: obj.userData.geometryInfo.faces,
+    position: {
+      x: obj.position.x,
+      y: obj.position.y,
+      z: obj.position.z
+    }
+  }));
+}
 
 // 处理鼠标悬停效果
 const onMouseMove = (event) => {
