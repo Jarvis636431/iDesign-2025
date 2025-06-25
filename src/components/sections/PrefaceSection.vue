@@ -30,7 +30,9 @@ const isLongPressing = ref(false);
 const parallaxOffset = ref(0);
 const parallaxOff = ref(false);
 const isScrollListenerActive = ref(false);
+
 let intersectionObserver = null;
+let scrollCheckInterval = null; // 滚动状态检查定时器
 
 // 计算clip-path样式
 const clipPathStyle = computed(() => {
@@ -93,13 +95,15 @@ const checkMobile = () => {
     
     // 添加新的滚动事件监听器
     if (isMobile.value) {
-      window.addEventListener("scroll", handleScroll);
+      window.addEventListener("scroll", handleScroll, { passive: true });
       console.log("📱 [DEBUG] Switched to mobile - added window scroll listener");
     } else {
       const scrollContainer = document.querySelector(".scroll-container");
       if (scrollContainer) {
-        scrollContainer.addEventListener("scroll", handleScroll);
+        scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
         console.log("💻 [DEBUG] Switched to desktop - added container scroll listener");
+      } else {
+        console.warn("⚠️ [DEBUG] Scroll container not found when switching to desktop!");
       }
     }
    }
@@ -210,7 +214,7 @@ const textTransformStyle = computed(() => {
 });
 
 const handleScroll = () => {
-  // 移动端始终允许滚动处理，桌面端需要等待part2进入视窗
+  // 桌面端需要等待part2进入视窗，移动端无限制
   if (!isMobile.value && !isScrollListenerActive.value) {
     console.log("🚫 [DEBUG] Desktop scroll blocked - part2 not in viewport");
     return;
@@ -219,8 +223,10 @@ const handleScroll = () => {
   console.log("📜 [DEBUG] handleScroll triggered:", {
     isMobile: isMobile.value,
     timestamp: Date.now(),
+    scrollY: window.scrollY,
     isScrollListenerActive: isScrollListenerActive.value,
-    parallaxOff: parallaxOff.value
+    parallaxOff: parallaxOff.value,
+    eventSource: isMobile.value ? 'window' : 'scroll-container'
   });
 
   if (isMobile.value) {
@@ -301,9 +307,10 @@ const setupIntersectionObserver = () => {
 
 onMounted(() => {
   console.log("🚀 [DEBUG] Component mounted");
-  console.log("📱 [DEBUG] Initial mobile check:", {
+  console.log("📱 [DEBUG] Initial check:", {
     windowWidth: window.innerWidth,
-    isMobile: window.innerWidth <= 768
+    isMobile: window.innerWidth <= 768,
+    isScrollable: document.documentElement.scrollHeight > window.innerHeight
   });
 
   // 初始化移动端检测
@@ -333,7 +340,9 @@ onMounted(() => {
 
   console.log("📜 [DEBUG] Adding scroll event listener");
   if (isMobile.value) {
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    console.log("📱 [DEBUG] Mobile scroll listener added to window");
+    
     // 立即检查一次滚动位置
     setTimeout(() => {
       console.log("📱 [DEBUG] Initial mobile scroll check:", {
@@ -343,15 +352,34 @@ onMounted(() => {
       });
       handleScroll(); // 触发一次滚动处理
     }, 100);
+    
+    // 测试手动触发滚动
+    setTimeout(() => {
+      window.scrollTo(0, 1);
+      setTimeout(() => window.scrollTo(0, 0), 100);
+    }, 500);
   } else {
     const scrollContainer = document.querySelector(".scroll-container");
     if (scrollContainer) {
-      scrollContainer.addEventListener("scroll", handleScroll);
+      scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+      console.log("💻 [DEBUG] Desktop scroll listener added to container");
+    } else {
+      console.warn("⚠️ [DEBUG] Scroll container not found for desktop!");
     }
   }
 
   // 设置Intersection Observer来检测part2是否进入视窗
   setupIntersectionObserver();
+
+  // 定期检查滚动状态（可选的调试功能）
+  // scrollCheckInterval = setInterval(() => {
+  //   console.log("⏰ [DEBUG] Scroll status check:", {
+  //     currentScrollY: window.scrollY,
+  //     isMobile: isMobile.value,
+  //     isScrollListenerActive: isScrollListenerActive.value,
+  //     parallaxOff: parallaxOff.value
+  //   });
+  // }, 5000); // 每5秒检查一次
 
   console.log("🔧 [DEBUG] Initial setup complete:", {
     isMobile: isMobile.value,
@@ -360,6 +388,12 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  // 清理定时器
+  if (scrollCheckInterval) {
+    clearInterval(scrollCheckInterval);
+    scrollCheckInterval = null;
+  }
+  
   // 移除resize监听器
   window.removeEventListener("resize", checkMobile);
 
