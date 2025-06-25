@@ -231,20 +231,12 @@ const handleScroll = () => {
 
   if (isMobile.value) {
     // 移动端竖直滚动
-    const scrollTop =
-      window.scrollY ||
-      window.pageYOffset ||
-      document.documentElement.scrollTop ||
-      0;
+    const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     parallaxOffset.value = scrollTop * 2.0;
-
     console.log("📱 [DEBUG] Mobile scroll:", {
+      parallaxOff: parallaxOff.value,
       scrollTop,
-      parallaxOffset: parallaxOffset.value,
-      windowScrollY: window.scrollY,
-      transform: `translateY(${parallaxOffset.value}px)`,
-      elementVisible: document.querySelector('.parallax-text') ? 'found' : 'not found',
-      parallaxOff: parallaxOff.value
+      parallaxOffset: parallaxOffset.value
     });
   } else {
     // PC端横向滚动
@@ -252,10 +244,7 @@ const handleScroll = () => {
     if (!scrollContainer) return;
     const scrollLeft = scrollContainer.scrollLeft;
     parallaxOffset.value = scrollLeft * 0.1;
-
     console.log("💻 [DEBUG] Desktop scroll:", {
-      scrollLeft,
-      parallaxOffset: parallaxOffset.value,
       scrollContainer: !!scrollContainer,
     });
   }
@@ -1547,7 +1536,7 @@ onUnmounted(() => {
   margin-bottom: 4rem;
 }
 
-/* 第三部分：四行文字 (靠下) */
+/* 第三部分：下方三行文字 (靠下) */
 .text-part-3 {
   align-self: center;
 }
@@ -1818,6 +1807,8 @@ onUnmounted(() => {
 
   .content-section {
     width: 100vw !important;
+    height: auto !important; /* 关键：允许内容撑开页面高度 */
+    min-height: 100vh;
   }
 
   .preface-container {
@@ -2278,6 +2269,7 @@ onUnmounted(() => {
       opacity: 1;
     }
     100% {
+     
       transform: translate(-50%, -50%) scale(1);
       opacity: 0.8;
     }
