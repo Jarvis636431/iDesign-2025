@@ -208,6 +208,7 @@ export class SceneManager {
   }
 
   addObject(object) {
+    if (!object || !this.scene) return;
     // 添加对象前设置交互属性
     this.traverseModel(object);
     this.scene.add(object);
