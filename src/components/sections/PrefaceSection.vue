@@ -28,6 +28,8 @@ const isLongPressing = ref(false);
 
 // 视差滚动相关
 const parallaxOffset = ref(0);
+const isScrollListenerActive = ref(false);
+let intersectionObserver = null;
 
 // 计算clip-path样式
 const clipPathStyle = computed(() => {
@@ -68,9 +70,9 @@ const isMobile = ref(false);
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth <= 768;
-  console.log('🔍 [DEBUG] checkMobile:', {
+  console.log("🔍 [DEBUG] checkMobile:", {
     windowWidth: window.innerWidth,
-    isMobile: isMobile.value
+    isMobile: isMobile.value,
   });
 };
 
@@ -144,29 +146,33 @@ const handleTouchMove = (event) => {
 
 // 计算文字的transform样式
 const textTransformStyle = computed(() => {
-  const style = isMobile.value ? {
-    transform: `translateY(${parallaxOffset.value}px)`,
-    transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
-  } : {
-    transform: `translateX(${parallaxOffset.value}px)`,
-    transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
-  };
-  
-  console.log('🎨 [DEBUG] textTransformStyle:', {
+  const style = isMobile.value
+    ? {
+        transform: `translateY(${parallaxOffset.value}px)`,
+        transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
+      }
+    : {
+        transform: `translateX(${parallaxOffset.value}px)`,
+        transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
+      };
+
+  console.log("🎨 [DEBUG] textTransformStyle:", {
     isMobile: isMobile.value,
     parallaxOffset: parallaxOffset.value,
-    transform: style.transform
+    transform: style.transform,
   });
-  
+
   return style;
 });
 
 const handleScroll = () => {
-  console.log('📜 [DEBUG] handleScroll triggered:', {
+  if (!isScrollListenerActive.value) return;
+
+  console.log("📜 [DEBUG] handleScroll triggered:", {
     isMobile: isMobile.value,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
-  
+
   if (isMobile.value) {
     // 移动端纵向视差
     const scrollTop =
@@ -174,36 +180,66 @@ const handleScroll = () => {
       window.pageYOffset ||
       document.documentElement.scrollTop ||
       0;
-    parallaxOffset.value = -scrollTop * 0.8;
-    
-    console.log('📱 [DEBUG] Mobile scroll:', {
+    parallaxOff.value = scrollTop * 0.05;
+
+    console.log("📱 [DEBUG] Mobile scroll:", {
       scrollTop,
       parallaxOffset: parallaxOffset.value,
-      windowScrollY: window.scrollY
+      windowScrollY: window.scrollY,
     });
   } else {
     // PC端横向视差
-    const scrollContainer = document.querySelector('.scroll-container');
+    const scrollContainer = document.querySelector(".scroll-container");
     const scrollLeft = scrollContainer ? scrollContainer.scrollLeft : 0;
-    parallaxOffset.value = -scrollLeft * 0.8;
-    
-    console.log('💻 [DEBUG] Desktop scroll:', {
+    parallaxOffset.value = scrollLeft * 0.05;
+
+    console.log("💻 [DEBUG] Desktop scroll:", {
       scrollLeft,
       parallaxOffset: parallaxOffset.value,
-      scrollContainer: !!scrollContainer
+      scrollContainer: !!scrollContainer,
     });
   }
 };
 
+const setupIntersectionObserver = () => {
+  if (!part2Ref.value) return;
+
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          console.log(
+            "👁️ [DEBUG] Part2 entered viewport, activating scroll listener"
+          );
+          isScrollListenerActive.value = true;
+          // 重置视差偏移
+          parallaxOffset.value = 0;
+        } else {
+          console.log(
+            "👁️ [DEBUG] Part2 left viewport, deactivating scroll listener"
+          );
+          isScrollListenerActive.value = false;
+        }
+      });
+    },
+    {
+      threshold: 0.1, // 当part2有10%进入视窗时触发
+      rootMargin: "0px",
+    }
+  );
+
+  intersectionObserver.observe(part2Ref.value);
+};
+
 onMounted(() => {
-  console.log('🚀 [DEBUG] Component mounted');
-  
+  console.log("🚀 [DEBUG] Component mounted");
+
   // 初始化移动端检测
   checkMobile();
   window.addEventListener("resize", checkMobile);
 
   if (part3Ref.value) {
-    console.log('✅ [DEBUG] part3Ref found, adding events');
+    console.log("✅ [DEBUG] part3Ref found, adding events");
     // 桌面端鼠标事件
     part3Ref.value.addEventListener("mousemove", handleMouseMove);
     part3Ref.value.addEventListener("mouseenter", handleMouseEnter);
@@ -220,23 +256,25 @@ onMounted(() => {
       passive: false,
     });
   } else {
-    console.warn('⚠️ [DEBUG] part3Ref not found!');
+    console.warn("⚠️ [DEBUG] part3Ref not found!");
   }
 
-  console.log('📜 [DEBUG] Adding scroll event listener');
+  console.log("📜 [DEBUG] Adding scroll event listener");
   if (isMobile.value) {
     window.addEventListener("scroll", handleScroll);
   } else {
-    const scrollContainer = document.querySelector('.scroll-container');
+    const scrollContainer = document.querySelector(".scroll-container");
     if (scrollContainer) {
       scrollContainer.addEventListener("scroll", handleScroll);
     }
   }
-  handleScroll();
-  
-  console.log('🔧 [DEBUG] Initial setup complete:', {
+
+  // 设置Intersection Observer来检测part2是否进入视窗
+  setupIntersectionObserver();
+
+  console.log("🔧 [DEBUG] Initial setup complete:", {
     isMobile: isMobile.value,
-    parallaxOffset: parallaxOffset.value
+    parallaxOffset: parallaxOffset.value,
   });
 });
 
@@ -259,11 +297,18 @@ onUnmounted(() => {
   if (isMobile.value) {
     window.removeEventListener("scroll", handleScroll);
   } else {
-    const scrollContainer = document.querySelector('.scroll-container');
+    const scrollContainer = document.querySelector(".scroll-container");
     if (scrollContainer) {
       scrollContainer.removeEventListener("scroll", handleScroll);
     }
   }
+
+  // 清理Intersection Observer
+  if (intersectionObserver) {
+    intersectionObserver.disconnect();
+    intersectionObserver = null;
+  }
+
   document.body.style.cursor = "auto"; // 确保恢复光标
 });
 </script>
@@ -2023,7 +2068,7 @@ onUnmounted(() => {
 
   /* 渐变背景层 */
   .hidden-content-area::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
