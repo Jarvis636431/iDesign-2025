@@ -50,6 +50,25 @@
       ></div>
     </div>
 
+    <!-- 操作提示 -->
+    <div class="control-tips">
+      <div class="tips-content">
+        <div class="tips-title">操作提示</div>
+        <div class="tips-item">
+          <span class="tips-keys">WASD</span>
+          <span class="tips-desc">移动视角</span>
+        </div>
+        <div class="tips-item">
+          <span class="tips-keys">方向键</span>
+          <span class="tips-desc">移动视角</span>
+        </div>
+        <div class="tips-item">
+          <span class="tips-keys">鼠标</span>
+          <span class="tips-desc">旋转视角</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 移动端虚拟方向键 -->
     <div class="virtual-controls">
       <div class="control-row">
@@ -729,12 +748,71 @@ onUnmounted(() => {
   box-shadow: 0 6px 12px rgba(47, 163, 176, 0.3);
 }
 
+/* 操作提示样式 */
+.control-tips {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 1rem;
+  color: white;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 160px;
+}
+
+.tips-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tips-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 0.3rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.3rem;
+}
+
+.tips-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.tips-keys {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  min-width: 50px;
+  text-align: center;
+}
+
+.tips-desc {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+}
+
 /* 虚拟方向键样式 */
 .virtual-controls {
   display: none; /* 默认在PC端隐藏 */
   position: fixed;
   left: 20px;
-  bottom: 20px;
+  bottom: 180px; /* 调整位置避免与操作提示重叠 */
   z-index: 100;
 }
 
@@ -784,8 +862,31 @@ onUnmounted(() => {
     font-size: 0.9rem;
   }
 
+  .control-tips {
+    left: 15px;
+    bottom: 15px;
+    padding: 0.8rem;
+    font-size: 0.8rem;
+    min-width: 140px;
+  }
+
+  .tips-title {
+    font-size: 0.9rem;
+  }
+
+  .tips-keys {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+    min-width: 45px;
+  }
+
+  .tips-desc {
+    font-size: 0.75rem;
+  }
+
   .virtual-controls {
     display: block; /* 在移动端显示虚拟按键 */
+    bottom: 160px; /* 在移动端调整位置避免与操作提示重叠 */
   }
 
   .control-row {
