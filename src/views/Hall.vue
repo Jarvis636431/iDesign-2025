@@ -51,7 +51,7 @@
     </div>
 
     <!-- 操作提示 -->
-    <div class="control-tips">
+    <div v-if="!isMobile" class="control-tips">
       <div class="tips-content">
         <div class="tips-title">操作提示</div>
         <div class="tips-item">
@@ -140,6 +140,19 @@ const errorMessage = ref("");
 const loadingProgress = ref(0);
 const modelContainer = ref(null);
 const currentModel = ref(null);
+
+// 移动端检测
+const isMobile = ref(false);
+
+// 检测是否为移动设备
+const checkMobile = () => {
+  const userAgent = navigator.userAgent;
+  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+  const touchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const smallScreen = window.innerWidth <= 768;
+  
+  isMobile.value = mobileRegex.test(userAgent) || touchDevice || smallScreen;
+};
 
 // 获取路由中的展厅ID参数
 const currentHallId = computed(() => Number(route.query.id) || 73);
@@ -572,6 +585,9 @@ const animate = () => {
 const handleResize = () => {
   if (!camera || !renderer || !modelContainer.value) return;
 
+  // 重新检测移动端状态
+  checkMobile();
+
   // 更新相机宽高比
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -747,6 +763,10 @@ onMounted(async () => {
     console.log("BASE_URL:", import.meta.env.BASE_URL);
     console.log("当前路径:", window.location.pathname);
     console.log("完整URL:", window.location.href);
+
+    // 检测移动端设备
+    checkMobile();
+    console.log("移动端检测:", isMobile.value);
 
     await initScene();
     console.log("场景初始化完成");
@@ -1093,7 +1113,7 @@ onUnmounted(() => {
   display: none; /* 默认在PC端隐藏 */
   position: fixed;
   left: 20px;
-  bottom: 180px; /* 调整位置避免与操作提示重叠 */
+  bottom: 20px; /* 默认位置 */
   z-index: 100;
 }
 
@@ -1167,7 +1187,8 @@ onUnmounted(() => {
 
   .virtual-controls {
     display: block; /* 在移动端显示虚拟按键 */
-    bottom: 160px; /* 在移动端调整位置避免与操作提示重叠 */
+    bottom: 20px; /* 调整到更靠近底部的位置 */
+    padding-bottom: env(safe-area-inset-bottom); /* 适配安全区域 */
   }
 
   .control-row {
