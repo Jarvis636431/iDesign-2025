@@ -70,10 +70,43 @@ const handleMouseLeave = () => {
 const isMobile = ref(false);
 
 const checkMobile = () => {
+  const wasMobile = isMobile.value;
   isMobile.value = window.innerWidth <= 768;
-  console.log("🔍 [DEBUG] checkMobile:", {
-    windowWidth: window.innerWidth,
-    isMobile: isMobile.value,
+  
+  // 如果设备类型发生变化，重新绑定滚动事件
+  if (wasMobile !== isMobile.value) {
+    console.log("📱 [DEBUG] Device type changed:", {
+      wasMobile,
+      isMobile: isMobile.value,
+      windowWidth: window.innerWidth
+    });
+    
+    // 移除旧的滚动事件监听器
+    if (wasMobile) {
+      window.removeEventListener("scroll", handleScroll);
+    } else {
+      const scrollContainer = document.querySelector(".scroll-container");
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("scroll", handleScroll);
+      }
+    }
+    
+    // 添加新的滚动事件监听器
+    if (isMobile.value) {
+      window.addEventListener("scroll", handleScroll);
+      console.log("📱 [DEBUG] Switched to mobile - added window scroll listener");
+    } else {
+      const scrollContainer = document.querySelector(".scroll-container");
+      if (scrollContainer) {
+        scrollContainer.addEventListener("scroll", handleScroll);
+        console.log("💻 [DEBUG] Switched to desktop - added container scroll listener");
+      }
+    }
+   }
+   
+   console.log("🔍 [DEBUG] checkMobile:", {
+     windowWidth: window.innerWidth,
+     isMobile: isMobile.value,
   });
 };
 
@@ -147,10 +180,11 @@ const handleTouchMove = (event) => {
 
 // 计算文字的transform样式
 const textTransformStyle = computed(() => {
-  // 如果视差效果被禁用，返回默认样式
-  if (parallaxOff.value) {
+  // 桌面端：如果视差效果被禁用，返回默认样式
+  // 移动端：始终应用视差效果
+  if (!isMobile.value && parallaxOff.value) {
     return {
-      transform: isMobile.value ? 'translateY(0px)' : 'translateX(0px)',
+      transform: 'translateX(0px)',
       transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
     };
   }
@@ -176,11 +210,17 @@ const textTransformStyle = computed(() => {
 });
 
 const handleScroll = () => {
-  if (!isScrollListenerActive.value) return;
+  // 移动端始终允许滚动处理，桌面端需要等待part2进入视窗
+  if (!isMobile.value && !isScrollListenerActive.value) {
+    console.log("🚫 [DEBUG] Desktop scroll blocked - part2 not in viewport");
+    return;
+  }
 
   console.log("📜 [DEBUG] handleScroll triggered:", {
     isMobile: isMobile.value,
     timestamp: Date.now(),
+    isScrollListenerActive: isScrollListenerActive.value,
+    parallaxOff: parallaxOff.value
   });
 
   if (isMobile.value) {
@@ -335,14 +375,13 @@ onUnmounted(() => {
     part3Ref.value.removeEventListener("touchmove", handleTouchMove);
   }
 
-  if (isMobile.value) {
-    window.removeEventListener("scroll", handleScroll);
-  } else {
-    const scrollContainer = document.querySelector(".scroll-container");
-    if (scrollContainer) {
-      scrollContainer.removeEventListener("scroll", handleScroll);
-    }
+  // 移除所有可能的滚动事件监听器
+  window.removeEventListener("scroll", handleScroll);
+  const scrollContainer = document.querySelector(".scroll-container");
+  if (scrollContainer) {
+    scrollContainer.removeEventListener("scroll", handleScroll);
   }
+  console.log("🧹 [DEBUG] Removed all scroll event listeners");
 
   // 清理Intersection Observer
   if (intersectionObserver) {

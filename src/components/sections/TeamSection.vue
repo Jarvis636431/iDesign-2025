@@ -103,14 +103,14 @@ const setupScrollHandler = () => {
           (windowHeight - sectionBounds.top) / (windowHeight * 1.5);
       }
 
-      // 临时调试日志
-      if (scrollProgress > 0) {
-        console.log(
-          `🔄 Continuous scroll progress: ${scrollProgress.toFixed(
-            2
-          )}, top: ${sectionBounds.top.toFixed(0)}`
-        );
-      }
+      // 临时调试日志已移除以提高性能
+      // if (scrollProgress > 0) {
+      //   console.log(
+      //     `🔄 Continuous scroll progress: ${scrollProgress.toFixed(
+      //       2
+      //     )}, top: ${sectionBounds.top.toFixed(0)}`
+      //   );
+      // }
 
       // 根据滚动进度更新所有卡片，基于宽度调整滚动速度
       rectangles.value = rectangles.value.map((rect, index) => {
@@ -147,14 +147,14 @@ const setupScrollHandler = () => {
             ? -100 + cardProgress * moveRange
             : 100 - cardProgress * moveRange;
 
-        // 调试信息：查看每个卡片的宽度和速度
-        console.log(
-          `Card ${rect.id}: width=${cardWidth.toFixed(
-            0
-          )}px, speedFactor=${widthSpeedFactor.toFixed(
-            2
-          )}, translateX=${newTranslateX.toFixed(2)}`
-        );
+        // 调试信息已移除以提高性能
+        // console.log(
+        //   `Card ${rect.id}: width=${cardWidth.toFixed(
+        //     0
+        //   )}px, speedFactor=${widthSpeedFactor.toFixed(
+        //     2
+        //   )}, translateX=${newTranslateX.toFixed(2)}`
+        // );
 
         return {
           ...rect,
