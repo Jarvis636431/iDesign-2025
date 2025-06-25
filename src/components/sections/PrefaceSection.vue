@@ -180,7 +180,7 @@ const handleScroll = () => {
       window.pageYOffset ||
       document.documentElement.scrollTop ||
       0;
-    parallaxOff.value = scrollTop * 0.05;
+    parallaxOff.value = scrollTop * 0.1;
 
     console.log("📱 [DEBUG] Mobile scroll:", {
       scrollTop,
@@ -191,7 +191,7 @@ const handleScroll = () => {
     // PC端横向视差
     const scrollContainer = document.querySelector(".scroll-container");
     const scrollLeft = scrollContainer ? scrollContainer.scrollLeft : 0;
-    parallaxOffset.value = scrollLeft * 0.05;
+    parallaxOffset.value = scrollLeft * 0.1;
 
     console.log("💻 [DEBUG] Desktop scroll:", {
       scrollLeft,
