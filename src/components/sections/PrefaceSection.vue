@@ -68,6 +68,10 @@ const isMobile = ref(false);
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth <= 768;
+  console.log('🔍 [DEBUG] checkMobile:', {
+    windowWidth: window.innerWidth,
+    isMobile: isMobile.value
+  });
 };
 
 // 移动端触摸事件处理
@@ -140,19 +144,29 @@ const handleTouchMove = (event) => {
 
 // 计算文字的transform样式
 const textTransformStyle = computed(() => {
-  if (isMobile.value) {
-    return {
-      transform: `translateY(${parallaxOffset.value}px)`,
-      transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
-    };
-  }
-  return {
+  const style = isMobile.value ? {
+    transform: `translateY(${parallaxOffset.value}px)`,
+    transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
+  } : {
     transform: `translateX(${parallaxOffset.value}px)`,
     transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
   };
+  
+  console.log('🎨 [DEBUG] textTransformStyle:', {
+    isMobile: isMobile.value,
+    parallaxOffset: parallaxOffset.value,
+    transform: style.transform
+  });
+  
+  return style;
 });
 
 const handleScroll = () => {
+  console.log('📜 [DEBUG] handleScroll triggered:', {
+    isMobile: isMobile.value,
+    timestamp: Date.now()
+  });
+  
   if (isMobile.value) {
     // 移动端纵向视差
     const scrollTop =
@@ -161,23 +175,35 @@ const handleScroll = () => {
       document.documentElement.scrollTop ||
       0;
     parallaxOffset.value = -scrollTop * 0.8;
+    
+    console.log('📱 [DEBUG] Mobile scroll:', {
+      scrollTop,
+      parallaxOffset: parallaxOffset.value,
+      windowScrollY: window.scrollY
+    });
   } else {
     // PC端横向视差
-    const scrollLeft =
-      window.scrollX ||
-      window.pageXOffset ||
-      document.documentElement.scrollLeft ||
-      0;
+    const scrollContainer = document.querySelector('.scroll-container');
+    const scrollLeft = scrollContainer ? scrollContainer.scrollLeft : 0;
     parallaxOffset.value = -scrollLeft * 0.8;
+    
+    console.log('💻 [DEBUG] Desktop scroll:', {
+      scrollLeft,
+      parallaxOffset: parallaxOffset.value,
+      scrollContainer: !!scrollContainer
+    });
   }
 };
 
 onMounted(() => {
+  console.log('🚀 [DEBUG] Component mounted');
+  
   // 初始化移动端检测
   checkMobile();
   window.addEventListener("resize", checkMobile);
 
   if (part3Ref.value) {
+    console.log('✅ [DEBUG] part3Ref found, adding events');
     // 桌面端鼠标事件
     part3Ref.value.addEventListener("mousemove", handleMouseMove);
     part3Ref.value.addEventListener("mouseenter", handleMouseEnter);
@@ -193,10 +219,25 @@ onMounted(() => {
     part3Ref.value.addEventListener("touchmove", handleTouchMove, {
       passive: false,
     });
+  } else {
+    console.warn('⚠️ [DEBUG] part3Ref not found!');
   }
 
-  window.addEventListener("scroll", handleScroll);
+  console.log('📜 [DEBUG] Adding scroll event listener');
+  if (isMobile.value) {
+    window.addEventListener("scroll", handleScroll);
+  } else {
+    const scrollContainer = document.querySelector('.scroll-container');
+    if (scrollContainer) {
+      scrollContainer.addEventListener("scroll", handleScroll);
+    }
+  }
   handleScroll();
+  
+  console.log('🔧 [DEBUG] Initial setup complete:', {
+    isMobile: isMobile.value,
+    parallaxOffset: parallaxOffset.value
+  });
 });
 
 onUnmounted(() => {
@@ -215,7 +256,14 @@ onUnmounted(() => {
     part3Ref.value.removeEventListener("touchmove", handleTouchMove);
   }
 
-  window.removeEventListener("scroll", handleScroll);
+  if (isMobile.value) {
+    window.removeEventListener("scroll", handleScroll);
+  } else {
+    const scrollContainer = document.querySelector('.scroll-container');
+    if (scrollContainer) {
+      scrollContainer.removeEventListener("scroll", handleScroll);
+    }
+  }
   document.body.style.cursor = "auto"; // 确保恢复光标
 });
 </script>
