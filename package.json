@@ -10,14 +10,11 @@
   },
   "dependencies": {
     "@types/three": "^0.176.0",
-    "@vicons/ionicons5": "^0.13.0",
     "axios": "^1.9.0",
-    "naive-ui": "^2.41.0",
     "pinia": "^3.0.2",
     "three": "^0.176.0",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.1",
-    "xicons": "^1.0.0"
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",
