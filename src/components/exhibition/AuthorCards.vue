@@ -77,32 +77,33 @@ const hasMoreAuthors = computed(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-right: -10px; /* 改为右侧叠加，减小叠加面积 */
+}
 
-  &:last-child {
-    margin-right: 0;
-  }
+.author-card:last-child {
+  margin-right: 0;
+}
 
-  &:hover {
-    z-index: 10 !important;
+.author-card:hover {
+  z-index: 10 !important;
+  transform: translateY(-5px);
+}
 
-    .author-avatar {
-      transform: scale(1.1);
-      border: 2px solid var(--hall-color); /* 保持边框宽度一致 */
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬浮时加强阴影 */
+.author-card:hover .author-avatar {
+  transform: scale(1.1);
+  border: 2px solid var(--hall-color); /* 保持边框宽度一致 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 悬浮时加强阴影 */
 
-      /* 移除::before的opacity变化，因为现在默认就是透明的 */
-    }
+  /* 移除::before的opacity变化，因为现在默认就是透明的 */
+}
 
-    .author-info {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(-50%) scale(1);
-    }
-  }
+.author-card:hover .author-info {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) scale(1);
+}
 
-  &:nth-child(n + 6) {
-    display: none;
-  }
+.author-card:nth-child(n + 6) {
+  display: none;
 }
 
 .author-avatar {
@@ -119,16 +120,16 @@ const hasMoreAuthors = computed(() => {
   background-position: center;
   transition: all 0.3s ease;
   z-index: 6;
+}
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: #d9d9d9;
-    border-radius: 50%;
-    transition: opacity 0.3s ease;
-    opacity: 0; /* 默认透明，显示真实头像 */
-  }
+.author-avatar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #d9d9d9;
+  border-radius: 50%;
+  transition: opacity 0.3s ease;
+  opacity: 0; /* 默认透明，显示真实头像 */
 }
 
 .author-initial {
@@ -173,14 +174,14 @@ const hasMoreAuthors = computed(() => {
   align-items: flex-start;
   gap: 0px; /* 减小文字之间的间距 */
   border: 1px solid var(--hall-color);
+}
 
-  &::after {
-    content: none; /* 移除原来的箭头 */
-  }
+.author-info::after {
+  content: none; /* 移除原来的箭头 */
+}
 
-  &::before {
-    content: none; /* 移除原来的箭头 */
-  }
+.author-info::before {
+  content: none; /* 移除原来的箭头 */
 }
 
 .author-info.active {
@@ -204,7 +205,5 @@ const hasMoreAuthors = computed(() => {
   line-height: 1.1; /* 减小行高 */
 }
 
-.author-card:hover {
-  transform: translateY(-5px);
-}
+
 </style>
