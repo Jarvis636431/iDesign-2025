@@ -2,6 +2,41 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
+// 配置常量
+const SCENE_CONFIG = {
+  // 模型加载配置
+  LOAD_TIMEOUT: 30000, // 30秒超时
+  DRACO_DECODER_PATHS: [
+    "https://www.gstatic.com/draco/v1/decoders/",
+    "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/libs/draco/",
+    "/draco/",
+  ],
+  
+  // 光照配置
+  LIGHTING: {
+    AMBIENT: {
+      color: 0xffffff,
+      intensity: 0.8
+    },
+    DIRECTIONAL: {
+      color: 0xffffff,
+      intensity: 1,
+      position: { x: 5, y: 5, z: 5 },
+      shadow: {
+        mapSize: { width: 2048, height: 2048 },
+        camera: { near: 0.5, far: 500 }
+      }
+    },
+    FILL_LIGHT: {
+      color: 0xffffff,
+      intensity: 0.3,
+      position: { x: -5, y: 5, z: -5 }
+    }
+  }
+};
+
+
+
 export class SceneManager {
   constructor(container) {
     this.container = container;
@@ -13,68 +48,65 @@ export class SceneManager {
     // 移除默认背景色，使用透明背景
     this.scene.background = null;
 
-    // 添加光源
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    // 添加环境光
+    const ambientLight = new THREE.AmbientLight(
+      SCENE_CONFIG.LIGHTING.AMBIENT.color,
+      SCENE_CONFIG.LIGHTING.AMBIENT.intensity
+    );
     this.scene.add(ambientLight);
 
-    // 添加方向光
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(5, 5, 5);
+    // 添加主方向光
+    const directionalLight = new THREE.DirectionalLight(
+      SCENE_CONFIG.LIGHTING.DIRECTIONAL.color,
+      SCENE_CONFIG.LIGHTING.DIRECTIONAL.intensity
+    );
+    const dirPos = SCENE_CONFIG.LIGHTING.DIRECTIONAL.position;
+    directionalLight.position.set(dirPos.x, dirPos.y, dirPos.z);
     directionalLight.castShadow = true;
 
     // 设置阴影属性
-    directionalLight.shadow.mapSize.width = 2048;
-    directionalLight.shadow.mapSize.height = 2048;
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 500;
+    const shadowConfig = SCENE_CONFIG.LIGHTING.DIRECTIONAL.shadow;
+    directionalLight.shadow.mapSize.width = shadowConfig.mapSize.width;
+    directionalLight.shadow.mapSize.height = shadowConfig.mapSize.height;
+    directionalLight.shadow.camera.near = shadowConfig.camera.near;
+    directionalLight.shadow.camera.far = shadowConfig.camera.far;
     this.scene.add(directionalLight);
 
     // 添加辅助光源
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
-    fillLight.position.set(-5, 5, -5);
+    const fillLight = new THREE.DirectionalLight(
+      SCENE_CONFIG.LIGHTING.FILL_LIGHT.color,
+      SCENE_CONFIG.LIGHTING.FILL_LIGHT.intensity
+    );
+    const fillPos = SCENE_CONFIG.LIGHTING.FILL_LIGHT.position;
+    fillLight.position.set(fillPos.x, fillPos.y, fillPos.z);
     this.scene.add(fillLight);
   }
 
   async loadModel(modelPath, onProgress) {
-    console.log("开始加载模型:", modelPath);
-
     const loader = new GLTFLoader();
     loader.manager.onError = (url) => {
-      console.error("资源加载失败:", url);
+      // 资源加载失败时的静默处理
     };
 
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderConfig({ type: "js" }); // 使用JavaScript解码器
 
-    const DRACO_PATHS = [
-      "https://www.gstatic.com/draco/v1/decoders/",
-      "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/libs/draco/",
-      "/draco/",
-    ];
-
     // 尝试设置Draco解码器路径
     let dracoPathSet = false;
-    for (const path of DRACO_PATHS) {
+    for (const path of SCENE_CONFIG.DRACO_DECODER_PATHS) {
       try {
-        console.log("尝试使用Draco解码器路径:", path);
         dracoLoader.setDecoderPath(path);
         dracoPathSet = true;
-        console.log("成功设置Draco解码器路径:", path);
         break;
       } catch (error) {
-        console.warn(`Draco解码器路径 ${path} 不可用:`, error);
+        // 路径不可用时继续尝试下一个
       }
-    }
-
-    if (!dracoPathSet) {
-      console.warn("所有Draco解码器路径都不可用，将尝试不使用Draco加载模型");
     }
 
     loader.setDRACOLoader(dracoLoader);
 
     try {
       const gltf = await new Promise((resolve, reject) => {
-        const timeoutDuration = 30000; // 30秒超时
         let timeoutId = null;
 
         const cleanup = () => {
@@ -86,7 +118,6 @@ export class SceneManager {
 
         const handleSuccess = (gltf) => {
           cleanup();
-          console.log("模型加载成功:", modelPath);
           if (!gltf.scene) {
             reject(new Error("加载的模型没有场景对象"));
             return;
@@ -97,28 +128,15 @@ export class SceneManager {
         const handleProgress = (event) => {
           if (onProgress && typeof onProgress === "function") {
             try {
-              console.log(
-                "加载进度:",
-                Math.round(event.loaded / 1024),
-                "KB /",
-                event.total
-                  ? Math.round(event.total / 1024) + "KB"
-                  : "未知大小",
-                event.lengthComputable
-                  ? `(${Math.round((event.loaded / event.total) * 100)}%)`
-                  : ""
-              );
               onProgress(event);
             } catch (error) {
-              console.warn("进度回调执行失败:", error);
+              // 进度回调执行失败时的静默处理
             }
           }
         };
 
         const handleError = (error) => {
           cleanup();
-          console.error("模型加载失败:", error);
-          console.error("模型路径:", modelPath);
           reject(new Error(`模型加载失败: ${error.message || "未知错误"}`));
         };
 
@@ -126,19 +144,16 @@ export class SceneManager {
 
         // 设置加载超时
         timeoutId = setTimeout(() => {
-          console.error("模型加载超时:", modelPath);
           reject(new Error("模型加载超时"));
-        }, timeoutDuration);
+        }, SCENE_CONFIG.LOAD_TIMEOUT);
       });
 
       if (!gltf.scene) {
         throw new Error("加载的模型没有场景对象");
       }
 
-      console.log("成功获取模型场景对象");
       return gltf.scene;
     } catch (error) {
-      console.error("模型加载过程出错:", error);
       throw error;
     } finally {
       dracoLoader.dispose();
@@ -159,7 +174,35 @@ export class SceneManager {
     }
   }
 
-  // 递归清理资源但保留交互性
+  /**
+   * 释放单个材质的所有纹理资源
+   * @param {THREE.Material} material - 要释放的材质
+   */
+  disposeMaterial(material) {
+    if (!material) return;
+    
+    // 定义需要释放的纹理属性
+    const textureProperties = [
+      'map', 'lightMap', 'bumpMap', 'normalMap', 
+      'specularMap', 'envMap', 'aoMap', 'emissiveMap',
+      'metalnessMap', 'roughnessMap', 'alphaMap'
+    ];
+    
+    // 释放所有纹理
+    textureProperties.forEach(prop => {
+      if (material[prop]) {
+        material[prop].dispose();
+      }
+    });
+    
+    // 释放材质本身
+    material.dispose();
+  }
+
+  /**
+   * 递归清理资源但保留交互性
+   * @param {THREE.Object3D} object - 要清理的3D对象
+   */
   disposeObject(object) {
     if (!object) return;
 
@@ -180,23 +223,9 @@ export class SceneManager {
     // 释放材质
     if (object.material) {
       if (Array.isArray(object.material)) {
-        object.material.forEach((material) => {
-          if (material.map) material.map.dispose();
-          if (material.lightMap) material.lightMap.dispose();
-          if (material.bumpMap) material.bumpMap.dispose();
-          if (material.normalMap) material.normalMap.dispose();
-          if (material.specularMap) material.specularMap.dispose();
-          if (material.envMap) material.envMap.dispose();
-          material.dispose();
-        });
+        object.material.forEach((material) => this.disposeMaterial(material));
       } else {
-        if (object.material.map) object.material.map.dispose();
-        if (object.material.lightMap) object.material.lightMap.dispose();
-        if (object.material.bumpMap) object.material.bumpMap.dispose();
-        if (object.material.normalMap) object.material.normalMap.dispose();
-        if (object.material.specularMap) object.material.specularMap.dispose();
-        if (object.material.envMap) object.material.envMap.dispose();
-        object.material.dispose();
+        this.disposeMaterial(object.material);
       }
     }
 
@@ -230,6 +259,5 @@ export class SceneManager {
   dispose() {
     this.clear();
     this.scene = null;
-    console.log("场景管理器已完全释放");
   }
 }
