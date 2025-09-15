@@ -44,7 +44,12 @@ onMounted(() => {
       );
 
       // 如果在弹窗、明确需要垂直滚动的区域、展厅logo区域或团队section，不转换
-      if (isInModal || isInVerticalScroll || isInExhibitionLogo || isInTeamSection) {
+      if (
+        isInModal ||
+        isInVerticalScroll ||
+        isInExhibitionLogo ||
+        isInTeamSection
+      ) {
         return;
       }
 

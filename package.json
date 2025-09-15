@@ -1,6 +1,6 @@
 {
-  "name": "idesign-2025-web",
-  "version": "0.0.0",
+  "name": "idesign2025",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
