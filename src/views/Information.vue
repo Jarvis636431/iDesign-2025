@@ -9,7 +9,8 @@ import {
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import CustomCarousel from "@/components/slides/CustomCarousel.vue"; // Import CustomCarousel
-import AuthorCards from "@/components/exhibition/AuthorCards.vue";
+import ExhibitCarousel from "@/components/exhibit/ExhibitCarousel.vue"; // Import ExhibitCarousel
+import AuthorCards from "@/components/exhibit/AuthorCards.vue";
 import { halls as hallConfigs } from "@/constants/halls";
 import axios from "axios";
 import { exhibitModels } from "@/constants/exhibitModels";
@@ -353,28 +354,14 @@ const downloadShareCard = async () => {
         />
         <div class="exhibit-content" :class="{ 'mobile-content': isMobile }">
           <div class="exhibit-image-wrapper">
-            <div class="exhibit-image-inner">
-              <!-- Replace old carousel content with CustomCarousel component -->
-              <CustomCarousel
-                :slides="exhibitSlides"
-                :hallColor="hallColor"
-                ref="carouselRef"
-                style="width: 100%; height: 100%"
-              />
-              <!-- 放大镜按钮 -->
-              <button
-                class="fullscreen-btn"
-                :style="{ backgroundColor: hallColor }"
-                @click="openFullscreen"
-                title="全屏查看"
-              >
-                <svg viewBox="0 0 24 24" class="magnify-icon">
-                  <path
-                    d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
-                  />
-                </svg>
-              </button>
-            </div>
+            <!-- 使用新的ExhibitCarousel组件 -->
+            <ExhibitCarousel
+              :slides="exhibitSlides"
+              :hallColor="hallColor"
+              :isMobile="isMobile"
+              @fullscreen="openFullscreen"
+              ref="carouselRef"
+            />
           </div>
           <div class="exhibit-details">
             <div class="hall-info">
@@ -702,46 +689,7 @@ const downloadShareCard = async () => {
   align-self: flex-start; /* 保证左侧区域高度只受自身内容影响 */
 }
 
-.exhibit-image-inner {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #fff;
-  position: relative;
-}
-
-/* 放大镜按钮 */
-.fullscreen-btn {
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.fullscreen-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-}
-
-.magnify-icon {
-  width: 18px;
-  height: 18px;
-  fill: white;
-}
+/* 轮播图相关样式已移至ExhibitCarousel组件 */
 
 .exhibit-main-image,
 .exhibit-main-video {
@@ -1031,14 +979,7 @@ const downloadShareCard = async () => {
     position: relative;
   }
 
-  .exhibit-image-inner {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 6px; /* 从12px改为6px，圆角更小 */
-  }
+  /* exhibit-image-inner样式已移至ExhibitCarousel组件 */
 
   /* 移动端详情区域 - 下方 */
   .exhibit-details {

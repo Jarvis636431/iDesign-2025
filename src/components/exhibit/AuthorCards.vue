@@ -204,6 +204,4 @@ const hasMoreAuthors = computed(() => {
   padding: 0;
   line-height: 1.1; /* 减小行高 */
 }
-
-
 </style>
