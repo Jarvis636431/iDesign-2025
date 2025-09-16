@@ -13,6 +13,7 @@ import AuthorCards from "@/components/exhibition/AuthorCards.vue";
 import { halls as hallConfigs } from "@/constants/halls";
 import axios from "axios";
 import { exhibitModels } from "@/constants/exhibitModels";
+import { shareCardGenerator } from "@/utils/ShareCardGenerator";
 
 const route = useRoute();
 const router = useRouter();
@@ -77,6 +78,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", checkMobile);
+  // 清理ShareCardGenerator资源
+  shareCardGenerator.dispose();
 });
 
 watch(hallId, fetchExhibits);
@@ -289,242 +292,15 @@ const copyLink = async () => {
 
 // 下载分享卡片
 const downloadShareCard = async () => {
-  await generateShareCard();
-  const canvas = document.getElementById("shareCanvas");
-  if (canvas) {
-    const link = document.createElement("a");
-    link.download = `${exhibitInfo.value.title}-分享卡片.png`;
-    link.href = canvas.toDataURL();
-    link.click();
+  try {
+    await shareCardGenerator.downloadShareCard(exhibitInfo.value, hallInfo.value);
+  } catch (error) {
+    console.error('下载分享卡片失败:', error);
+    alert('下载失败，请稍后重试');
   }
 };
 
-// 生成分享卡片
-const generateShareCard = () => {
-  return new Promise((resolve) => {
-    if (!exhibitInfo.value) {
-      resolve();
-      return;
-    }
 
-    const canvas = document.getElementById("shareCanvas");
-    const ctx = canvas.getContext("2d");
-
-    // 设置画布尺寸 (类似手机屏幕比例)
-    canvas.width = 400;
-    canvas.height = 600;
-
-    // 绘制背景
-    ctx.fillStyle = "#f5e6e8";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // 绘制卡片背景
-    ctx.fillStyle = "#ffffff";
-    const cardX = 20;
-    const cardY = 20;
-    const cardWidth = canvas.width - 40;
-    const cardHeight = canvas.height - 40;
-
-    // 绘制圆角矩形
-    ctx.beginPath();
-    ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 16);
-    ctx.fill();
-
-    // 绘制头部区域
-    ctx.fillStyle = "#333333";
-    ctx.font = "bold 16px Arial, sans-serif";
-    ctx.fillText("天津大学第11届设计年展", cardX + 60, cardY + 35);
-
-    // 绘制三个点
-    ctx.fillStyle = "#999999";
-    ctx.font = "20px Arial";
-    ctx.fillText("⋯", cardX + cardWidth - 30, cardY + 35);
-
-    let iconLoaded = false;
-    let mainImageLoaded = false;
-
-    const checkComplete = () => {
-      if (iconLoaded && mainImageLoaded) {
-        drawBottomContent();
-        resolve();
-      }
-    };
-
-    // 绘制头部图标 (使用固定的PNG图片)
-    const iconImg = new Image();
-    // 移除crossOrigin，因为是本地图片
-    iconImg.onload = () => {
-      console.log("头部图片加载成功:", iconImg.src);
-      // 绘制固定的PNG图片 (保持原始比例)
-      ctx.drawImage(iconImg, cardX + 15, cardY + 10, 40, 40);
-
-      iconLoaded = true;
-      checkComplete();
-    };
-    iconImg.onerror = (error) => {
-      console.error("头部图片加载失败:", error);
-      // 图片加载失败，绘制圆形占位符和文字标识
-      ctx.fillStyle = hallColor.value || "#2FA3B0";
-      ctx.beginPath();
-      ctx.arc(cardX + 35, cardY + 30, 20, 0, 2 * Math.PI);
-      ctx.fill();
-
-      // 添加文字标识，确认这个区域被绘制了
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "12px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("LOGO", cardX + 35, cardY + 35);
-      ctx.textAlign = "left";
-
-      iconLoaded = true;
-      checkComplete();
-    };
-    // 尝试多种路径格式
-    const possiblePaths = [
-      "/assets/images/avatar-border.png",
-      "./assets/images/avatar-border.png",
-      window.location.origin + "/assets/images/avatar-border.png",
-      import.meta.env.BASE_URL + "assets/images/avatar-border.png",
-    ];
-
-    iconImg.src = possiblePaths[0]; // 先尝试第一个路径
-    console.log("尝试加载头部图片:", iconImg.src);
-
-    // 绘制图片区域
-    const imageY = cardY + 60;
-    const imageHeight = 200;
-
-    if (exhibitInfo.value.imageUrl) {
-      const img = new Image();
-      // 只对外部图片设置crossOrigin
-      if (exhibitInfo.value.imageUrl.startsWith("http")) {
-        img.crossOrigin = "anonymous";
-      }
-      img.onload = () => {
-        console.log("主图片加载成功");
-        ctx.drawImage(img, cardX, imageY, cardWidth, imageHeight);
-        mainImageLoaded = true;
-        checkComplete();
-      };
-      img.onerror = (error) => {
-        console.error("主图片加载失败:", error);
-        drawImagePlaceholder();
-        mainImageLoaded = true;
-        checkComplete();
-      };
-      img.src = exhibitInfo.value.imageUrl;
-    } else {
-      drawImagePlaceholder();
-      mainImageLoaded = true;
-      checkComplete();
-    }
-
-    function drawImagePlaceholder() {
-      ctx.fillStyle = "#f0f0f0";
-      ctx.fillRect(cardX, imageY, cardWidth, imageHeight);
-
-      ctx.fillStyle = "#666666";
-      ctx.font = "16px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(
-        exhibitInfo.value.title,
-        cardX + cardWidth / 2,
-        imageY + imageHeight / 2
-      );
-      ctx.textAlign = "left";
-    }
-
-    function drawBottomContent() {
-      const bottomY = imageY + imageHeight + 20;
-
-      // 绘制图标行 - 使用图片图标
-      const iconSize = 20;
-      const iconY = bottomY + 5;
-
-      // 创建图标图片
-      const iconImg = new Image();
-      iconImg.onload = () => {
-        // 绘制四个图标，增加间距
-        const iconSpacing = 50; // 增加图标间距
-        ctx.drawImage(iconImg, cardX + 30, iconY, iconSize, iconSize);
-        ctx.drawImage(
-          iconImg,
-          cardX + 30 + iconSpacing,
-          iconY,
-          iconSize,
-          iconSize
-        );
-        ctx.drawImage(
-          iconImg,
-          cardX + 30 + iconSpacing * 2,
-          iconY,
-          iconSize,
-          iconSize
-        );
-        ctx.drawImage(
-          iconImg,
-          cardX + cardWidth - 50,
-          iconY,
-          iconSize,
-          iconSize
-        );
-      };
-      iconImg.src = "/assets/images/icons/share.png";
-
-      // 绘制作品标题
-      ctx.fillStyle = "#333333";
-      ctx.font = "bold 16px Arial";
-      ctx.fillText(exhibitInfo.value.title, cardX + 20, bottomY + 50);
-
-      // 绘制标签
-      ctx.fillStyle = "#4a90e2";
-      ctx.font = "14px Arial";
-      const tags = `#${
-        hallInfo.value?.name || ""
-      } #${exhibitInfo.value.details.authors
-        .map((a) => a.zh_names)
-        .join(" #")}`;
-      ctx.fillText(tags, cardX + 20, bottomY + 75);
-
-      // 绘制描述
-      ctx.fillStyle = "#333333";
-      ctx.font = "12px Arial";
-      const description = exhibitInfo.value.description;
-      const lines = wrapText(ctx, description, cardWidth - 40);
-      lines.slice(0, 3).forEach((line, index) => {
-        ctx.fillText(line, cardX + 20, bottomY + 100 + index * 18);
-      });
-
-      // 绘制底部信息
-      ctx.fillStyle = "#999999";
-      ctx.font = "11px Arial";
-      ctx.fillText("1分钟", cardX + 20, bottomY + 170);
-      ctx.fillText("查看翻译", cardX + cardWidth - 60, bottomY + 170);
-    }
-  });
-};
-
-// 文字换行辅助函数
-const wrapText = (ctx, text, maxWidth) => {
-  const words = text.split("");
-  const lines = [];
-  let currentLine = "";
-
-  for (let i = 0; i < words.length; i++) {
-    const testLine = currentLine + words[i];
-    const metrics = ctx.measureText(testLine);
-    const testWidth = metrics.width;
-
-    if (testWidth > maxWidth && i > 0) {
-      lines.push(currentLine);
-      currentLine = words[i];
-    } else {
-      currentLine = testLine;
-    }
-  }
-  lines.push(currentLine);
-  return lines;
-};
 </script>
 
 <template>
@@ -777,8 +553,7 @@ const wrapText = (ctx, text, maxWidth) => {
           </button>
         </div>
 
-        <!-- 隐藏的Canvas用于生成图片 -->
-        <canvas id="shareCanvas" style="display: none"></canvas>
+
       </div>
     </div>
 
