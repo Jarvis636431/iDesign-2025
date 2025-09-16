@@ -1,64 +1,47 @@
 <script setup>
-import {
-  ref,
-  computed,
-  watch,
-  onMounted,
-  onBeforeUnmount,
-  nextTick,
-} from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import CustomCarousel from "@/components/slides/CustomCarousel.vue"; // Import CustomCarousel
-import ExhibitCarousel from "@/components/exhibit/ExhibitCarousel.vue"; // Import ExhibitCarousel
+import CustomCarousel from "@/components/slides/CustomCarousel.vue";
+import ExhibitCarousel from "@/components/exhibit/ExhibitCarousel.vue";
 import AuthorCards from "@/components/exhibit/AuthorCards.vue";
-import { halls as hallConfigs } from "@/constants/halls";
-import axios from "axios";
 import { exhibitModels } from "@/constants/exhibitModels";
+import { halls as hallsData } from "@/constants/halls";
 import { shareCardGenerator } from "@/utils/ShareCardGenerator";
+import { useExhibit } from "@/composables/useExhibit";
+import { processExhibitInfo, generateExhibitSlides, generateModelFile } from "@/utils/exhibitUtils";
 
 const route = useRoute();
 const router = useRouter();
 
-const carouselRef = ref(null); // Add carouselRef
-const showShareModal = ref(false); // 分享弹窗状态
-const showFullscreen = ref(false); // 全屏展示状态
-const isMobile = ref(false); // 移动端检测
+// 响应式数据
+const currentId = computed(() => route.query.id);
+const hallId = computed(() => route.query.hallId);
+const isMobile = ref(false);
+const showShareModal = ref(false);
+const showFullscreen = ref(false);
+const carouselRef = ref(null);
 
-const hallId = computed(() => parseInt(route.query.hallId));
-const currentId = computed(() => parseInt(route.query.id));
-const hallInfo = computed(() => hallConfigs.find((h) => h.id === hallId.value));
-const hallColor = computed(() => hallInfo.value?.color || "#2FA3B0");
-const hallBackgroundColor = computed(
-  () => hallInfo.value?.backgroundColor || "#D5f7ec"
-);
-const hallBackgroundImage = computed(
-  () => hallInfo.value?.backgroundImage || ""
-);
+// 展厅信息
+const hallInfo = computed(() => {
+  if (!hallId.value) return null;
+  return hallsData.find((hall) => hall.id === Number(hallId.value)) || null;
+});
 
-const exhibits = ref([]);
-const loading = ref(false);
-const error = ref("");
+const hallColor = computed(() => hallInfo.value?.color || "#000");
+const hallBackgroundImage = computed(() => {
+  return hallInfo.value?.backgroundImage || null;
+});
 
-// 获取展厅所有展品
-async function fetchExhibits() {
-  if (!hallId.value) return;
-  loading.value = true;
-  error.value = "";
-  try {
-    const res = await axios.get(
-      "http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists",
-      {
-        params: { per_page: 9999, current_page: 1, category_id: hallId.value },
-      }
-    );
-    exhibits.value = res.data?.data || [];
-  } catch (e) {
-    error.value = "展品数据加载失败";
-    exhibits.value = [];
-  } finally {
-    loading.value = false;
-  }
-}
+// 使用展品相关的组合式函数
+const {
+  exhibits,
+  loading,
+  error,
+  fetchExhibits,
+  findExhibitById,
+  getNextExhibitId,
+  getPrevExhibitId
+} = useExhibit();
 
 // 移动端检测
 const checkMobile = () => {
@@ -66,7 +49,7 @@ const checkMobile = () => {
 };
 
 onMounted(async () => {
-  fetchExhibits();
+  fetchExhibits(hallId.value);
   checkMobile();
   window.addEventListener("resize", checkMobile);
 
@@ -83,7 +66,7 @@ onBeforeUnmount(() => {
   shareCardGenerator.dispose();
 });
 
-watch(hallId, fetchExhibits);
+watch(hallId, () => fetchExhibits(hallId.value));
 
 // 监听路由变化，确保滚动到顶部
 watch([currentId, hallId], async () => {
@@ -95,124 +78,50 @@ watch([currentId, hallId], async () => {
   }, 50);
 });
 
+// 使用工具函数处理展品信息
 const exhibitInfo = computed(() => {
-  if (!currentId.value || !Array.isArray(exhibits.value)) return null;
-  // id 强制转为数字，避免类型不一致导致找不到
-  const item = exhibits.value.find(
-    (e) => Number(e.id) === Number(currentId.value)
-  );
-  if (!item) return null;
-  // 优先展示视频，没有视频再展示图片，兼容对象数组
-  let imageUrl = "";
-  let videoUrl = "";
-  if (item.more) {
-    if (item.more.files && item.more.files.length > 0) {
-      const file = item.more.files[0];
-      videoUrl = fullUrl(file.url);
-    } else if (item.more.photos && item.more.photos.length > 0) {
-      const photo = item.more.photos[0];
-      imageUrl = fullUrl(photo.url);
-    } else if (item.more.thumbnail) {
-      imageUrl = fullUrl(item.more.thumbnail);
-    }
-  }
-  // 处理所有作者
-  let authors = [];
-  if (Array.isArray(item.more?.authors)) {
-    authors = item.more.authors.map((author) => ({
-      zh_names: author.zh_names,
-      grade: author.grade || "未知年级",
-      avatar: author.url ? fullUrl(author.url) : null, // 作者头像URL需要通过fullUrl处理
-    }));
-  }
-  return {
-    title: item.post_title,
-    description: item.intro_zh,
-    imageUrl,
-    videoUrl,
-    details: {
-      authors,
-      teacher: item.tutors_zh || "",
-      year: "",
-      medium: "",
-    },
-  };
+  const item = findExhibitById(currentId.value);
+  return processExhibitInfo(item);
 });
 
+// 使用工具函数生成模型文件路径
 const modelFile = computed(() => {
-  if (!currentId.value) return "";
-  const file = exhibitModels[currentId.value];
-  // 适配 Vite base 配置，确保开发和生产都能加载模型
-  return file ? import.meta.env.BASE_URL + "assets/models/" + file : "";
+  return generateModelFile(exhibitModels, currentId.value);
 });
 
-function fullUrl(path) {
-  if (!path) return "";
-  return path.startsWith("http")
-    ? path
-    : `http://idesign.tju.edu.cn/upload/${path.replace(/^\//, "")}`;
-}
-
+// 优化后的导航函数
 const goToExhibit = (direction) => {
   if (!exhibits.value.length) return;
-  const idx = exhibits.value.findIndex((e) => e.id === currentId.value);
-  let newIdx;
+  
+  let nextId;
   if (direction === "next") {
-    newIdx = idx < exhibits.value.length - 1 ? idx + 1 : 0;
+    nextId = getNextExhibitId(currentId.value);
   } else {
-    newIdx = idx > 0 ? idx - 1 : exhibits.value.length - 1;
+    nextId = getPrevExhibitId(currentId.value);
   }
-  const nextId = exhibits.value[newIdx]?.id;
-  router.push({
-    path: "/information",
-    query: {
-      id: nextId,
-      hallId: hallId.value,
-    },
-  });
+  
+  if (nextId) {
+    router.push({
+      path: "/information",
+      query: {
+        id: nextId,
+        hallId: hallId.value,
+      },
+    });
 
-  // 切换展品后滚动到顶部
-  setTimeout(() => {
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  }, 100);
+    // 切换展品后滚动到顶部
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 100);
+  }
 };
 
-// const currentSlide = ref(0) // Remove old currentSlide
-
+// 使用工具函数生成幻灯片数据
 const exhibitSlides = computed(() => {
-  const slides = [];
-  // 1. 模型
-  const file = exhibitModels[currentId.value];
-  if (file) {
-    slides.push({ type: "model", src: "assets/models/" + file });
-  }
-  // 2. 所有视频
-  const item = exhibits.value.find(
-    (e) => Number(e.id) === Number(currentId.value)
-  );
-  if (
-    item &&
-    item.more &&
-    Array.isArray(item.more.files) &&
-    item.more.files.length > 0
-  ) {
-    item.more.files.forEach((f) => {
-      if (f.url) slides.push({ type: "video", src: fullUrl(f.url) });
-    });
-  }
-  // 3. 所有图片
-  if (item && item.more) {
-    if (Array.isArray(item.more.photos) && item.more.photos.length > 0) {
-      item.more.photos.forEach((photo) => {
-        if (photo.url) slides.push({ type: "image", src: fullUrl(photo.url) });
-      });
-    } else if (item.more.thumbnail) {
-      slides.push({ type: "image", src: fullUrl(item.more.thumbnail) });
-    }
-  }
-  return slides;
+  const item = findExhibitById(currentId.value);
+  return generateExhibitSlides(item, exhibitModels, currentId.value);
 });
 
 // Remove old prevSlide and nextSlide methods
