@@ -24,5 +24,52 @@
     "planners": "Exhibition Planners",
     "graduates": "Graduates",
     "headline": ["Balmy Breeze,", "New Growth"]
+  },
+  "halls": {
+    "73": {
+      "name": "First Whisper",
+      "subTitle": "Wind's valley sigh, lets ideas fly.",
+      "desc": [
+        "This is the valley first brushed by the design breeze,",
+        "Where inspiration ascends like morning mist, and notions break forth like tender shoots.",
+        "Every line drawn is a whisper awakened in the wind."
+      ]
+    },
+    "74": {
+      "name": "Winding Trails",
+      "subTitle": "Wind-woven ways, through leafy maze.",
+      "desc": [
+        "Methods, like a forest, demand discernment at every step.",
+        "Here, you will witness how thought navigates hidden trails,",
+        "Testing and forging its own way among the interwoven boughs."
+      ]
+    },
+    "75": {
+      "name": "Unveiled Horizons",
+      "subTitle": "Wind-swept plains, where vision reigns.",
+      "desc": [
+        "Upon this open expanse, design hesitates no more; it surges, it lands, it takes shape.",
+        "This is a realm of freedom for language and structure,",
+        "A vessel for envisioned futures."
+      ]
+    },
+    "76": {
+      "name": "Resonant Ripples",
+      "subTitle": "Wind-stirred lakes, an echo makes.",
+      "desc": [
+        "The wind does more than merely blow; it also stirs echoes.",
+        "Here, you will hear the syllables of collaboration, the ripples of society,",
+        "And a gentle greeting cast by designers unto the world."
+      ]
+    },
+    "77": {
+      "name": "Crowned Woods",
+      "subTitle": "Wind's haven found, a forest crowned.",
+      "desc": [
+        "This is a return, and also a new departure.",
+        "The wind settles here; design converges herein.",
+        "The reflections and creations of a generation quietly grow within the woods."
+      ]
+    }
   }
 }

@@ -4,8 +4,7 @@ import { useI18n } from "vue-i18n";
 import { halls } from "../../constants/halls";
 import { useRouter } from "vue-router";
 
-const { locale } = useI18n();
-const isEnglish = computed(() => locale.value === "en");
+const { t, tm } = useI18n();
 
 const activeHallIndex = ref(0);
 const activeHall = computed(() => halls[activeHallIndex.value]);
@@ -27,19 +26,11 @@ const windowWidth = ref(window.innerWidth); // 窗口宽度调试
 
 // 动态光标样式
 const customCursor = computed(() => {
+  if (!activeHall.value) return "pointer";
   const backgroundColor = activeHall.value.color.replace("#", "%23"); // URL编码展厅颜色作为底色
   const triangleColor = "%23FFE29A"; // 三角形保持黄色
   return `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="${backgroundColor}"/><polygon points="25,22 25,38 37,30" fill="none" stroke="${triangleColor}" stroke-width="2"/></svg>') 30 30, pointer`;
 });
-
-// 处理文本换行
-const formatText = (text) => {
-  // 中英文都使用 | 作为分隔符
-  return text
-    .split("|")
-    .filter(Boolean)
-    .map((line) => line.trim());
-};
 
 // 切换到下一个展厅
 const nextHall = () => {
@@ -291,8 +282,8 @@ const handleCarouselTouchEnd = (event) => {
   >
     <!-- 左上角标题 -->
     <div class="hall-title-area">
-      <h2 class="hall-title" :style="{ color: activeHall.color }">
-        {{ isEnglish ? activeHall.enName : activeHall.name }}
+      <h2 class="hall-title" :style="{ color: activeHall?.color }">
+        {{ activeHall ? t(`halls.${activeHall.i18nKey}.name`) : "" }}
       </h2>
     </div>
 
@@ -306,9 +297,9 @@ const handleCarouselTouchEnd = (event) => {
     >
       <transition-group name="slide-fade" tag="div" class="logo-container">
         <img
-          :key="activeHall.logo"
-          :src="activeHall.logo"
-          :alt="isEnglish ? activeHall.enName : activeHall.name"
+          :key="activeHall?.logo"
+          :src="activeHall?.logo"
+          :alt="activeHall ? t(`halls.${activeHall.i18nKey}.name`) : ''"
           class="hall-logo"
           :style="{ cursor: customCursor }"
           @click="enterExhibition(activeHall)"
@@ -319,23 +310,21 @@ const handleCarouselTouchEnd = (event) => {
     <!-- 左下角展厅Icon -->
     <div class="hall-icon-area">
       <img
-        :key="activeHall.icon"
-        :src="activeHall.icon"
-        :alt="isEnglish ? activeHall.enName : activeHall.name"
+        :key="activeHall?.icon"
+        :src="activeHall?.icon"
+        :alt="activeHall ? t(`halls.${activeHall.i18nKey}.name`) : ''"
         class="hall-icon"
       />
     </div>
 
     <!-- 右下角描述 -->
-    <div class="hall-description" :style="{ color: activeHall.color }">
-      <div class="hall-subtitle" :style="{ color: activeHall.color }">
-        {{ isEnglish ? activeHall.enSubTitle : activeHall.subTitle }}
+    <div class="hall-description" :style="{ color: activeHall?.color }">
+      <div class="hall-subtitle" :style="{ color: activeHall?.color }">
+        {{ activeHall ? t(`halls.${activeHall.i18nKey}.subTitle`) : "" }}
       </div>
-      <div class="hall-text" :style="{ color: activeHall.color }">
+      <div class="hall-text" :style="{ color: activeHall?.color }">
         <p
-          v-for="(sentence, index) in formatText(
-            isEnglish ? activeHall.enDesc : activeHall.desc
-          )"
+          v-for="(sentence, index) in (activeHall ? tm(`halls.${activeHall.i18nKey}.desc`) || [] : [])"
           :key="index"
           class="text-line"
         >
@@ -355,25 +344,23 @@ const handleCarouselTouchEnd = (event) => {
     <div class="mobile-content">
       <!-- 标题 -->
       <div class="mobile-title-area">
-        <h2 class="mobile-hall-title" :style="{ color: activeHall.color }">
-          {{ isEnglish ? activeHall.enName : activeHall.name }}
+        <h2 class="mobile-hall-title" :style="{ color: activeHall?.color }">
+          {{ activeHall ? t(`halls.${activeHall.i18nKey}.name`) : "" }}
         </h2>
       </div>
 
       <!-- 副标题 -->
       <div class="mobile-subtitle-area">
-        <div class="mobile-hall-subtitle" :style="{ color: activeHall.color }">
-          {{ isEnglish ? activeHall.enSubTitle : activeHall.subTitle }}
+        <div class="mobile-hall-subtitle" :style="{ color: activeHall?.color }">
+          {{ activeHall ? t(`halls.${activeHall.i18nKey}.subTitle`) : "" }}
         </div>
       </div>
 
       <!-- 描述 -->
       <div class="mobile-description-area">
-        <div class="mobile-hall-text" :style="{ color: activeHall.color }">
+        <div class="mobile-hall-text" :style="{ color: activeHall?.color }">
           <p
-            v-for="(sentence, index) in formatText(
-              isEnglish ? activeHall.enDesc : activeHall.desc
-            )"
+            v-for="(sentence, index) in (activeHall ? tm(`halls.${activeHall.i18nKey}.desc`) || [] : [])"
             :key="index"
             class="mobile-text-line"
           >
@@ -395,11 +382,7 @@ const handleCarouselTouchEnd = (event) => {
             <div class="carousel-slide">
               <img
                 :src="halls[halls.length - 1].logo"
-                :alt="
-                  isEnglish
-                    ? halls[halls.length - 1].enName
-                    : halls[halls.length - 1].name
-                "
+                :alt="t(`halls.${halls[halls.length - 1].i18nKey}.name`)"
                 class="carousel-logo"
                 @click="enterExhibition(halls[halls.length - 1])"
               />
@@ -414,7 +397,7 @@ const handleCarouselTouchEnd = (event) => {
             >
               <img
                 :src="hall.logo"
-                :alt="isEnglish ? hall.enName : hall.name"
+                :alt="t(`halls.${hall.i18nKey}.name`)"
                 class="carousel-logo"
                 @click="enterExhibition(hall)"
               />
@@ -424,7 +407,7 @@ const handleCarouselTouchEnd = (event) => {
             <div class="carousel-slide">
               <img
                 :src="halls[0].logo"
-                :alt="isEnglish ? halls[0].enName : halls[0].name"
+                :alt="t(`halls.${halls[0].i18nKey}.name`)"
                 class="carousel-logo"
                 @click="enterExhibition(halls[0])"
               />
@@ -442,7 +425,7 @@ const handleCarouselTouchEnd = (event) => {
             :style="{
               backgroundColor:
                 index === activeHallIndex
-                  ? activeHall.color
+                  ? activeHall?.color
                   : 'rgba(255,255,255,0.5)',
             }"
             @click="jumpToHall(index)"
@@ -458,20 +441,18 @@ const handleCarouselTouchEnd = (event) => {
       <!-- 展厅Icon -->
       <div class="loading-icon">
         <img
-          :src="activeHall.icon"
-          :alt="isEnglish ? activeHall.enName : activeHall.name"
+          :src="activeHall?.icon"
+          :alt="activeHall ? t(`halls.${activeHall.i18nKey}.name`) : ''"
           class="loading-hall-icon"
         />
         <!-- Loading文字 -->
         <div class="loading-text">Loading...</div>
       </div>
       <!-- 展厅描述 -->
-      <div class="loading-description" :style="{ color: activeHall.color }">
+      <div class="loading-description" :style="{ color: activeHall?.color }">
         <div class="loading-desc-text">
           <p
-            v-for="(sentence, index) in formatText(
-              isEnglish ? activeHall.enDesc : activeHall.desc
-            )"
+            v-for="(sentence, index) in (activeHall ? tm(`halls.${activeHall.i18nKey}.desc`) || [] : [])"
             :key="index"
             class="loading-desc-line"
           >

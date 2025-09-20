@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import CustomCarousel from "@/components/slides/CustomCarousel.vue";
 import ExhibitCarousel from "@/components/exhibit/ExhibitCarousel.vue";
@@ -12,6 +13,7 @@ import { processExhibitInfo, generateExhibitSlides, generateModelFile } from "@/
 
 const route = useRoute();
 const router = useRouter();
+const { t, tm } = useI18n();
 
 // 响应式数据
 const currentId = computed(() => route.query.id);
@@ -28,9 +30,7 @@ const hallInfo = computed(() => {
 });
 
 const hallColor = computed(() => hallInfo.value?.color || "#000");
-const hallBackgroundImage = computed(() => {
-  return hallInfo.value?.backgroundImage || null;
-});
+const hallBackgroundImage = computed(() => hallInfo.value?.backgroundImage || null);
 
 // 使用展品相关的组合式函数
 const {
@@ -203,7 +203,25 @@ const copyLink = async () => {
 // 下载分享卡片
 const downloadShareCard = async () => {
   try {
-    await shareCardGenerator.downloadShareCard(exhibitInfo.value, hallInfo.value);
+    const hall = hallInfo.value;
+    await shareCardGenerator.downloadShareCard(
+      exhibitInfo.value,
+      hall
+        ? (() => {
+            const desc = tm(`halls.${hall.i18nKey}.desc`);
+            return {
+              ...hall,
+              name: t(`halls.${hall.i18nKey}.name`),
+              subTitle: t(`halls.${hall.i18nKey}.subTitle`),
+              descLines: Array.isArray(desc)
+                ? desc
+                : desc
+                ? [desc]
+                : [],
+            };
+          })()
+        : null
+    );
   } catch (error) {
     console.error('下载分享卡片失败:', error);
     alert('下载失败，请稍后重试');
@@ -281,12 +299,12 @@ const downloadShareCard = async () => {
                 alt="icon"
               />
               <span class="hall-text-group">
-                <span class="hall-text" :style="{ color: hallColor }">{{
-                  hallInfo?.name || ""
-                }}</span>
-                <span class="hall-subtext" :style="{ color: hallColor }">{{
-                  hallInfo?.enName || ""
-                }}</span>
+                <span class="hall-text" :style="{ color: hallColor }">
+                  {{ hallInfo ? t(`halls.${hallInfo.i18nKey}.name`) : "" }}
+                </span>
+                <span class="hall-subtext" :style="{ color: hallColor }">
+                  {{ hallInfo ? t(`halls.${hallInfo.i18nKey}.subTitle`) : "" }}
+                </span>
               </span>
             </div>
             <div class="desc-section">
@@ -414,7 +432,7 @@ const downloadShareCard = async () => {
               <div class="share-card-work-title">
                 <strong>{{ exhibitInfo.title }}</strong>
                 <span class="share-card-tags">
-                  #{{ hallInfo?.name || "" }}
+                  #{{ hallInfo ? t(`halls.${hallInfo.i18nKey}.name`) : "" }}
                   <span
                     v-for="author in exhibitInfo.details.authors"
                     :key="author.zh_names"

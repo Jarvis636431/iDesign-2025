@@ -6,7 +6,7 @@
         <div class="loading-icon">
           <img
             :src="currentHallInfo?.icon"
-            :alt="currentHallInfo?.name"
+            :alt="currentHallInfo ? t(`halls.${currentHallInfo.i18nKey}.name`) : ''"
             class="loading-hall-icon"
           />
           <div class="loading-text">Loading...</div>
@@ -112,6 +112,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter, useRoute } from "vue-router";
 import * as THREE from "three";
 import { SceneManager } from "../utils/SceneManager";
@@ -127,6 +128,7 @@ import axios from "axios"; // 导入 axios
 
 const router = useRouter();
 const route = useRoute();
+const { t, tm } = useI18n();
 
 // Three.js 实例变量
 let sceneManager, cameraController, camera, renderer, model;
@@ -179,19 +181,16 @@ const currentHallInfo = computed(() => {
 // 展厅描述格式化
 const formatDesc = (hall) => {
   if (!hall) return [];
-  const desc = hall.desc || hall.enDesc || "";
-  return desc
-    .split("|")
-    .filter(Boolean)
-    .map((line) => line.trim());
+  const desc = tm(`halls.${hall.i18nKey}.desc`);
+  return Array.isArray(desc) ? desc : desc ? [desc] : [];
 };
 
 // 更新模型信息
 const updateModelInfo = () => {
   if (!currentHallInfo.value) return;
   currentModel.value = {
-    name: currentHallInfo.value.name,
-    description: currentHallInfo.value.enName,
+    name: t(`halls.${currentHallInfo.value.i18nKey}.name`),
+    description: t(`halls.${currentHallInfo.value.i18nKey}.subTitle`),
     ...currentHallInfo.value.model,
   };
 };
