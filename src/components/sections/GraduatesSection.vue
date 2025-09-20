@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import { graduates } from "../../constants/graduates";
 import GraduateCard from "../graduates/GraduateCard.vue";
 
-const { locale } = useI18n();
+const { t, tm, locale } = useI18n();
 const isEnglish = computed(() => locale.value === "en");
 
 const selectedGraduate = ref(graduates[0]);
@@ -207,35 +207,29 @@ onUnmounted(() => {
                 <h3 class="section-title">
                   {{
                     selectedGraduate.isTeacher
-                      ? isEnglish
-                        ? "Class Advisor"
-                        : "班导师"
-                      : isEnglish
-                      ? "Graduate"
-                      : "毕业生"
+                      ? t("graduates.labels.teacherDesktop")
+                      : t("graduates.labels.graduate")
                   }}
                 </h3>
                 <div class="thoughts-section">
                   {{
-                    isEnglish
-                      ? selectedGraduate.thoughts.en
-                      : selectedGraduate.thoughts.zh
+                    t(
+                      `graduates.items.${selectedGraduate.i18nKey}.thoughts`
+                    )
                   }}
                 </div>
 
                 <div class="bottom-info">
                   <h2 class="graduate-name">
                     {{
-                      isEnglish
-                        ? selectedGraduate.name.en
-                        : selectedGraduate.name.zh
+                      t(`graduates.items.${selectedGraduate.i18nKey}.name`)
                     }}
                   </h2>
                   <div class="graduate-title">
                     {{
-                      isEnglish
-                        ? selectedGraduate.destination.en
-                        : selectedGraduate.destination.zh
+                      t(
+                        `graduates.items.${selectedGraduate.i18nKey}.destination`
+                      )
                     }}
                   </div>
                 </div>
@@ -245,7 +239,9 @@ onUnmounted(() => {
                 <div class="portrait-wrapper">
                   <img
                     :src="selectedGraduate.avatar"
-                    :alt="selectedGraduate.name.zh"
+                    :alt="
+                      t(`graduates.items.${selectedGraduate.i18nKey}.name`)
+                    "
                     class="portrait"
                   />
                 </div>
@@ -260,19 +256,13 @@ onUnmounted(() => {
             :class="{ 'english-text': isEnglish }"
             v-if="selectedGraduate"
           >
-            <template v-if="isEnglish">
-              <!-- 英文两行诗歌 -->
-              <div class="text-line">A Southern breeze, so soft and low,</div>
-              <div class="text-line">Awakens seeds, helps all things grow.</div>
-            </template>
-            <template v-else>
-              <!-- 中文五行文字 -->
-              <div class="text-line">南方来风</div>
-              <div class="text-line">不烈不喧 却润物无声</div>
-              <div class="text-line">它携带着方向、温度与节奏</div>
-              <div class="text-line">唤醒沉潜的种子</div>
-              <div class="text-line">也推动万物的生长</div>
-            </template>
+            <div
+              v-for="(line, index) in tm('graduates.poem') || []"
+              :key="index"
+              class="text-line"
+            >
+              {{ line }}
+            </div>
           </div>
         </div>
 
@@ -291,8 +281,7 @@ onUnmounted(() => {
             <GraduateCard
               v-for="graduate in [...graduates, ...graduates]"
               :key="graduate.id + Math.random()"
-              :name="graduate.name"
-              :destination="graduate.destination"
+              :i18n-key="graduate.i18nKey"
               :avatar="graduate.avatar"
               :class="{ active: selectedGraduate?.id === graduate.id }"
               @click="handleSelectGraduate(graduate, $event)"
@@ -327,12 +316,8 @@ onUnmounted(() => {
                 <div class="card-title">
                   {{
                     graduate.isTeacher
-                      ? isEnglish
-                        ? "Class Advisor"
-                        : "班导师寄语"
-                      : isEnglish
-                      ? "Graduate"
-                      : "毕业生"
+                      ? t("graduates.labels.teacherMobile")
+                      : t("graduates.labels.graduate")
                   }}
                 </div>
 
@@ -340,7 +325,7 @@ onUnmounted(() => {
                 <div class="avatar-section">
                   <img
                     :src="graduate.avatar"
-                    :alt="graduate.name.zh"
+                    :alt="t(`graduates.items.${graduate.i18nKey}.name`)"
                     class="graduate-avatar"
                   />
                 </div>
@@ -348,20 +333,13 @@ onUnmounted(() => {
                 <!-- 名字（底部） -->
                 <div class="name-section">
                   <h2 class="graduate-name">
-                    {{ isEnglish ? graduate.name.en : graduate.name.zh }}
+                    {{ t(`graduates.items.${graduate.i18nKey}.name`) }}
                   </h2>
                   <p
                     class="graduate-destination"
-                    v-if="
-                      graduate.destination &&
-                      (graduate.destination.zh || graduate.destination.en)
-                    "
+                    v-if="t(`graduates.items.${graduate.i18nKey}.destination`)"
                   >
-                    {{
-                      isEnglish
-                        ? graduate.destination.en
-                        : graduate.destination.zh
-                    }}
+                    {{ t(`graduates.items.${graduate.i18nKey}.destination`) }}
                   </p>
                 </div>
               </div>
@@ -370,9 +348,7 @@ onUnmounted(() => {
               <div class="card-right">
                 <div class="thoughts-section">
                   <p class="thoughts-text">
-                    {{
-                      isEnglish ? graduate.thoughts.en : graduate.thoughts.zh
-                    }}
+                    {{ t(`graduates.items.${graduate.i18nKey}.thoughts`) }}
                   </p>
                 </div>
               </div>

@@ -1,31 +1,20 @@
-import { FlatCompat } from '@eslint/eslintrc';
-
-const compat = new FlatCompat();
+import js from '@eslint/js';
+import pluginVue from 'eslint-plugin-vue';
+import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
   {
     ignores: ['dist', 'node_modules', '**/dist']
   },
-  ...compat.extends(
-    'eslint:recommended',
-    'plugin:vue/vue3-recommended',
-    '@vue/eslint-config-prettier'
-  ),
+  js.configs.recommended,
+  ...pluginVue.configs['flat/recommended'],
+  eslintConfigPrettier,
   {
     rules: {
       'vue/multi-word-component-names': 'off',
-      'vue/html-self-closing': [
-        'error',
-        {
-          html: {
-            void: 'never',
-            normal: 'always',
-            component: 'always'
-          },
-          svg: 'always',
-          math: 'always'
-        }
-      ]
+      'vue/html-self-closing': 'off',
+      'vue/attributes-order': 'off',
+      'vue/attribute-hyphenation': 'off'
     }
   }
 ];

@@ -9,12 +9,12 @@
       <img
         v-if="avatar"
         :src="avatar"
-        :alt="name"
+        :alt="t(`graduates.items.${i18nKey}.name`)"
         class="avatar"
         @error="handleImageError"
       />
       <div v-else class="avatar-placeholder">
-        {{ name ? name.charAt(0) : "?" }}
+        {{ (t(`graduates.items.${i18nKey}.name`) || '?')[0] || '?' }}
       </div>
     </div>
   </div>
@@ -22,18 +22,12 @@
 
 <script setup>
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 
-const props = defineProps({
-  name: {
-    type: Object,
+defineProps({
+  i18nKey: {
+    type: String,
     required: true,
-  },
-  destination: {
-    type: Object,
-    default: () => ({
-      zh: "",
-      en: "",
-    }),
   },
   avatar: {
     type: String,
@@ -45,6 +39,7 @@ const props = defineProps({
   },
 });
 
+const { t } = useI18n();
 const isHovered = ref(false);
 
 const handleImageError = (e) => {

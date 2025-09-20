@@ -23,7 +23,10 @@
   "transition": {
     "planners": "Exhibition Planners",
     "graduates": "Graduates",
-    "headline": ["Balmy Breeze,", "New Growth"]
+    "headline": [
+      "Balmy Breeze,",
+      "New Growth"
+    ]
   },
   "halls": {
     "73": {
@@ -70,6 +73,311 @@
         "The wind settles here; design converges herein.",
         "The reflections and creations of a generation quietly grow within the woods."
       ]
+    }
+  },
+  "staff": {
+    "groups": {
+      "group1": {
+        "name": "指导教师"
+      },
+      "group2": {
+        "name": "总负责"
+      },
+      "group3": {
+        "name": "策展A组"
+      },
+      "group4": {
+        "name": "策展B组"
+      },
+      "group5": {
+        "name": "策展C组"
+      },
+      "group6": {
+        "name": "设计A组"
+      },
+      "group7": {
+        "name": "设计B组"
+      },
+      "group8": {
+        "name": "宣传组"
+      },
+      "group9": {
+        "name": "对接人"
+      }
+    },
+    "members": {
+      "group1_member1": {
+        "name": "Fang BIAN",
+        "role": "Exhibition theory knowledge lecture, design guidance"
+      },
+      "group1_member2": {
+        "name": "Hechen ZHANG",
+        "role": "Annual exhibition planning coordination, design guidance"
+      },
+      "group1_member3": {
+        "name": "Qingwei LI",
+        "role": "Annual exhibition experiment guidance, publicity guidance"
+      },
+      "group1_member4": {
+        "name": "Junyu YANG",
+        "role": "Annual exhibition visual design guidance"
+      },
+      "group2_member1": {
+        "name": "Jiayi LIU",
+        "role": "Overall exhibition planning"
+      },
+      "group3_member1": {
+        "name": "Yuanning DAI",
+        "role": "Offline exhibition planning"
+      },
+      "group3_member2": {
+        "name": "Xinzi ZHANG",
+        "role": "Offline exhibition planning"
+      },
+      "group4_member1": {
+        "name": "Ningyuan WANG",
+        "role": "Website framework design, development assistance and Chinese-English translation"
+      },
+      "group4_member2": {
+        "name": "Chang SU",
+        "role": "Responsible for virtual exhibition hall and mobile terminal"
+      },
+      "group5_member1": {
+        "name": "Zhiyu CUI",
+        "role": "Information collection, assisting curation"
+      },
+      "group6_member1": {
+        "name": "Yucheng ZHANG",
+        "role": "Coordinate the entire group, design and produce offline exhibition panels and materials"
+      },
+      "group6_member2": {
+        "name": "Qampa Yangzom",
+        "role": "Design and produce offline exhibition panels and materials"
+      },
+      "group6_member3": {
+        "name": "Jiaqian CHEN",
+        "role": "Design and produce offline exhibition panels and materials"
+      },
+      "group6_member4": {
+        "name": "Wen MIAO",
+        "role": "Design and produce offline exhibition panels and materials"
+      },
+      "group6_member5": {
+        "name": "Keren LI",
+        "role": "Design and produce offline exhibition panels and materials"
+      },
+      "group6_member6": {
+        "name": "Fengyi GUI",
+        "role": "Design Group A"
+      },
+      "group6_member7": {
+        "name": "Junwei LIN",
+        "role": "Procurement of offline materials"
+      },
+      "group7_member1": {
+        "name": "Linhan WU",
+        "role": "Organization and coordination, auxiliary graphics, virtual exhibition hall and webpage"
+      },
+      "group7_member2": {
+        "name": "Zikun XIAO",
+        "role": "Key visual, auxiliary graphics, virtual exhibition hall and webpage"
+      },
+      "group7_member3": {
+        "name": "Luxiang YU",
+        "role": "Auxiliary graphics, virtual exhibition hall and webpage"
+      },
+      "group7_member4": {
+        "name": "Jinyu LIU",
+        "role": "Design and produce virtual exhibition hall, key visual animation"
+      },
+      "group7_member5": {
+        "name": "Jingwen LAN",
+        "role": "Design and produce virtual exhibition hall"
+      },
+      "group7_member6": {
+        "name": "Peipei DIAO",
+        "role": "Design and produce offline exhibition panels and materials"
+      },
+      "group7_member7": {
+        "name": "Can TANG",
+        "role": "Design Group B"
+      },
+      "group8_member1": {
+        "name": "Xuanpeng CHEN",
+        "role": "Overall planning of publicity matters, shooting, interviews"
+      },
+      "group8_member2": {
+        "name": "Cevina",
+        "role": "Video script production, video shooting, post-production, push notification production, interviews"
+      },
+      "group8_member3": {
+        "name": "Chunyu WANG",
+        "role": "Script planning, video editing, push notification production, interviews"
+      },
+      "group8_member4": {
+        "name": "Jingyi YUAN",
+        "role": "Video shooting, post-production, push notification production, interviews"
+      },
+      "group9_member1": {
+        "name": "Yuxuan FU",
+        "role": "Liaison with Brunel"
+      },
+      "group9_member2": {
+        "name": "Changlin JIANG",
+        "role": "Liaison for '21 ID"
+      },
+      "group9_member3": {
+        "name": "Dongyue GONG",
+        "role": "Liaison for '23 ID"
+      }
+    }
+  },
+  "graduates": {
+    "labels": {
+      "teacherDesktop": "Class Advisor",
+      "teacherMobile": "Class Advisor",
+      "graduate": "Graduate"
+    },
+    "poem": [
+      "A Southern breeze, so soft and low,",
+      "Awakens seeds, helps all things grow."
+    ],
+    "items": {
+      "teacher1": {
+        "name": "Liming ZHU",
+        "destination": "Class Advisor",
+        "thoughts": "Time flies. In the blink of an eye, it's time for our annual exhibition again. This year marks its 11th anniversary, and the unforgettable people and events of these past eleven years remain vivid in my mind. Moreover, this year also coincides with the 130th anniversary of Tianjin University, making it a truly double blessing. Although the pressure of the employment environment has been relatively high in recent years, I believe that our outstanding '21 graduates (Class of 2021 graduates) have sufficient ability and talent to step out of campus and embrace their own new lives. Here, I also sincerely wish all our industrial design students: forge ahead courageously, pioneer the future, and live up to your splendid youth."
+      },
+      "teacher2": {
+        "name": "Junyu YANG",
+        "destination": "Class Advisor",
+        "thoughts": "You are the ones who sketch the future with conceptual designs, the practitioners who transform creativity into reality. From sketches to models, from a single pen to the entire world, you have shown that 'design' is not just about solving problems, but a language that conveys warmth and inspires imagination. Today, you are graduating. May you continue to use your keen observation, independent thinking, and warm creativity to paint your own unique and brilliant works on the canvas of life. Please remember: the world does not lack products; what it lacks are people who design hope for the world. Go forth, designers, to transform the world and be moved by it."
+      },
+      "graduate1": {
+        "name": "JiaYi WANG",
+        "destination": "Recommended for admission to Tianjin University, special instructor program",
+        "thoughts": "The days of rushing to complete the graduation project didn't seem so different from rushing any other major assignment—the same people, the same place, the same tasks, the same nights of being so busy to the point of collapse, thinking I would never procrastinate and rush like this again. It was only then that I realized, when I once again forgot to plan my time, those I loved had already left, and tears fell unconsciously. Thank you to everyone who has walked with me over the past four years, and thank you to myself."
+      },
+      "graduate2": {
+        "name": "Yuqing WU",
+        "destination": "The Hong Kong Polytechnic University",
+        "thoughts": "Three years ago, holding a pen, I thought I could draw the world of design. Two years ago, typing on a keyboard, I thought I could render the future of design. One year ago, conducting research everywhere, I thought I could learn insight in design. Today, I think, perhaps the most important thing is that my heart will continue to burn passionately for design."
+      },
+      "graduate3": {
+        "name": "Qian WANG",
+        "destination": "Recommended for postgraduate studies at Tianjin University",
+        "thoughts": "Graduation is the end of a journey and also the beginning of a new life. Looking back from the ferry of time, those fragments interwoven with sweat and laughter flow like a movie in my mind, solidifying into the most precious footnotes of youth. When the farewell song resounds, please seal the sunset in the classroom, the advice of teachers, and the laughter of classmates in the amber of memory. As the poet said: 'Gatherings and partings all have their time,' but the stars we once gazed upon together will ultimately transform into starlight guiding the road ahead. May your journey ahead be like a path of blooming flowers, and may we meet again as we always were."
+      },
+      "graduate4": {
+        "name": "Chunyang YU",
+        "destination": "Tianjin University",
+        "thoughts": "The four years of undergraduate life passed by in a flash. I have experienced both good and bad during these four years, and I have grown a lot. Graduation is the end of undergraduate life, and even more so, a new beginning. I hope you carry courage to do whatever you want to do, and go wherever you want to go!"
+      },
+      "graduate5": {
+        "name": "Shiqi HUANG",
+        "destination": "Postgraduate studies",
+        "thoughts": "Unknowingly, it's time to graduate. Time has passed quite quickly. Now that I'm really graduating, I don't have a strong feeling about it. Perhaps it's because the path ahead is set, or perhaps because moments of joy or sadness have already been frozen in memory, becoming a habit. Next, I just hope everything goes smoothly."
+      },
+      "graduate6": {
+        "name": "Zha LUO",
+        "destination": "Employment",
+        "thoughts": "Standing at the crossroads of youth, looking back at the dawn and dusk of the campus, every frame is a mark of growth. The diligent writing in the library, the laughter on the playground, the earnest teachings of our mentors, have gradually enriched our once naive hearts. Graduation is not the end, but a new starting point to rush towards mountains and seas with knowledge and courage. May we take our original intentions as a lamp, and in the midst of wind and rain, still remember the cherry blossom tree in front of the teaching building that bloomed so passionately."
+      },
+      "graduate7": {
+        "name": "Changlin JIANG",
+        "destination": "Postgraduate studies",
+        "thoughts": "Graduation makes one happy yet sentimental. The days of our group staying up late together are still vivid in my mind, and the pain of cramming overnight for exams like Maoist ideology is still etched in my memory. Although the studies were hard, the rewards were plentiful. I improved my professional skills and gained friendships. Thank you all for your companionship throughout these four years."
+      },
+      "graduate8": {
+        "name": "Shiyu CHEN",
+        "destination": "Gap year",
+        "thoughts": "Happy graduation! I hope I can always have the courage to explore and try, and always be full of vitality!"
+      },
+      "graduate9": {
+        "name": "Yangchen HE",
+        "destination": "Tianjin University",
+        "thoughts": "Four years of university, I held onto a heart full of regrets, made a mess of things, didn't learn much knowledge, nor gained much insight, only managed to find some peace and quiet for myself. However, looking back, over these four years, I've cried, laughed, moved forward, and retreated, been mature and childish. It seems it wasn't all for nothing."
+      },
+      "graduate10": {
+        "name": "Beichen LIU",
+        "destination": "Civil service examination",
+        "thoughts": "The study life during university brought me a brand new experience. There was confusion and helplessness, setbacks and hardships, and of course, moments of epiphany and growth. No matter what kind of experience, it is a precious treasure in my life. As I am about to open another door, I hesitate, but I believe that the day I find myself in a dilemma might just be the time for a new world to open up."
+      },
+      "graduate11": {
+        "name": "Renjie ZHANG",
+        "destination": "Postgraduate student in Industrial Design at Tianjin University",
+        "thoughts": "Thank you to the teachers and classmates of Industrial Design, thank you to myself for growing along the way, and thank you to this world that offers infinite possibilities. I'm graduating! May the future be brave and passionate!"
+      },
+      "graduate12": {
+        "name": "Mingyang WANG",
+        "destination": "N/A",
+        "thoughts": "The four years of studying industrial design have been a journey of turning ideas into reality. Although I encountered many challenges from the initial sketches to the final product, it also made me clearer about my own interests and future direction. I am grateful for the growth and tempering this experience has brought; it will become an important accumulation in my life."
+      },
+      "graduate13": {
+        "name": "Hao BAI",
+        "destination": "Employment",
+        "thoughts": "In these four years, I have gained a lot of happiness and love. The road ahead is long and bright. I wish us to maintain our passion and head towards mountains and seas. Youth is not wrong, youth has no regrets. See you on the next journey."
+      },
+      "graduate14": {
+        "name": "Zhang ZHANG",
+        "destination": "Continuing further studies on Earth",
+        "thoughts": "Actually, I don't feel much about graduating, just that I've graduated. And yet, it feels like I haven't graduated because I still have to go to school, so it feels like schooling has never ended. Actually, school is quite fun, and I quite like going to school. If I had the ability, I would hope to keep going to school, keep graduating, never finish schooling, and never finish graduating."
+      },
+      "graduate15": {
+        "name": "Wangmu RENZENG",
+        "destination": "Employment",
+        "thoughts": "Four years of youth, thank you for the encounter. The end of this journey means the beginning of the next. I hope the next journey will also be full of gains and hope. Thank you to everyone who accompanied me through this journey. I wish us a bright future and all our wishes come true."
+      },
+      "graduate16": {
+        "name": "Chanjuan JIANG",
+        "destination": "Postgraduate studies",
+        "thoughts": "Time flies, and the years pass like a shuttle. In this hall full of wisdom and hope, we have spent the most precious youthful years of our lives. We are grateful for the earnest teachings of our respected teachers, who nurtured our growth; grateful for the companionship of our classmates, who together composed the splendid chapter of youth. Today, we are about to embark on a new journey. May we take the nurturing grace of our alma mater as our cornerstone, and the teachings of our mentors as our guiding light, to forge ahead on the path of the future, living up to our splendid youth."
+      },
+      "graduate17": {
+        "name": "Haoyue LIU",
+        "destination": "Nanyang Technological University",
+        "thoughts": "These four years, like a meticulously detailed painting slowly unfolding—the brightly lit labs, the warm late-night snacks from 7-Eleven, along with the hum of computer fans, have all become the most moving details in the picture. The traces of repeatedly deliberated plans, the slightly trembling voice during presentations—thinking back now, those were all signs of growth. The world is vast, and I want to turn my sketches into reality."
+      },
+      "graduate18": {
+        "name": "Zihan QU",
+        "destination": "Employment",
+        "thoughts": "One year in intelligent manufacturing, three years in industrial design; from choosing a major to preparing for postgraduate entrance exams, every step was my own choice. Failure and success are both normal, serving as anchor points for future memories. Student life is about to end, and the doors of society are opening. I am very fortunate to have met worthy people during this time, and very fortunate that this period has been the most tumultuous and wonderfully exciting chapter of my life so far."
+      },
+      "graduate19": {
+        "name": "Ziyi LIU",
+        "destination": "Recommended for postgraduate studies at Tianjin University",
+        "thoughts": "This path I will tread; heartfelt thanks I offer. Special thanks to the friends who grew with me, and to everyone who helped me. A thousand words cannot fully express my feelings. I wish that for this journey through life, everyone has good luck. Happy graduation."
+      },
+      "graduate20": {
+        "name": "Chuyi ZENG",
+        "destination": "To be decided / N/A",
+        "thoughts": "Using the design annual exhibition to prolong the farewell, four years of intense university life finally return to tranquility. I love and am grateful for every person I've met. I hope that, having shed my undergraduate identity, I will be more resilient, brave, and peaceful."
+      },
+      "graduate21": {
+        "name": "Yihan YIN",
+        "destination": "Postgraduate studies",
+        "thoughts": "Happy graduation! Happy summer! Although there are still unfinished matters, please leave the regrets and expectations for the next stage of life! Life will henceforth turn a new page... but the future is bound to be bright!"
+      },
+      "graduate22": {
+        "name": "Xueyi CHEN",
+        "destination": "Work in China",
+        "thoughts": "Four years have passed in a flash. From ignorance to maturity, I thank my teachers for their earnest guidance and my friends for their sincere companionship. Every challenge and perseverance is a mark of growth. The road ahead is still long. May we cherish our dreams, never forget our original intentions, bravely chase the light, and shine brightly on our respective life stages. Goodbye, campus; hello, world!"
+      },
+      "graduate23": {
+        "name": "Yuxing ZHANG",
+        "destination": "JD.com",
+        "thoughts": "Swiftly flows the clear stream."
+      },
+      "graduate24": {
+        "name": "Annida TANG",
+        "destination": "Tongji University, Shanghai International College of Innovation",
+        "thoughts": "The road is long and arduous, but with perseverance, one will arrive. I am grateful to myself for having come this far. In these four years of university life, there have been gains, growth, laughter, tears, madness, and regrets. All experiences have meaning. I accept my ordinary, imperfect self. I hope that in my future full of infinite possibilities, I will still be filled with passion."
+      },
+      "graduate25": {
+        "name": "Yuqi ZHAO",
+        "destination": "",
+        "thoughts": "Good evening, everyone. I am Zhao Yuqi, the presenter. Together with TJU Industrial Design, I have completed this three-year course project. In today's presentation, the user targeting is not precise enough, the visualization is not beautiful enough, and the blueprint is not perfect enough. However, my partners are lovely enough, and our journey has been wonderful enough. This concludes my presentation. Please offer your critiques and corrections. Stars have a beauty of no return; sometimes, a chance encounter might be the most precious. This path I will tread; heartfelt thanks I offer."
+      }
     }
   }
 }

@@ -1,11 +1,10 @@
 <!-- TeamSection.vue -->
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
 import { staffGroups } from "../../constants/staff";
 
-const { locale } = useI18n();
-const isEnglish = computed(() => locale.value === "en");
+const { t } = useI18n();
 
 const rectangles = ref([]);
 const isMobile = ref(false);
@@ -238,7 +237,7 @@ const easeInOutCubic = (x) => {
               }
         "
       >
-        <h3>{{ rectangle.name }}</h3>
+        <h3>{{ t(`staff.groups.${rectangle.i18nKey}.name`) }}</h3>
         <div class="members-grid" :class="{ 'mobile-grid': isMobile }">
           <div
             v-for="member in rectangle.members"
@@ -247,14 +246,14 @@ const easeInOutCubic = (x) => {
             :class="{ 'mobile-card': isMobile }"
           >
             <img
-              :src="`${member.avatar}`"
-              :alt="member.name.zh"
+              :src="member.avatar"
+              :alt="t(`staff.members.${member.i18nKey}.name`)"
               class="member-avatar"
               :class="{ 'mobile-avatar': isMobile }"
             />
             <div class="member-info">
-              <h4>{{ isEnglish ? member.name.en : member.name.zh }}</h4>
-              <p>{{ isEnglish ? member.role.en : member.role.zh }}</p>
+              <h4>{{ t(`staff.members.${member.i18nKey}.name`) }}</h4>
+              <p>{{ t(`staff.members.${member.i18nKey}.role`) }}</p>
             </div>
           </div>
         </div>
