@@ -1,0 +1,28 @@
+{
+  "nav": {
+    "preface": "卷首语",
+    "video": "宣传片",
+    "exhibition": "虚拟展厅",
+    "graduates": "毕业生",
+    "team": "年展组"
+  },
+  "language": {
+    "switch": "EN"
+  },
+  "video": {
+    "loading": "视频加载中...",
+    "error": "视频加载失败，请刷新页面重试",
+    "fallback": "您的浏览器不支持视频播放。",
+    "description": [
+      "风起林间，记录设计生长的声音",
+      "在微光与风语中，看见一代人的筑梦足迹",
+      "每一帧，都是新苗破土的片刻",
+      "每一段影像，都是成长的年轮"
+    ]
+  },
+  "transition": {
+    "planners": "年展组",
+    "graduates": "毕业生",
+    "headline": ["有风自南，", "翼彼新苗"]
+  }
+}

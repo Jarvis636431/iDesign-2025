@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import HomeSection from "../components/sections/HomeSection.vue";
 import PrefaceSection from "../components/sections/PrefaceSection.vue";
 import VideoSection from "../components/sections/VideoSection.vue";
@@ -10,7 +11,8 @@ import EndSection from "../components/sections/EndSection.vue";
 import TransitionSlide from "../components/slides/TransitionSlide.vue";
 import TransitionSlideBetweenExhibitionAndGraduates from "../components/slides/TransitionSlideBetweenExhibitionAndGraduates.vue";
 
-const isEnglish = ref(false);
+const { t, locale } = useI18n();
+const isEnglish = computed(() => locale.value === "en");
 const currentSection = ref("home");
 const scrollContainerRef = ref(null);
 
@@ -19,7 +21,10 @@ const isMobile = ref(false);
 const isMenuOpen = ref(false);
 
 const toggleLanguage = () => {
-  isEnglish.value = !isEnglish.value;
+  locale.value = isEnglish.value ? "zh" : "en";
+  if (typeof window !== "undefined") {
+    window.localStorage?.setItem("app-locale", locale.value);
+  }
 };
 
 // 检测是否为移动端
@@ -143,39 +148,39 @@ onMounted(() => {
           :class="{ active: currentSection === 'preface' }"
           @click="scrollToSection('preface')"
         >
-          {{ isEnglish ? "Preface" : "卷首语" }}
+          {{ t("nav.preface") }}
         </div>
         <div
           class="nav-item"
           :class="{ active: currentSection === 'video' }"
           @click="scrollToSection('video')"
         >
-          {{ isEnglish ? "Promotional Video" : "宣传片" }}
+          {{ t("nav.video") }}
         </div>
         <div
           class="nav-item"
           :class="{ active: currentSection === 'exhibition' }"
           @click="scrollToSection('exhibition')"
         >
-          {{ isEnglish ? "Virtual Exhibition" : "虚拟展厅" }}
+          {{ t("nav.exhibition") }}
         </div>
         <div
           class="nav-item"
           :class="{ active: currentSection === 'graduates' }"
           @click="scrollToSection('graduates')"
         >
-          {{ isEnglish ? "Graduates" : "毕业生" }}
+          {{ t("nav.graduates") }}
         </div>
         <div
           class="nav-item"
           :class="{ active: currentSection === 'team' }"
           @click="scrollToSection('team')"
         >
-          {{ isEnglish ? "Exhibition Planner" : "年展组" }}
+          {{ t("nav.team") }}
         </div>
       </div>
       <div class="language-switch" @click="toggleLanguage">
-        {{ isEnglish ? "CN" : "EN" }}
+        {{ t("language.switch") }}
       </div>
     </nav>
 
@@ -187,42 +192,17 @@ onMounted(() => {
         ref="scrollContainerRef"
       >
         <HomeSection id="home" class="content-section" />
-        <PrefaceSection
-          id="preface"
-          class="content-section"
-          :is-english="isEnglish"
-        />
-        <VideoSection
-          id="video"
-          class="content-section"
-          :is-english="isEnglish"
-        />
-        <ExhibitionSection
-          id="exhibition"
-          class="content-section"
-          :is-english="isEnglish"
-        />
+        <PrefaceSection id="preface" class="content-section" />
+        <VideoSection id="video" class="content-section" />
+        <ExhibitionSection id="exhibition" class="content-section" />
         <TransitionSlideBetweenExhibitionAndGraduates
           id="transition-between-exhibition-and-graduates"
           class="content-section"
-          :is-english="isEnglish"
         />
-        <GraduatesSection
-          id="graduates"
-          class="content-section"
-          :is-english="isEnglish"
-        />
-        <TransitionSlide
-          id="story"
-          class="content-section"
-          :is-english="isEnglish"
-        />
-        <TeamSection
-          id="team"
-          class="content-section"
-          :is-english="isEnglish"
-        />
-        <EndSection id="end" class="content-section" :is-english="isEnglish" />
+        <GraduatesSection id="graduates" class="content-section" />
+        <TransitionSlide id="story" class="content-section" />
+        <TeamSection id="team" class="content-section" />
+        <EndSection id="end" class="content-section" />
       </div>
     </main>
   </div>

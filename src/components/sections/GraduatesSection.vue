@@ -1,14 +1,11 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { graduates } from "../../constants/graduates";
 import GraduateCard from "../graduates/GraduateCard.vue";
 
-const props = defineProps({
-  isEnglish: {
-    type: Boolean,
-    default: false,
-  },
-});
+const { locale } = useI18n();
+const isEnglish = computed(() => locale.value === "en");
 
 const selectedGraduate = ref(graduates[0]);
 const isHovering = ref(false);
@@ -19,6 +16,11 @@ const avatarsContainerRef = ref(null);
 const isMobile = ref(false);
 const currentIndex = ref(0);
 const cardsContainerRef = ref(null);
+
+const normalizeIndex = (index, length) => {
+  if (!length) return 0;
+  return ((index % length) + length) % length;
+};
 
 const handleSelectGraduate = (graduate, event) => {
   selectedGraduate.value = graduate;
@@ -92,14 +94,11 @@ const updateCardPosition = () => {
     const totalCards = graduates.length;
 
     // 确保索引在有效范围内
-    if (currentIndex.value >= totalCards) {
-      currentIndex.value = 0;
-    } else if (currentIndex.value < 0) {
-      currentIndex.value = totalCards - 1;
-    }
+    const normalizedIndex = normalizeIndex(currentIndex.value, totalCards);
+    currentIndex.value = normalizedIndex;
 
     // 计算偏移量，让当前卡片居中
-    const translateX = -currentIndex.value * cardWidth;
+    const translateX = -normalizedIndex * cardWidth;
     cardsContainerRef.value.style.transform = `translateX(${translateX}px)`;
   }
 };
@@ -148,11 +147,13 @@ const handleTouchEnd = (event) => {
       currentIndex.value++;
     }
 
+    currentIndex.value = normalizeIndex(currentIndex.value, graduates.length);
     // 更新卡片位置
     updateCardPosition();
 
     // 更新选中的毕业生
-    selectedGraduate.value = graduates[currentIndex.value % graduates.length];
+    const nextGraduateIndex = normalizeIndex(currentIndex.value, graduates.length);
+    selectedGraduate.value = graduates[nextGraduateIndex];
   }
 };
 
@@ -292,7 +293,6 @@ onUnmounted(() => {
               :key="graduate.id + Math.random()"
               :name="graduate.name"
               :destination="graduate.destination"
-              :is-english="isEnglish"
               :avatar="graduate.avatar"
               :class="{ active: selectedGraduate?.id === graduate.id }"
               @click="handleSelectGraduate(graduate, $event)"

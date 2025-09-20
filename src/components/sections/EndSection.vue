@@ -26,12 +26,6 @@
 </template>
 
 <script setup>
-defineProps({
-  isEnglish: {
-    type: Boolean,
-    default: false,
-  },
-});
 </script>
 
 <style scoped>

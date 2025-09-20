@@ -6,14 +6,14 @@
         :style="textTransformStyle"
         class="skew-text"
       >
-        <template v-if="isEnglish">
-          <span class="text-line">Balmy Breeze,</span>
-          <span class="text-line offset">New Growth</span>
-        </template>
-        <template v-else>
-          <span class="text-line">有风自南，</span>
-          <span class="text-line offset">翼彼新苗</span>
-        </template>
+        <span
+          v-for="(line, index) in headlineLines"
+          :key="line + index"
+          class="text-line"
+          :class="{ offset: index === 1 }"
+        >
+          {{ line }}
+        </span>
       </h2>
       <div class="rotating-image">
         <img src="/assets/images/chime.png" alt="chime" />
@@ -21,29 +21,13 @@
     </div>
     <div class="repeating-text" :class="{ 'english-position': isEnglish }">
       <div class="text-container" :class="{ 'english-layout': isEnglish }">
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Exhibition Planners" : "年展组" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Exhibition Planners" : "年展组" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Exhibition Planners" : "年展组" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Exhibition Planners" : "年展组" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Exhibition Planners" : "年展组" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Exhibition Planners" : "年展组" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Exhibition Planners" : "年展组" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Exhibition Planners" : "年展组" }}
+        <div
+          v-for="n in 8"
+          :key="n"
+          class="text-item"
+          :class="{ 'english-text': isEnglish }"
+        >
+          {{ plannerLabel }}
         </div>
       </div>
     </div>
@@ -52,13 +36,7 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref, computed } from "vue";
-
-const props = defineProps({
-  isEnglish: {
-    type: Boolean,
-    default: false,
-  },
-});
+import { useI18n } from "vue-i18n";
 
 // 水平滚动相关状态
 const isScrolling = ref(false);
@@ -95,6 +73,14 @@ let scrollHandler;
 let handleWheel;
 let animationFrame;
 let rotationAngle = 0;
+
+const { t, tm, locale } = useI18n();
+const isEnglish = computed(() => locale.value === "en");
+const headlineLines = computed(() => {
+  const lines = tm("transition.headline");
+  return Array.isArray(lines) ? lines : [];
+});
+const plannerLabel = computed(() => t("transition.planners"));
 
 onMounted(() => {
   const image = document.querySelector(".rotating-image img");

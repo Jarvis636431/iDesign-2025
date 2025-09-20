@@ -1,0 +1,28 @@
+{
+  "nav": {
+    "preface": "Preface",
+    "video": "Promotional Video",
+    "exhibition": "Virtual Exhibition",
+    "graduates": "Graduates",
+    "team": "Exhibition Planner"
+  },
+  "language": {
+    "switch": "CN"
+  },
+  "video": {
+    "loading": "Loading video...",
+    "error": "Video failed to load. Please refresh and try again.",
+    "fallback": "Your browser does not support video playback.",
+    "description": [
+      "The wind stirs the forest, tracing the growth of design.",
+      "In glimmers and murmurs, a generation's dreams unfold.",
+      "Each frame, a seed breaking through the earth.",
+      "Each scene, a ring etched into time."
+    ]
+  },
+  "transition": {
+    "planners": "Exhibition Planners",
+    "graduates": "Graduates",
+    "headline": ["Balmy Breeze,", "New Growth"]
+  }
+}

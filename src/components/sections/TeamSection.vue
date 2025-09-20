@@ -1,14 +1,11 @@
 <!-- TeamSection.vue -->
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { staffGroups } from "../../constants/staff";
 
-const props = defineProps({
-  isEnglish: {
-    type: Boolean,
-    default: false,
-  },
-});
+const { locale } = useI18n();
+const isEnglish = computed(() => locale.value === "en");
 
 const rectangles = ref([]);
 const isMobile = ref(false);

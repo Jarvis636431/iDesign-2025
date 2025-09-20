@@ -1,25 +1,18 @@
 <!-- TODO：文字堆砌 -->
 <script setup>
 import { ref, onMounted, computed } from "vue";
-
-const props = defineProps({
-  isEnglish: {
-    type: Boolean,
-    default: false,
-  },
-});
+import { useI18n } from "vue-i18n";
 
 const videoRef = ref(null);
 const isVideoLoaded = ref(false);
 const videoError = ref(false);
 
+const { t, tm } = useI18n();
+
 // 计算属性：视频描述文字
-const videoDescription = computed(() => {
-  if (props.isEnglish) {
-    return "The wind stirs the forest, <br />echoing the quiet growth of design.<br />In glimmers and whispers, <br />we witness a generation dreaming into being. Every frame, a seed breaking<br />through the earth. Every scene, a ring in the tree of time.";
-  } else {
-    return "风起林间，记录设计生长的声音<br />在微光与风语中，看见一代人的筑梦足迹<br />每一帧，都是新苗破土的片刻<br />每一段影像，都是成长的年轮";
-  }
+const videoDescriptionLines = computed(() => {
+  const lines = tm("video.description");
+  return Array.isArray(lines) ? lines : [];
 });
 
 // 修复视频初始尺寸问题
@@ -62,12 +55,12 @@ onMounted(() => {
         <!-- 加载状态 -->
         <div v-if="!isVideoLoaded && !videoError" class="video-loading">
           <div class="loading-spinner"></div>
-          <p>视频加载中...</p>
+          <p>{{ t("video.loading") }}</p>
         </div>
 
         <!-- 错误状态 -->
         <div v-if="videoError" class="video-error">
-          <p>视频加载失败，请刷新页面重试</p>
+          <p>{{ t("video.error") }}</p>
         </div>
 
         <!-- 视频播放器 -->
@@ -80,11 +73,16 @@ onMounted(() => {
           @loadstart="isVideoLoaded = false"
         >
           <source src="/assets/videos/preface.mp4" type="video/mp4" />
-          您的浏览器不支持视频播放。
+          {{ t("video.fallback") }}
         </video>
       </div>
 
-      <p class="video-description" v-html="videoDescription"></p>
+      <p class="video-description">
+        <template v-for="(line, index) in videoDescriptionLines" :key="index">
+          <span>{{ line }}</span>
+          <br v-if="index !== videoDescriptionLines.length - 1" />
+        </template>
+      </p>
     </div>
   </section>
 </template>

@@ -1,12 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 
-const props = defineProps({
-  isEnglish: {
-    type: Boolean,
-    default: false,
-  },
-});
+const { locale } = useI18n();
+const isEnglish = computed(() => locale.value === "en");
 
 // 第三部分的引用
 const part3Ref = ref(null);

@@ -35,10 +35,6 @@ const props = defineProps({
       en: "",
     }),
   },
-  isEnglish: {
-    type: Boolean,
-    default: false,
-  },
   avatar: {
     type: String,
     default: "",

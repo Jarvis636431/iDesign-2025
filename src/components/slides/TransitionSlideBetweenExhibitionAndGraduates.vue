@@ -1,10 +1,10 @@
 <script setup>
-const props = defineProps({
-  isEnglish: {
-    type: Boolean,
-    default: false,
-  },
-});
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t, locale } = useI18n();
+const isEnglish = computed(() => locale.value === "en");
+const graduateLabel = computed(() => t("transition.graduates"));
 </script>
 
 <template>
@@ -24,29 +24,13 @@ const props = defineProps({
     </div>
     <div class="repeating-text" :class="{ 'english-position': isEnglish }">
       <div class="text-container" :class="{ 'english-layout': isEnglish }">
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Graduates" : "毕业生" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Graduates" : "毕业生" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Graduates" : "毕业生" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Graduates" : "毕业生" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Graduates" : "毕业生" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Graduates" : "毕业生" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Graduates" : "毕业生" }}
-        </div>
-        <div class="text-item" :class="{ 'english-text': isEnglish }">
-          {{ isEnglish ? "Graduates" : "毕业生" }}
+        <div
+          v-for="n in 8"
+          :key="n"
+          class="text-item"
+          :class="{ 'english-text': isEnglish }"
+        >
+          {{ graduateLabel }}
         </div>
       </div>
     </div>

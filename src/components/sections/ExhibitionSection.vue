@@ -1,15 +1,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { halls } from "../../constants/halls";
 import { useRouter } from "vue-router";
-import axios from "axios";
 
-const props = defineProps({
-  isEnglish: {
-    type: Boolean,
-    default: false,
-  },
-});
+const { locale } = useI18n();
+const isEnglish = computed(() => locale.value === "en");
 
 const activeHallIndex = ref(0);
 const activeHall = computed(() => halls[activeHallIndex.value]);
