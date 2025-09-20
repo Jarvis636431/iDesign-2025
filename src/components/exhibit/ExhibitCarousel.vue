@@ -30,7 +30,7 @@ import { ref } from 'vue'
 import CustomCarousel from '@/components/slides/CustomCarousel.vue'
 
 // Props定义
-const props = defineProps({
+defineProps({
   slides: {
     type: Array,
     required: true,

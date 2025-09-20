@@ -117,13 +117,7 @@ import { useRouter, useRoute } from "vue-router";
 import * as THREE from "three";
 import { SceneManager } from "../utils/SceneManager";
 import { CameraController } from "../utils/CameraController";
-import {
-  halls,
-  cameraDefaults,
-  controlsLimits,
-  getHallByNumber,
-  getHallById,
-} from "../constants/halls";
+import { cameraDefaults, controlsLimits, getHallById } from "../constants/halls";
 import axios from "axios"; // 导入 axios
 
 const router = useRouter();
@@ -169,9 +163,6 @@ const checkMobile = () => {
 
 // 获取路由中的展厅ID参数
 const currentHallId = computed(() => Number(route.query.id) || 73);
-
-// 获取所有展厅配置
-const hallList = computed(() => halls);
 
 // 获取当前展厅对应的信息
 const currentHallInfo = computed(() => {
@@ -511,41 +502,6 @@ const showObjectInfo = (object) => {
   // alert(message);
 };
 
-// 根据ID获取对象的辅助函数
-const getObjectById = (objectId) => {
-  return clickableObjects.find((obj) => obj.userData.objectId === objectId);
-};
-
-// 根据名称获取对象的辅助函数
-const getObjectByName = (objectName) => {
-  return clickableObjects.find((obj) => obj.name === objectName);
-};
-
-// 根据类型获取所有对象的辅助函数
-const getObjectsByType = (objectType) => {
-  return clickableObjects.filter(
-    (obj) => obj.userData.objectType === objectType
-  );
-};
-
-// 获取所有对象信息的辅助函数
-const getAllObjectsInfo = () => {
-  return clickableObjects.map((obj) => ({
-    name: obj.name,
-    id: obj.userData.objectId,
-    type: obj.userData.objectType,
-    index: obj.userData.meshIndex,
-    uuid: obj.uuid,
-    vertices: obj.userData.geometryInfo.vertices,
-    faces: obj.userData.geometryInfo.faces,
-    position: {
-      x: obj.position.x,
-      y: obj.position.y,
-      z: obj.position.z,
-    },
-  }));
-};
-
 // 节流处理鼠标移动事件
 let mouseMoveThrottleId = null;
 const MOUSE_MOVE_THROTTLE = 50; // 50ms节流
@@ -706,23 +662,6 @@ const handleVisibilityChange = () => {
   }
 };
 
-// 重置视角
-const resetView = () => {
-  if (!camera || !cameraController || !currentHallInfo.value?.model) return;
-
-  camera.position.set(
-    currentHallInfo.value.model.camera.position.x,
-    currentHallInfo.value.model.camera.position.y,
-    currentHallInfo.value.model.camera.position.z
-  );
-  camera.lookAt(
-    currentHallInfo.value.model.camera.target.x,
-    currentHallInfo.value.model.camera.target.y,
-    currentHallInfo.value.model.camera.target.z
-  );
-  cameraController.update();
-};
-
 // 设置相机视图
 const setupCameraView = () => {
   if (!camera || !model || !currentHallInfo.value?.model) {
@@ -762,25 +701,6 @@ const setupCameraView = () => {
     Object.assign(cameraController.controls, controlsLimits);
     cameraController.update();
     console.log("相机控制器更新完成");
-  }
-};
-
-// 切换展厅
-const switchHall = async () => {
-  try {
-    // 计算下一个展厅ID
-    const currentIndex = halls.findIndex(
-      (hall) => hall.id === currentHallId.value
-    );
-    const nextIndex = (currentIndex + 1) % halls.length;
-    const nextHall = halls[nextIndex];
-
-    // 跳转到下一个展厅
-    router.push(`/hall?id=${nextHall.id}`);
-  } catch (error) {
-    console.error("切换展厅失败:", error);
-    hasError.value = true;
-    errorMessage.value = error.message || "切换展厅失败";
   }
 };
 

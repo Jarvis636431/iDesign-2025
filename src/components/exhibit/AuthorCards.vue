@@ -48,19 +48,8 @@ const props = defineProps({
 });
 
 const activeCard = ref(null);
-const showAllAuthors = ref(false);
 
-const visibleAuthors = computed(() => {
-  return props.authors.slice(0, 5);
-});
-
-const hiddenAuthors = computed(() => {
-  return props.authors.slice(5);
-});
-
-const hasMoreAuthors = computed(() => {
-  return props.authors.length > 5;
-});
+const visibleAuthors = computed(() => props.authors.slice(0, 5));
 </script>
 
 <style scoped>

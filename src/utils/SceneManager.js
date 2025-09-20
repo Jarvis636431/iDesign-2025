@@ -158,7 +158,7 @@ export class SceneManager {
     console.log(`开始加载新模型: ${modelPath}`);
     
     const loader = new GLTFLoader();
-    loader.manager.onError = (url) => {
+    loader.manager.onError = () => {
       // 资源加载失败时的静默处理
     };
 
@@ -170,14 +170,12 @@ export class SceneManager {
     dracoLoader.preload(); // 预加载解码器
 
     // 尝试设置Draco解码器路径
-    let dracoPathSet = false;
     for (const path of SCENE_CONFIG.DRACO_DECODER_PATHS) {
       try {
         dracoLoader.setDecoderPath(path);
-        dracoPathSet = true;
         console.log(`使用 Draco 解码器路径: ${path}`);
         break;
-      } catch (error) {
+      } catch {
         // 路径不可用时继续尝试下一个
       }
     }
@@ -208,7 +206,7 @@ export class SceneManager {
           if (onProgress && typeof onProgress === "function") {
             try {
               onProgress(event);
-            } catch (error) {
+            } catch {
               // 进度回调执行失败时的静默处理
             }
           }
@@ -240,8 +238,6 @@ export class SceneManager {
       this.manageCacheSize();
 
       return gltf.scene;
-    } catch (error) {
-      throw error;
     } finally {
       dracoLoader.dispose();
     }
@@ -404,7 +400,7 @@ export class SceneManager {
   clearCache() {
     console.log('开始清理模型缓存...');
     
-    for (const [path, model] of this.modelCache) {
+    for (const model of this.modelCache.values()) {
       this.disposeObject(model, false);
     }
     

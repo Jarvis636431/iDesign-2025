@@ -9,7 +9,7 @@ import { exhibitModels } from "@/constants/exhibitModels";
 import { halls as hallsData } from "@/constants/halls";
 import { shareCardGenerator } from "@/utils/ShareCardGenerator";
 import { useExhibit } from "@/composables/useExhibit";
-import { processExhibitInfo, generateExhibitSlides, generateModelFile } from "@/utils/exhibitUtils";
+import { processExhibitInfo, generateExhibitSlides } from "@/utils/exhibitUtils";
 
 const route = useRoute();
 const router = useRouter();
@@ -82,11 +82,6 @@ watch([currentId, hallId], async () => {
 const exhibitInfo = computed(() => {
   const item = findExhibitById(currentId.value);
   return processExhibitInfo(item);
-});
-
-// 使用工具函数生成模型文件路径
-const modelFile = computed(() => {
-  return generateModelFile(exhibitModels, currentId.value);
 });
 
 // 优化后的导航函数
@@ -195,7 +190,7 @@ const copyLink = async () => {
   try {
     await navigator.clipboard.writeText(window.location.href);
     alert("链接已复制到剪贴板！");
-  } catch (error) {
+  } catch {
     prompt("请复制以下链接进行分享：", window.location.href);
   }
 };

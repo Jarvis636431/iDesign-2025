@@ -240,7 +240,7 @@ export class ShareCardGenerator {
       try {
         const iconImg = await this.loadImage('/assets/images/avatar-border.png');
         ctx.drawImage(iconImg, cardX + 15, cardY + 10, 40, 40);
-      } catch (error) {
+      } catch {
         // 绘制占位符
         ctx.fillStyle = hallInfo?.color || '#2FA3B0';
         ctx.beginPath();
@@ -262,7 +262,7 @@ export class ShareCardGenerator {
         try {
           const img = await this.loadImage(exhibitInfo.imageUrl);
           ctx.drawImage(img, cardX, imageY, cardWidth, imageHeight);
-        } catch (error) {
+        } catch {
           this.drawImagePlaceholder(ctx, cardX, imageY, cardWidth, imageHeight, exhibitInfo.title);
         }
       } else {

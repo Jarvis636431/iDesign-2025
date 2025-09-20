@@ -61,16 +61,6 @@ const scrollToSection = (sectionId) => {
   }
 };
 
-// 跳转到展厅视图
-const goToHall = () => {
-  // 关闭移动端菜单
-  if (isMobile.value) {
-    closeMenu();
-  }
-  // 跳转到展厅视图页面，默认显示第一个展厅
-  window.open("/#/2025/hall?id=73", "_blank");
-};
-
 // 使用 IntersectionObserver 监测每个 section 的可见性
 onMounted(() => {
   // 初始检测移动端
