@@ -108,7 +108,6 @@ export class SceneManager {
     }
 
     if (oldestKey) {
-      console.log(`清理缓存: ${oldestKey}`);
       const cachedModel = this.modelCache.get(oldestKey);
       if (cachedModel) {
         this.disposeObject(cachedModel, false);
@@ -143,7 +142,6 @@ export class SceneManager {
   async loadModel(modelPath, onProgress) {
     // 检查缓存
     if (this.modelCache.has(modelPath)) {
-      console.log(`从缓存加载模型: ${modelPath}`);
       const cachedModel = this.modelCache.get(modelPath);
       this.cacheAccessTime.set(modelPath, Date.now());
       
@@ -155,8 +153,6 @@ export class SceneManager {
       return this.cloneModel(cachedModel);
     }
 
-    console.log(`开始加载新模型: ${modelPath}`);
-    
     const loader = new GLTFLoader();
     loader.manager.onError = () => {
       // 资源加载失败时的静默处理
@@ -173,7 +169,6 @@ export class SceneManager {
     for (const path of SCENE_CONFIG.DRACO_DECODER_PATHS) {
       try {
         dracoLoader.setDecoderPath(path);
-        console.log(`使用 Draco 解码器路径: ${path}`);
         break;
       } catch {
         // 路径不可用时继续尝试下一个
@@ -230,7 +225,6 @@ export class SceneManager {
       }
 
       // 将模型添加到缓存
-      console.log(`模型加载成功，添加到缓存: ${modelPath}`);
       this.modelCache.set(modelPath, gltf.scene.clone(true));
       this.cacheAccessTime.set(modelPath, Date.now());
       
@@ -358,8 +352,6 @@ export class SceneManager {
   removeModel(model) {
     if (!model || !this.scene) return;
     
-    console.log('开始清理模型资源...');
-    
     // 从场景中移除
     this.scene.remove(model);
     
@@ -374,12 +366,9 @@ export class SceneManager {
     // 清空子对象数组
     model.children.length = 0;
     
-    console.log('模型资源清理完成');
   }
 
   clear() {
-    console.log('开始清理场景中的所有对象...');
-    
     // 创建子对象数组的副本，避免在遍历时修改原数组
     const children = [...this.scene.children];
     
@@ -391,23 +380,18 @@ export class SceneManager {
       this.removeObject(object);
     });
     
-    console.log('场景清理完成');
   }
 
   /**
    * 清理所有缓存的模型
    */
   clearCache() {
-    console.log('开始清理模型缓存...');
-    
     for (const model of this.modelCache.values()) {
       this.disposeObject(model, false);
     }
-    
+
     this.modelCache.clear();
     this.cacheAccessTime.clear();
-    
-    console.log('模型缓存清理完成');
   }
 
   /**
@@ -423,8 +407,6 @@ export class SceneManager {
   }
 
   dispose() {
-    console.log('开始销毁 SceneManager...');
-    
     // 清理缓存
     this.clearCache();
     
@@ -436,7 +418,5 @@ export class SceneManager {
       this.scene.dispose?.();
       this.scene = null;
     }
-    
-    console.log('SceneManager 销毁完成');
   }
 }
