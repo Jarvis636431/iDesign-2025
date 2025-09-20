@@ -18,12 +18,16 @@ const currentSlideIndex = ref(0);
 
 const totalSlides = computed(() => props.slides.length);
 const currentSlide = computed(() => {
-  if (totalSlides.value === 0) return null;
-  // Ensure index is always valid, even if slides array changes unexpectedly
-  if (currentSlideIndex.value >= totalSlides.value) {
-    currentSlideIndex.value = Math.max(0, totalSlides.value - 1);
+  if (totalSlides.value === 0) {
+    return null;
   }
-  return props.slides[currentSlideIndex.value];
+
+  const clampedIndex = Math.min(
+    Math.max(currentSlideIndex.value, 0),
+    totalSlides.value - 1
+  );
+
+  return props.slides[clampedIndex] ?? null;
 });
 
 function prevSlideExecute() {
@@ -52,25 +56,37 @@ defineExpose({
   goToSlide, // Exposing goToSlide as well, might be useful
 });
 
+watch(totalSlides, (newTotal) => {
+  if (newTotal === 0) {
+    currentSlideIndex.value = 0;
+    return;
+  }
+
+  if (currentSlideIndex.value >= newTotal) {
+    currentSlideIndex.value = newTotal - 1;
+  }
+});
+
 watch(
   () => props.slides,
   (newSlides, oldSlides) => {
-    // Only reset if the actual content of slides might have changed identity,
-    // or if the current index becomes invalid.
-    // A simple heuristic: if length changes, or if current item's src changes.
-    let resetIndex = false;
-    if (newSlides.length !== oldSlides.length) {
-      resetIndex = true;
-    } else if (
-      currentSlide.value &&
-      newSlides[currentSlideIndex.value] &&
-      newSlides[currentSlideIndex.value].src !== currentSlide.value.src
-    ) {
-      // If the slide at the current index has a different src, likely a full content change
-      resetIndex = true;
+    if (!Array.isArray(newSlides) || !newSlides.length) {
+      currentSlideIndex.value = 0;
+      return;
     }
 
-    if (resetIndex || currentSlideIndex.value >= newSlides.length) {
+    let resetIndex = false;
+    if (!Array.isArray(oldSlides) || newSlides.length !== oldSlides.length) {
+      resetIndex = true;
+    } else {
+      const previousSlide = oldSlides[currentSlideIndex.value];
+      const nextSlide = newSlides[currentSlideIndex.value];
+      if (previousSlide && nextSlide && previousSlide.src !== nextSlide.src) {
+        resetIndex = true;
+      }
+    }
+
+    if (resetIndex) {
       currentSlideIndex.value = 0;
     }
   },
