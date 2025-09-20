@@ -147,6 +147,13 @@ const currentModel = ref(null);
 // 移动端检测
 const isMobile = ref(false);
 
+// 渲染优化状态
+const needsRender = ref(true);
+const isPageVisible = ref(true);
+let animationId = null;
+let lastRenderTime = 0;
+const RENDER_THROTTLE = 16; // 约60fps
+
 // 检测是否为移动设备
 const checkMobile = () => {
   const userAgent = navigator.userAgent;
@@ -395,6 +402,8 @@ const onMouseClick = (event) => {
   if (intersects.length > 0) {
     const clickedObject = intersects[0].object;
     handleObjectClick(clickedObject, intersects[0]);
+    // 点击后需要重新渲染以显示效果
+    requestRender();
   }
 };
 
@@ -538,8 +547,24 @@ const getAllObjectsInfo = () => {
   }));
 };
 
-// 处理鼠标悬停效果
+// 节流处理鼠标移动事件
+let mouseMoveThrottleId = null;
+const MOUSE_MOVE_THROTTLE = 50; // 50ms节流
+
+// 处理鼠标悬停效果（节流版本）
 const onMouseMove = (event) => {
+  // 节流处理，避免过度计算射线检测
+  if (mouseMoveThrottleId) {
+    clearTimeout(mouseMoveThrottleId);
+  }
+  
+  mouseMoveThrottleId = setTimeout(() => {
+    handleMouseMove(event);
+  }, MOUSE_MOVE_THROTTLE);
+};
+
+// 实际的鼠标移动处理逻辑
+const handleMouseMove = (event) => {
   // 计算鼠标位置
   const rect = renderer.domElement.getBoundingClientRect();
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -551,6 +576,8 @@ const onMouseMove = (event) => {
   // 检测悬停对象
   const intersects = raycaster.intersectObjects(clickableObjects);
 
+  let hasChanges = false;
+
   // 重置所有对象的悬停状态
   clickableObjects.forEach((obj) => {
     if (obj.userData.isHovered) {
@@ -558,6 +585,7 @@ const onMouseMove = (event) => {
       // 恢复原始颜色（如果不是被点击状态）
       if (obj.userData.originalColor && obj.material && obj.material.color) {
         obj.material.color.copy(obj.userData.originalColor);
+        hasChanges = true;
       }
     }
   });
@@ -580,20 +608,72 @@ const onMouseMove = (event) => {
       const brightColor = hoveredObject.userData.originalColor.clone();
       brightColor.multiplyScalar(1.2); // 提亮20%
       hoveredObject.material.color.copy(brightColor);
+      hasChanges = true;
     }
   } else {
     // 恢复默认鼠标样式
     renderer.domElement.style.cursor = "default";
   }
+
+  // 只有在有变化时才请求重新渲染
+  if (hasChanges) {
+    requestRender();
+  }
 };
 
-// 动画循环
-const animate = () => {
-  requestAnimationFrame(animate);
-  if (cameraController) {
-    cameraController.update();
+// 请求重新渲染
+const requestRender = () => {
+  needsRender.value = true;
+};
+
+// 智能动画循环 - 只在需要时渲染
+const animate = (currentTime = 0) => {
+  if (!isPageVisible.value) {
+    // 页面不可见时暂停渲染
+    animationId = null;
+    return;
   }
-  renderer.render(sceneManager.scene, camera);
+
+  // 节流渲染，避免过度渲染
+  if (currentTime - lastRenderTime < RENDER_THROTTLE) {
+    animationId = requestAnimationFrame(animate);
+    return;
+  }
+
+  let shouldRender = needsRender.value;
+  
+  // 检查相机控制器是否需要更新
+  if (cameraController) {
+    const cameraChanged = cameraController.update();
+    if (cameraChanged) {
+      shouldRender = true;
+    }
+  }
+
+  // 只在需要时渲染
+  if (shouldRender && renderer && sceneManager && camera) {
+    renderer.render(sceneManager.scene, camera);
+    needsRender.value = false;
+    lastRenderTime = currentTime;
+  }
+
+  // 继续动画循环
+  animationId = requestAnimationFrame(animate);
+};
+
+// 启动渲染循环
+const startRenderLoop = () => {
+  if (!animationId) {
+    animationId = requestAnimationFrame(animate);
+  }
+};
+
+// 停止渲染循环
+const stopRenderLoop = () => {
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
 };
 
 // 处理窗口大小变化
@@ -609,6 +689,22 @@ const handleResize = () => {
 
   // 更新渲染器大小
   renderer.setSize(window.innerWidth, window.innerHeight);
+  
+  // 窗口大小变化时需要重新渲染
+  requestRender();
+};
+
+// 页面可见性变化处理
+const handleVisibilityChange = () => {
+  isPageVisible.value = !document.hidden;
+  if (isPageVisible.value) {
+    // 页面变为可见时恢复渲染
+    requestRender();
+    startRenderLoop();
+  } else {
+    // 页面隐藏时停止渲染
+    stopRenderLoop();
+  }
 };
 
 // 重置视角
@@ -753,6 +849,9 @@ const handleVirtualKey = (keyCode, isKeyDown) => {
   } else {
     cameraController.handleKeyUp(event);
   }
+  
+  // 虚拟按键操作后请求重新渲染
+  requestRender();
 };
 
 // 监听展厅ID变化
@@ -765,12 +864,25 @@ watch(currentHallId, async (newId) => {
   errorMessage.value = "";
   loadingProgress.value = 0;
 
-  // 保存当前模型引用并清理
+  // 保存当前模型引用并彻底清理
   const oldModel = model;
   model = null;
+  
   if (oldModel) {
     console.log("正在清理旧模型...");
-    sceneManager.removeObject(oldModel);
+    
+    // 清空可点击对象数组
+    clickableObjects = [];
+    
+    // 使用增强的模型清理方法
+    sceneManager.removeModel(oldModel);
+    
+    // 强制垃圾回收提示
+    if (window.gc) {
+      window.gc();
+    }
+    
+    console.log("旧模型清理完成");
   }
 
   // 加载新模型
@@ -803,6 +915,7 @@ onMounted(async () => {
 
     // 添加事件监听器
     window.addEventListener("resize", handleResize);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // 添加鼠标事件监听器
     if (renderer && renderer.domElement) {
@@ -810,6 +923,9 @@ onMounted(async () => {
       renderer.domElement.addEventListener("mousemove", onMouseMove);
       console.log("鼠标交互事件监听器已添加");
     }
+
+    // 启动智能渲染循环
+    startRenderLoop();
   } catch (error) {
     console.error("初始化失败:", error);
     hasError.value = true;
@@ -818,8 +934,18 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  // 停止渲染循环
+  stopRenderLoop();
+
+  // 清理节流定时器
+  if (mouseMoveThrottleId) {
+    clearTimeout(mouseMoveThrottleId);
+    mouseMoveThrottleId = null;
+  }
+
   // 移除窗口事件监听器
   window.removeEventListener("resize", handleResize);
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
 
   // 移除鼠标事件监听器
   if (renderer && renderer.domElement) {

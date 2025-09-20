@@ -41,6 +41,12 @@ export class SceneManager {
   constructor(container) {
     this.container = container;
     this.scene = new THREE.Scene();
+    
+    // 模型缓存系统
+    this.modelCache = new Map();
+    this.maxCacheSize = 5; // 最大缓存模型数量
+    this.cacheAccessTime = new Map(); // 记录缓存访问时间，用于LRU清理
+    
     this.setupScene();
   }
 
@@ -82,7 +88,75 @@ export class SceneManager {
     this.scene.add(fillLight);
   }
 
+  /**
+   * 管理缓存大小，使用LRU策略清理旧缓存
+   */
+  manageCacheSize() {
+    if (this.modelCache.size <= this.maxCacheSize) {
+      return;
+    }
+
+    // 找到最久未访问的缓存项
+    let oldestKey = null;
+    let oldestTime = Date.now();
+    
+    for (const [key, time] of this.cacheAccessTime) {
+      if (time < oldestTime) {
+        oldestTime = time;
+        oldestKey = key;
+      }
+    }
+
+    if (oldestKey) {
+      console.log(`清理缓存: ${oldestKey}`);
+      const cachedModel = this.modelCache.get(oldestKey);
+      if (cachedModel) {
+        this.disposeObject(cachedModel, false);
+      }
+      this.modelCache.delete(oldestKey);
+      this.cacheAccessTime.delete(oldestKey);
+    }
+  }
+
+  /**
+   * 克隆缓存的模型
+   * @param {THREE.Object3D} originalModel - 原始模型
+   * @returns {THREE.Object3D} 克隆的模型
+   */
+  cloneModel(originalModel) {
+    const clonedModel = originalModel.clone(true);
+    
+    // 深度克隆材质，避免共享材质导致的问题
+    clonedModel.traverse((child) => {
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material = child.material.map(mat => mat.clone());
+        } else {
+          child.material = child.material.clone();
+        }
+      }
+    });
+    
+    return clonedModel;
+  }
+
   async loadModel(modelPath, onProgress) {
+    // 检查缓存
+    if (this.modelCache.has(modelPath)) {
+      console.log(`从缓存加载模型: ${modelPath}`);
+      const cachedModel = this.modelCache.get(modelPath);
+      this.cacheAccessTime.set(modelPath, Date.now());
+      
+      // 模拟进度回调
+      if (onProgress && typeof onProgress === "function") {
+        setTimeout(() => onProgress({ loaded: 100, total: 100, lengthComputable: true }), 10);
+      }
+      
+      return this.cloneModel(cachedModel);
+    }
+
+    console.log(`开始加载新模型: ${modelPath}`);
+    
     const loader = new GLTFLoader();
     loader.manager.onError = (url) => {
       // 资源加载失败时的静默处理
@@ -91,12 +165,17 @@ export class SceneManager {
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderConfig({ type: "js" }); // 使用JavaScript解码器
 
+    // 优化 Draco 解码器配置
+    dracoLoader.setWorkerLimit(4); // 设置工作线程数量
+    dracoLoader.preload(); // 预加载解码器
+
     // 尝试设置Draco解码器路径
     let dracoPathSet = false;
     for (const path of SCENE_CONFIG.DRACO_DECODER_PATHS) {
       try {
         dracoLoader.setDecoderPath(path);
         dracoPathSet = true;
+        console.log(`使用 Draco 解码器路径: ${path}`);
         break;
       } catch (error) {
         // 路径不可用时继续尝试下一个
@@ -152,6 +231,14 @@ export class SceneManager {
         throw new Error("加载的模型没有场景对象");
       }
 
+      // 将模型添加到缓存
+      console.log(`模型加载成功，添加到缓存: ${modelPath}`);
+      this.modelCache.set(modelPath, gltf.scene.clone(true));
+      this.cacheAccessTime.set(modelPath, Date.now());
+      
+      // 管理缓存大小
+      this.manageCacheSize();
+
       return gltf.scene;
     } catch (error) {
       throw error;
@@ -202,22 +289,26 @@ export class SceneManager {
   /**
    * 递归清理资源但保留交互性
    * @param {THREE.Object3D} object - 要清理的3D对象
+   * @param {boolean} preserveInteractivity - 是否保留交互性，默认为true
    */
-  disposeObject(object) {
+  disposeObject(object, preserveInteractivity = true) {
     if (!object) return;
 
     // 保存交互相关的属性
-    const userData = object.userData;
-    const clickable = object.userData?.clickable;
+    const userData = preserveInteractivity ? object.userData : null;
+    const clickable = preserveInteractivity ? object.userData?.clickable : null;
 
     // 递归处理子对象
     if (object.children && object.children.length > 0) {
-      object.children.forEach((child) => this.disposeObject(child));
+      // 创建子对象数组的副本，避免在遍历时修改原数组
+      const children = [...object.children];
+      children.forEach((child) => this.disposeObject(child, preserveInteractivity));
     }
 
     // 释放几何体
     if (object.geometry) {
       object.geometry.dispose();
+      object.geometry = null;
     }
 
     // 释放材质
@@ -227,12 +318,23 @@ export class SceneManager {
       } else {
         this.disposeMaterial(object.material);
       }
+      object.material = null;
     }
 
-    // 恢复交互相关的属性
-    object.userData = userData;
-    if (clickable) {
-      object.userData.clickable = clickable;
+    // 清理纹理引用
+    if (object.texture) {
+      object.texture.dispose();
+      object.texture = null;
+    }
+
+    // 恢复交互相关的属性（如果需要保留）
+    if (preserveInteractivity) {
+      object.userData = userData || {};
+      if (clickable) {
+        object.userData.clickable = clickable;
+      }
+    } else {
+      object.userData = {};
     }
   }
 
@@ -244,20 +346,101 @@ export class SceneManager {
   }
 
   removeObject(object) {
-    if (!object) return;
+    if (!object || !this.scene) return;
+    
+    // 从场景中移除对象
     this.scene.remove(object);
+    
+    // 清理对象的所有资源
+    this.disposeObject(object, false);
+  }
+
+  /**
+   * 安全地移除和清理模型对象
+   * @param {THREE.Object3D} model - 要移除的模型对象
+   */
+  removeModel(model) {
+    if (!model || !this.scene) return;
+    
+    console.log('开始清理模型资源...');
+    
+    // 从场景中移除
+    this.scene.remove(model);
+    
+    // 深度清理所有资源
+    this.disposeObject(model, false);
+    
+    // 清理模型的父子关系
+    if (model.parent) {
+      model.parent.remove(model);
+    }
+    
+    // 清空子对象数组
+    model.children.length = 0;
+    
+    console.log('模型资源清理完成');
   }
 
   clear() {
-    // 清理场景中的所有对象
-    while (this.scene.children.length > 0) {
-      const object = this.scene.children[0];
+    console.log('开始清理场景中的所有对象...');
+    
+    // 创建子对象数组的副本，避免在遍历时修改原数组
+    const children = [...this.scene.children];
+    
+    children.forEach(object => {
+      // 跳过光源等系统对象
+      if (object.isLight || object.isCamera) {
+        return;
+      }
       this.removeObject(object);
+    });
+    
+    console.log('场景清理完成');
+  }
+
+  /**
+   * 清理所有缓存的模型
+   */
+  clearCache() {
+    console.log('开始清理模型缓存...');
+    
+    for (const [path, model] of this.modelCache) {
+      this.disposeObject(model, false);
     }
+    
+    this.modelCache.clear();
+    this.cacheAccessTime.clear();
+    
+    console.log('模型缓存清理完成');
+  }
+
+  /**
+   * 获取缓存统计信息
+   */
+  getCacheStats() {
+    return {
+      size: this.modelCache.size,
+      maxSize: this.maxCacheSize,
+      paths: Array.from(this.modelCache.keys()),
+      memoryUsage: this.modelCache.size > 0 ? 'cached models in memory' : 'no cached models'
+    };
   }
 
   dispose() {
+    console.log('开始销毁 SceneManager...');
+    
+    // 清理缓存
+    this.clearCache();
+    
+    // 清理场景
     this.clear();
-    this.scene = null;
+    
+    // 清理场景本身
+    if (this.scene) {
+      this.scene.dispose?.();
+      this.scene = null;
+    }
+    
+    console.log('SceneManager 销毁完成');
   }
 }

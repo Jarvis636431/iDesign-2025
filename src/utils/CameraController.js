@@ -156,9 +156,12 @@ export class CameraController {
   /**
    * 更新相机位置和控制器状态
    * 每帧调用此方法来处理键盘输入和相机移动
+   * @returns {boolean} 是否发生了变化，需要重新渲染
    */
   update() {
-    if (!this.camera || !this.controls) return;
+    if (!this.camera || !this.controls) return false;
+
+    let hasChanged = false;
 
     // 复用向量对象，减少GC压力
     // 获取相机前进方向（去掉y分量，保持水平移动）
@@ -173,32 +176,51 @@ export class CameraController {
     this.rightVector.y = 0;
     this.rightVector.normalize();
 
+    // 记录相机位置变化前的状态
+    const oldPosition = this.camera.position.clone();
+    const oldTarget = this.controls.target.clone();
+
     // 根据按键状态更新相机位置
     if (this.moveState.moveForward) {
       this.tempVector.copy(this.forwardVector).multiplyScalar(cameraDefaults.moveSpeed);
       this.camera.position.add(this.tempVector);
       this.controls.target.add(this.tempVector);
+      hasChanged = true;
     }
     if (this.moveState.moveBackward) {
       this.tempVector.copy(this.forwardVector).multiplyScalar(-cameraDefaults.moveSpeed);
       this.camera.position.add(this.tempVector);
       this.controls.target.add(this.tempVector);
+      hasChanged = true;
     }
     if (this.moveState.moveLeft) {
       this.tempVector.copy(this.rightVector).multiplyScalar(-cameraDefaults.moveSpeed);
       this.camera.position.add(this.tempVector);
       this.controls.target.add(this.tempVector);
+      hasChanged = true;
     }
     if (this.moveState.moveRight) {
       this.tempVector.copy(this.rightVector).multiplyScalar(cameraDefaults.moveSpeed);
       this.camera.position.add(this.tempVector);
       this.controls.target.add(this.tempVector);
+      hasChanged = true;
     }
 
     // 约束相机位置在边界内
     this.clampCameraPosition();
 
-    this.controls.update();
+    // 检查 OrbitControls 是否有变化
+    const controlsChanged = this.controls.update();
+    if (controlsChanged) {
+      hasChanged = true;
+    }
+
+    // 检查位置是否真的发生了变化（考虑边界约束）
+    if (!hasChanged) {
+      hasChanged = !oldPosition.equals(this.camera.position) || !oldTarget.equals(this.controls.target);
+    }
+
+    return hasChanged;
   }
 
   /**
