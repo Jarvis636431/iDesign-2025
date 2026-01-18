@@ -7,9 +7,9 @@ const SCENE_CONFIG = {
   // 模型加载配置
   LOAD_TIMEOUT: 30000, // 30秒超时
   DRACO_DECODER_PATHS: [
+    `${import.meta.env.BASE_URL || "/"}draco/`,
     "https://www.gstatic.com/draco/v1/decoders/",
-    "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/libs/draco/",
-    "/draco/",
+    "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/js/libs/draco/",
   ],
   
   // 光照配置
