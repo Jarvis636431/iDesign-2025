@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
 
 // 配置常量
 const SCENE_CONFIG = {
@@ -10,6 +11,10 @@ const SCENE_CONFIG = {
     `${import.meta.env.BASE_URL || "/"}draco/`,
     "https://www.gstatic.com/draco/v1/decoders/",
     "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/js/libs/draco/",
+  ],
+  KTX2_TRANSCODER_PATHS: [
+    `${import.meta.env.BASE_URL || "/"}basis/`,
+    "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/libs/basis/",
   ],
   
   // 光照配置
@@ -38,9 +43,10 @@ const SCENE_CONFIG = {
 
 
 export class SceneManager {
-  constructor(container) {
+  constructor(container, renderer = null) {
     this.container = container;
     this.scene = new THREE.Scene();
+    this.renderer = renderer;
     
     // 模型缓存系统
     this.modelCache = new Map();
@@ -86,6 +92,10 @@ export class SceneManager {
     const fillPos = SCENE_CONFIG.LIGHTING.FILL_LIGHT.position;
     fillLight.position.set(fillPos.x, fillPos.y, fillPos.z);
     this.scene.add(fillLight);
+  }
+
+  setRenderer(renderer) {
+    this.renderer = renderer;
   }
 
   /**
@@ -176,6 +186,13 @@ export class SceneManager {
     }
 
     loader.setDRACOLoader(dracoLoader);
+    const ktx2Loader = new KTX2Loader();
+    const ktx2Path = SCENE_CONFIG.KTX2_TRANSCODER_PATHS[0];
+    ktx2Loader.setTranscoderPath(ktx2Path);
+    if (this.renderer) {
+      ktx2Loader.detectSupport(this.renderer);
+      loader.setKTX2Loader(ktx2Loader);
+    }
 
     try {
       const gltf = await new Promise((resolve, reject) => {
@@ -234,6 +251,7 @@ export class SceneManager {
       return gltf.scene;
     } finally {
       dracoLoader.dispose();
+      ktx2Loader.dispose();
     }
   }
 

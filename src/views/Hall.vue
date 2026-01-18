@@ -223,6 +223,10 @@ const initScene = async () => {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setClearColor(0xffffff, 1); // 设置白色背景
 
+  if (sceneManager) {
+    sceneManager.setRenderer(renderer);
+  }
+
   // 清除之前的渲染器
   if (modelContainer.value.children.length > 0) {
     modelContainer.value.innerHTML = "";
