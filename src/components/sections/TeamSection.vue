@@ -2,18 +2,30 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
-import { staffGroups } from "../../constants/staff";
+import { normalizeBase, joinBase } from "../../utils/assetPath";
+import { loadJson } from "../../utils/loadJson";
 
 const { t } = useI18n();
 
+const staffGroups = ref([]);
 const rectangles = ref([]);
 const isMobile = ref(false);
 let scrollHandler = null;
 
 onMounted(() => {
+  loadJson("staff", () => import("../../constants/staff.json")).then((data) => {
+    const baseURL = normalizeBase(import.meta.env.VITE_BASE_URL || "");
+    staffGroups.value = data.map((group) => ({
+      ...group,
+      members: group.members.map((member) => ({
+        ...member,
+        avatar: joinBase(baseURL, member.avatar),
+      })),
+    }));
+    initializeRectangles();
+    setupScrollHandler();
+  });
   checkMobile();
-  initializeRectangles();
-  setupScrollHandler();
   window.addEventListener("resize", () => {
     checkMobile();
     initializeRectangles(); // 重新初始化卡片位置
@@ -43,7 +55,7 @@ onBeforeUnmount(() => {
 });
 
 const initializeRectangles = () => {
-  rectangles.value = staffGroups.map((group, index) => {
+  rectangles.value = staffGroups.value.map((group, index) => {
     if (isMobile.value) {
       // 移动端：从左右两侧滑入的动画效果
       return {
@@ -56,7 +68,7 @@ const initializeRectangles = () => {
       // PC端：原有的上下错开布局
       const isTop = index % 2 === 1;
       const positionIndex = Math.floor(index / 2);
-      const groupsInRow = Math.ceil(staffGroups.length / 2);
+      const groupsInRow = Math.ceil(staffGroups.value.length / 2);
 
       // 基础间距设为35vw
       let horizontalOffset = (positionIndex - (groupsInRow - 1) / 2) * 35;

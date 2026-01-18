@@ -1,13 +1,15 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { graduates } from "../../constants/graduates";
+import { normalizeBase, joinBase } from "../../utils/assetPath";
+import { loadJson } from "../../utils/loadJson";
 import GraduateCard from "../graduates/GraduateCard.vue";
 
 const { t, tm, locale } = useI18n();
 const isEnglish = computed(() => locale.value === "en");
 
-const selectedGraduate = ref(graduates[0]);
+const graduates = ref([]);
+const selectedGraduate = ref(null);
 const isHovering = ref(false);
 const avatarsListRef = ref(null);
 const avatarsContainerRef = ref(null);
@@ -91,7 +93,7 @@ const checkMobile = () => {
 const updateCardPosition = () => {
   if (cardsContainerRef.value) {
     const cardWidth = window.innerWidth - 80; // 卡片宽度（减去左右边距）
-    const totalCards = graduates.length;
+    const totalCards = graduates.value.length;
 
     // 确保索引在有效范围内
     const normalizedIndex = normalizeIndex(currentIndex.value, totalCards);
@@ -147,17 +149,32 @@ const handleTouchEnd = (event) => {
       currentIndex.value++;
     }
 
-    currentIndex.value = normalizeIndex(currentIndex.value, graduates.length);
+    currentIndex.value = normalizeIndex(currentIndex.value, graduates.value.length);
     // 更新卡片位置
     updateCardPosition();
 
     // 更新选中的毕业生
-    const nextGraduateIndex = normalizeIndex(currentIndex.value, graduates.length);
-    selectedGraduate.value = graduates[nextGraduateIndex];
+    const nextGraduateIndex = normalizeIndex(
+      currentIndex.value,
+      graduates.value.length
+    );
+    selectedGraduate.value = graduates.value[nextGraduateIndex];
   }
 };
 
 onMounted(() => {
+  loadJson("graduates", () => import("../../constants/graduates.json")).then(
+    (data) => {
+      const baseURL = normalizeBase(import.meta.env.VITE_BASE_URL || "");
+      graduates.value = data.map((item) => ({
+        ...item,
+        avatar: joinBase(baseURL, item.avatar),
+      }));
+      if (!selectedGraduate.value && graduates.value.length > 0) {
+        selectedGraduate.value = graduates.value[0];
+      }
+    }
+  );
   // 检测移动端
   checkMobile();
   window.addEventListener("resize", () => {
@@ -214,7 +231,7 @@ onUnmounted(() => {
                 <div class="thoughts-section">
                   {{
                     t(
-                      `graduates.items.${selectedGraduate.i18nKey}.thoughts`
+                      `graduates.items.${selectedGraduate?.i18nKey}.thoughts`
                     )
                   }}
                 </div>
@@ -222,13 +239,13 @@ onUnmounted(() => {
                 <div class="bottom-info">
                   <h2 class="graduate-name">
                     {{
-                      t(`graduates.items.${selectedGraduate.i18nKey}.name`)
+                      t(`graduates.items.${selectedGraduate?.i18nKey}.name`)
                     }}
                   </h2>
                   <div class="graduate-title">
                     {{
                       t(
-                        `graduates.items.${selectedGraduate.i18nKey}.destination`
+                        `graduates.items.${selectedGraduate?.i18nKey}.destination`
                       )
                     }}
                   </div>
@@ -240,7 +257,7 @@ onUnmounted(() => {
                   <img
                     :src="selectedGraduate.avatar"
                     :alt="
-                      t(`graduates.items.${selectedGraduate.i18nKey}.name`)
+                      t(`graduates.items.${selectedGraduate?.i18nKey}.name`)
                     "
                     class="portrait"
                   />

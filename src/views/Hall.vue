@@ -117,7 +117,9 @@ import { useRouter, useRoute } from "vue-router";
 import * as THREE from "three";
 import { SceneManager } from "../utils/SceneManager";
 import { CameraController } from "../utils/CameraController";
-import { cameraDefaults, controlsLimits, getHallById } from "../constants/halls";
+import { cameraDefaults, controlsLimits } from "../constants/halls";
+import { normalizeBase, joinBase } from "../utils/assetPath";
+import { loadJson } from "../utils/loadJson";
 import { fetchExhibitsByCategoryId } from "../api/exhibit";
 
 const router = useRouter();
@@ -164,9 +166,26 @@ const checkMobile = () => {
 // 获取路由中的展厅ID参数
 const currentHallId = computed(() => Number(route.query.id) || 73);
 
+const halls = ref([]);
+
+const mapHallAssets = (hall, baseURL) => ({
+  ...hall,
+  icon: joinBase(baseURL, hall.icon),
+  logo: joinBase(baseURL, hall.logo),
+  border: joinBase(baseURL, hall.border),
+  mobileBorder: joinBase(baseURL, hall.mobileBorder),
+  backgroundImage: joinBase(baseURL, hall.backgroundImage),
+});
+
+const loadHallsLocal = async () => {
+  const data = await loadJson("halls", () => import("../constants/halls.json"));
+  const baseURL = normalizeBase(import.meta.env.BASE_URL || "/", "/");
+  return data.map((hall) => mapHallAssets(hall, baseURL));
+};
+
 // 获取当前展厅对应的信息
 const currentHallInfo = computed(() => {
-  return getHallById(currentHallId.value);
+  return halls.value.find((hall) => hall.id === currentHallId.value) || null;
 });
 
 // 展厅描述格式化
@@ -707,6 +726,9 @@ const handleVirtualKey = (keyCode, isKeyDown) => {
 // 监听展厅ID变化
 watch(currentHallId, async (newId) => {
   if (!newId) return;
+  if (!halls.value.length) {
+    halls.value = await loadHallsLocal();
+  }
 
   // 重置状态
   isLoading.value = true;
@@ -740,7 +762,7 @@ watch(currentHallId, async (newId) => {
 // 生命周期钩子
 onMounted(async () => {
   try {
-
+    halls.value = await loadHallsLocal();
     // 检测移动端设备
     checkMobile();
 

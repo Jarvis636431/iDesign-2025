@@ -1,13 +1,15 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
-import { halls } from "../../constants/halls";
+import { normalizeBase, joinBase } from "../../utils/assetPath";
+import { loadJson } from "../../utils/loadJson";
 import { useRouter } from "vue-router";
 
 const { t, tm } = useI18n();
 
+const halls = ref([]);
 const activeHallIndex = ref(0);
-const activeHall = computed(() => halls[activeHallIndex.value]);
+const activeHall = computed(() => halls.value[activeHallIndex.value]);
 
 // 无限轮播相关
 const isTransitioning = ref(false);
@@ -15,7 +17,9 @@ const currentTranslateIndex = ref(1); // 从1开始，因为第0个是克隆的�
 
 // 计算轮播的transform值
 const carouselTransform = computed(() => {
-  const translateValue = (currentTranslateIndex.value * 100) / 7; // 7个slide：克隆+原始5个+克隆
+  const totalSlides = halls.value.length + 2;
+  const translateValue =
+    totalSlides > 0 ? (currentTranslateIndex.value * 100) / totalSlides : 0;
   return `translateX(-${translateValue}%)`;
 });
 const isSwiping = ref(false);
@@ -39,8 +43,9 @@ const nextHall = () => {
   isTransitioning.value = true;
   currentTranslateIndex.value++;
 
-  // 如果到达克隆的第一个slide（索引6），需要跳回到真实的第一个slide（索引1）
-  if (currentTranslateIndex.value === 6) {
+  const lastCloneIndex = halls.value.length + 1;
+  // 如果到达克隆的第一个slide，需要跳回到真实的第一个slide
+  if (currentTranslateIndex.value === lastCloneIndex) {
     setTimeout(() => {
       // 禁用过渡动画
       const track = document.querySelector(".carousel-track");
@@ -57,7 +62,9 @@ const nextHall = () => {
       }
     }, 400); // 等待动画完成
   } else {
-    activeHallIndex.value = (activeHallIndex.value + 1) % halls.length;
+    if (halls.value.length > 0) {
+      activeHallIndex.value = (activeHallIndex.value + 1) % halls.value.length;
+    }
     setTimeout(() => {
       isTransitioning.value = false;
     }, 400);
@@ -71,15 +78,17 @@ const prevHall = () => {
   isTransitioning.value = true;
   currentTranslateIndex.value--;
 
-  // 如果到达克隆的最后一个slide（索引0），需要跳回到真实的最后一个slide（索引5）
+  // 如果到达克隆的最后一个slide，需要跳回到真实的最后一个slide
   if (currentTranslateIndex.value === 0) {
     setTimeout(() => {
       // 禁用过渡动画
       const track = document.querySelector(".carousel-track");
       if (track) {
         track.classList.add("no-transition");
-        currentTranslateIndex.value = 5;
-        activeHallIndex.value = 4;
+        if (halls.value.length > 0) {
+          currentTranslateIndex.value = halls.value.length;
+          activeHallIndex.value = halls.value.length - 1;
+        }
 
         // 重新启用过渡动画
         setTimeout(() => {
@@ -89,8 +98,11 @@ const prevHall = () => {
       }
     }, 400); // 等待动画完成
   } else {
-    activeHallIndex.value =
-      (activeHallIndex.value - 1 + halls.length) % halls.length;
+    if (halls.value.length > 0) {
+      activeHallIndex.value =
+        (activeHallIndex.value - 1 + halls.value.length) %
+        halls.value.length;
+    }
     setTimeout(() => {
       isTransitioning.value = false;
     }, 400);
@@ -207,6 +219,16 @@ const checkMobile = () => {
 
 // 生命周期钩子
 onMounted(() => {
+  loadJson("halls", () => import("../../constants/halls.json")).then((data) => {
+    const baseURL = normalizeBase(import.meta.env.BASE_URL || "/", "/");
+    halls.value = data.map((hall) => ({
+      ...hall,
+      logo: joinBase(baseURL, hall.logo),
+    }));
+    if (activeHallIndex.value >= halls.value.length) {
+      activeHallIndex.value = 0;
+    }
+  });
   checkMobile();
   window.addEventListener("resize", checkMobile);
 
@@ -377,7 +399,11 @@ const handleCarouselTouchEnd = (event) => {
         @touchend="handleCarouselTouchEnd"
       >
         <div class="carousel-container">
-          <div class="carousel-track" :style="{ transform: carouselTransform }">
+          <div
+            v-if="halls.length"
+            class="carousel-track"
+            :style="{ transform: carouselTransform }"
+          >
             <!-- 克隆的最后一个slide（用于从第一个向前滑动的无缝效果） -->
             <div class="carousel-slide">
               <img
@@ -416,7 +442,7 @@ const handleCarouselTouchEnd = (event) => {
         </div>
 
         <!-- 轮播指示器 -->
-        <div class="carousel-indicators">
+        <div v-if="halls.length" class="carousel-indicators">
           <div
             v-for="(hall, index) in halls"
             :key="hall.id"

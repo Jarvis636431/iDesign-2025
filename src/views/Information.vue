@@ -5,8 +5,8 @@ import { useRoute, useRouter } from "vue-router";
 import CustomCarousel from "@/components/slides/CustomCarousel.vue";
 import ExhibitCarousel from "@/components/exhibit/ExhibitCarousel.vue";
 import AuthorCards from "@/components/exhibit/AuthorCards.vue";
-import { exhibitModels } from "@/constants/exhibitModels";
-import { halls as hallsData } from "@/constants/halls";
+import { normalizeBase, joinBase } from "@/utils/assetPath";
+import { loadJson } from "@/utils/loadJson";
 import { shareCardGenerator } from "@/utils/ShareCardGenerator";
 import { useExhibit } from "@/composables/useExhibit";
 import { processExhibitInfo, generateExhibitSlides } from "@/utils/exhibitUtils";
@@ -22,11 +22,13 @@ const isMobile = ref(false);
 const showShareModal = ref(false);
 const showFullscreen = ref(false);
 const carouselRef = ref(null);
+const halls = ref([]);
+const exhibitModels = ref({});
 
 // 展厅信息
 const hallInfo = computed(() => {
   if (!hallId.value) return null;
-  return hallsData.find((hall) => hall.id === Number(hallId.value)) || null;
+  return halls.value.find((hall) => hall.id === Number(hallId.value)) || null;
 });
 
 const hallColor = computed(() => hallInfo.value?.color || "#000");
@@ -49,6 +51,20 @@ const checkMobile = () => {
 };
 
 onMounted(async () => {
+  const [hallsData, modelsData] = await Promise.all([
+    loadJson("halls", () => import("@/constants/halls.json")),
+    loadJson("exhibitModels", () => import("@/constants/exhibitModels.json")),
+  ]);
+  const baseURL = normalizeBase(import.meta.env.BASE_URL || "/", "/");
+  halls.value = hallsData.map((hall) => ({
+    ...hall,
+    icon: joinBase(baseURL, hall.icon),
+    logo: joinBase(baseURL, hall.logo),
+    border: joinBase(baseURL, hall.border),
+    mobileBorder: joinBase(baseURL, hall.mobileBorder),
+    backgroundImage: joinBase(baseURL, hall.backgroundImage),
+  }));
+  exhibitModels.value = modelsData;
   fetchExhibits(hallId.value);
   checkMobile();
   window.addEventListener("resize", checkMobile);
@@ -116,7 +132,7 @@ const goToExhibit = (direction) => {
 // 使用工具函数生成幻灯片数据
 const exhibitSlides = computed(() => {
   const item = findExhibitById(currentId.value);
-  return generateExhibitSlides(item, exhibitModels, currentId.value);
+  return generateExhibitSlides(item, exhibitModels.value, currentId.value);
 });
 
 // Remove old prevSlide and nextSlide methods
