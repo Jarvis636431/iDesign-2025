@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { cameraDefaults } from "../constants/halls";
+import { cameraDefaults } from "../constants/hallControls";
 
 // 相机控制器配置常量
 const CAMERA_CONFIG = {

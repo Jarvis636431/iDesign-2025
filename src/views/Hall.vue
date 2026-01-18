@@ -35,118 +35,39 @@
       </div>
     </div>
 
-    <!-- 返回按钮 -->
-    <button @click="goBack" class="back-button"><span>←</span> 返回</button>
-
-    <!-- 查看展品按钮 -->
-    <button @click="enterInformation()" class="exhibit-button">查看展品</button>
-
     <!-- 模型展示区域 -->
     <div class="model-frame">
       <div v-show="!isLoading && !hasError" class="model-container" ref="modelContainer"></div>
     </div>
-
-    <!-- 操作提示 -->
-    <div v-if="!isMobile" class="control-tips">
-      <div class="tips-content">
-        <div class="tips-title">操作提示</div>
-        <div class="tips-item">
-          <span class="tips-keys">WASD</span>
-          <span class="tips-desc">移动视角</span>
-        </div>
-        <div class="tips-item">
-          <span class="tips-keys">方向键</span>
-          <span class="tips-desc">移动视角</span>
-        </div>
-        <div class="tips-item">
-          <span class="tips-keys">鼠标</span>
-          <span class="tips-desc">旋转视角</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 移动端虚拟方向键 -->
-    <div class="virtual-controls">
-      <div class="control-row">
-        <button
-          @touchstart="handleVirtualKey('KeyW', true)"
-          @touchend="handleVirtualKey('KeyW', false)"
-          class="control-btn up"
-        >
-          <span>↑</span>
-        </button>
-      </div>
-      <div class="control-row">
-        <button
-          @touchstart="handleVirtualKey('KeyA', true)"
-          @touchend="handleVirtualKey('KeyA', false)"
-          class="control-btn left"
-        >
-          <span>←</span>
-        </button>
-        <button
-          @touchstart="handleVirtualKey('KeyS', true)"
-          @touchend="handleVirtualKey('KeyS', false)"
-          class="control-btn down"
-        >
-          <span>↓</span>
-        </button>
-        <button
-          @touchstart="handleVirtualKey('KeyD', true)"
-          @touchend="handleVirtualKey('KeyD', false)"
-          class="control-btn right"
-        >
-          <span>→</span>
-        </button>
-      </div>
-    </div>
+    <HallHud
+      :is-mobile="isMobile"
+      @back="goBack"
+      @enter="enterInformation"
+      @virtual-key="handleVirtualKey"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter, useRoute } from "vue-router";
-import * as THREE from "three";
-import { SceneManager } from "../utils/SceneManager";
-import { CameraController } from "../utils/CameraController";
-import { cameraDefaults, controlsLimits } from "../constants/halls";
-import { mapHallAssets } from "../utils/mapAssets";
-import { loadAssets } from "../utils/loadAssets";
+import { cameraDefaults, controlsLimits } from "../constants/hallControls";
 import { useEventListener } from "../composables/useEventListener";
 import { fetchExhibitsByCategoryId } from "../api/exhibit";
+import { useHallData } from "../composables/useHallData";
+import { useHallScene } from "../composables/useHallScene";
+import HallHud from "../components/hall/HallHud.vue";
 
 const router = useRouter();
 const route = useRoute();
 const { t, tm } = useI18n();
 
-// Three.js 实例变量
-let sceneManager, cameraController, camera, renderer, model;
-
-// 鼠标交互相关
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-let clickableObjects = []; // 存储可点击的对象
-
-// 响应式状态
-const isLoading = ref(true);
-const hasError = ref(false);
-const errorMessage = ref("");
-const loadingProgress = ref(0);
 const modelContainer = ref(null);
-const currentModel = ref(null);
 
 // 移动端检测
 const isMobile = ref(false);
 
-// 渲染优化状态
-const needsRender = ref(true);
-const isPageVisible = ref(true);
-let animationId = null;
-let lastRenderTime = 0;
-const RENDER_THROTTLE = 16; // 约60fps
-
-// 检测是否为移动设备
 const checkMobile = () => {
   const userAgent = navigator.userAgent;
   const mobileRegex =
@@ -157,500 +78,32 @@ const checkMobile = () => {
   isMobile.value = mobileRegex.test(userAgent) || touchDevice || smallScreen;
 };
 
-// 获取路由中的展厅ID参数
-const currentHallId = computed(() => Number(route.query.id) || 73);
+const { halls, currentHallId, currentHallInfo, formatDesc, loadHalls } =
+  useHallData(route, tm);
 
-const halls = ref([]);
-
-const loadHallsLocal = () =>
-  loadAssets({
-    cacheKey: "halls",
-    importer: () => import("../constants/halls.json"),
-    mapItem: mapHallAssets,
-    baseEnvKey: "BASE_URL",
-    baseFallback: "/",
-  });
-
-// 获取当前展厅对应的信息
-const currentHallInfo = computed(() => {
-  return halls.value.find((hall) => hall.id === currentHallId.value) || null;
+const {
+  isLoading,
+  hasError,
+  errorMessage,
+  loadingProgress,
+  initScene,
+  loadModel,
+  clearModel,
+  bindMouseEvents,
+  startRenderLoop,
+  stopRenderLoop,
+  handleResize,
+  handleVisibilityChange,
+  handleVirtualKey,
+  dispose,
+} = useHallScene({
+  modelContainer,
+  currentHallInfo,
+  cameraDefaults,
+  controlsLimits,
+  t,
+  onResize: checkMobile,
 });
-
-// 展厅描述格式化
-const formatDesc = (hall) => {
-  if (!hall) return [];
-  const desc = tm(`halls.${hall.i18nKey}.desc`);
-  return Array.isArray(desc) ? desc : desc ? [desc] : [];
-};
-
-// 更新模型信息
-const updateModelInfo = () => {
-  if (!currentHallInfo.value) return;
-  currentModel.value = {
-    name: t(`halls.${currentHallInfo.value.i18nKey}.name`),
-    description: t(`halls.${currentHallInfo.value.i18nKey}.subTitle`),
-    ...currentHallInfo.value.model,
-  };
-};
-
-// 初始化场景
-const initScene = async () => {
-  if (!modelContainer.value) {
-    throw new Error("模型容器未就绪");
-  }
-
-  // 创建场景管理器
-  sceneManager = new SceneManager(modelContainer.value);
-  // 设置白色背景
-  sceneManager.scene.background = new THREE.Color(0xffffff);
-
-  // 创建相机
-  camera = new THREE.PerspectiveCamera(
-    cameraDefaults.fov,
-    window.innerWidth / window.innerHeight,
-    cameraDefaults.near,
-    cameraDefaults.far
-  );
-  camera.position.set(0, cameraDefaults.eyeHeight, 5);
-
-  // 创建渲染器
-  renderer = new THREE.WebGLRenderer({
-    antialias: true,
-  });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.setClearColor(0xffffff, 1); // 设置白色背景
-
-  if (sceneManager) {
-    sceneManager.setRenderer(renderer);
-  }
-
-  // 清除之前的渲染器
-  if (modelContainer.value.children.length > 0) {
-    modelContainer.value.innerHTML = "";
-  }
-
-  modelContainer.value.appendChild(renderer.domElement);
-
-  // 创建相机控制器
-  cameraController = new CameraController(camera, renderer.domElement);
-
-  // 设置控制器初始配置
-  if (controlsLimits) {
-    Object.assign(cameraController.controls, controlsLimits);
-  }
-
-  return Promise.resolve();
-};
-
-// 加载模型
-const loadModel = async () => {
-  try {
-    isLoading.value = true;
-    hasError.value = false;
-
-    if (!currentHallInfo.value?.model) {
-      throw new Error("当前展厅模型配置不存在");
-    }
-
-    // 正确处理路径
-    const modelPath = currentHallInfo.value.model.path;
-    const baseURL = import.meta.env.BASE_URL || "/";
-    const fullPath = modelPath.startsWith("http")
-      ? modelPath
-      : `${baseURL}${modelPath}`;
-
-    // 加载模型
-    model = await sceneManager.loadModel(fullPath, (event) => {
-      // 确保即使 lengthComputable 为 false 也能显示进度
-      if (event.lengthComputable) {
-        loadingProgress.value = Math.round((event.loaded / event.total) * 100);
-      } else if (event.loaded) {
-        // 如果无法计算总大小，至少显示已加载的字节数
-        loadingProgress.value = Math.min(
-          Math.round((event.loaded / 1048576) * 10), // 假设平均模型大小约10MB
-          99 // 保持在99%以防止提前显示100%
-        );
-      }
-    });
-
-    // 设置模型属性
-    setupModel();
-
-    isLoading.value = false;
-    animate();
-  } catch (error) {
-    hasError.value = true;
-    errorMessage.value = `模型加载失败: ${error.message || "未知错误"}`;
-    isLoading.value = false;
-  }
-};
-
-// 设置模型
-const setupModel = () => {
-  if (!model || !currentHallInfo.value?.model) {
-    return;
-  }
-
-  model.scale.setScalar(currentHallInfo.value.model.scale);
-  model.position.set(
-    currentHallInfo.value.model.position.x,
-    currentHallInfo.value.model.position.y,
-    currentHallInfo.value.model.position.z
-  );
-  model.rotation.set(
-    currentHallInfo.value.model.rotation.x,
-    currentHallInfo.value.model.rotation.y,
-    currentHallInfo.value.model.rotation.z
-  );
-
-  sceneManager.addObject(model);
-  updateModelInfo();
-  setupCameraView();
-
-  // 设置可点击对象
-  setupClickableObjects();
-};
-
-// 设置可点击对象
-const setupClickableObjects = () => {
-  if (!model) return;
-
-  // 清空之前的可点击对象
-  clickableObjects = [];
-
-  let objectIndex = 0;
-
-  // 遍历模型的所有子对象，将它们添加到可点击对象列表中
-  model.traverse((child) => {
-    if (child.isMesh) {
-      // 为每个网格对象添加用户数据，用于识别
-      child.userData.clickable = true;
-      child.userData.originalColor = child.material.color
-        ? child.material.color.clone()
-        : null;
-
-      // 添加唯一标识符
-      child.userData.objectId = `object_${objectIndex++}`;
-      child.userData.objectType = child.material?.name || "unknown";
-      child.userData.meshIndex = objectIndex - 1;
-
-      // 如果对象没有名称，给它一个默认名称
-      if (!child.name) {
-        child.name = `Mesh_${objectIndex - 1}`;
-      }
-
-      // 添加对象的几何信息
-      child.userData.geometryInfo = {
-        vertices: child.geometry?.attributes?.position?.count || 0,
-        faces: child.geometry?.index ? child.geometry.index.count / 3 : 0,
-        boundingBox: child.geometry?.boundingBox || null,
-      };
-
-      clickableObjects.push(child);
-    }
-  });
-
-};
-
-// 处理鼠标点击事件
-const onMouseClick = (event) => {
-  // 计算鼠标位置（标准化设备坐标）
-  const rect = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-  // 更新射线
-  raycaster.setFromCamera(mouse, camera);
-
-  // 检测与可点击对象的交集
-  const intersects = raycaster.intersectObjects(clickableObjects);
-
-  if (intersects.length > 0) {
-    const clickedObject = intersects[0].object;
-    handleObjectClick(clickedObject, intersects[0]);
-    // 点击后需要重新渲染以显示效果
-    requestRender();
-  }
-};
-
-// 处理对象点击
-const handleObjectClick = (object, intersection) => {
-  // 根据对象ID执行不同的交互逻辑
-  handleObjectInteraction(object);
-
-  // 添加点击效果 - 改变颜色
-  if (object.material && object.material.color) {
-    // 保存原始颜色
-    if (!object.userData.originalColor) {
-      object.userData.originalColor = object.material.color.clone();
-    }
-
-    // 根据对象类型使用不同的高亮颜色
-    const highlightColor = getHighlightColorByType(object.userData.objectType);
-    object.material.color.setHex(highlightColor);
-
-    // 1秒后恢复原始颜色
-    setTimeout(() => {
-      if (object.userData.originalColor) {
-        object.material.color.copy(object.userData.originalColor);
-      }
-    }, 1000);
-  }
-
-  // 显示对象信息
-  showObjectInfo(object);
-};
-
-// 根据对象类型获取高亮颜色
-const getHighlightColorByType = (objectType) => {
-  const colorMap = {
-    unknown: 0xff6b6b, // 红色
-    metal: 0x6b9eff, // 蓝色
-    wood: 0xffb366, // 橙色
-    glass: 0x66ffb3, // 绿色
-    fabric: 0xff66ff, // 紫色
-    plastic: 0xffff66, // 黄色
-  };
-  return colorMap[objectType] || 0xff6b6b;
-};
-
-// 根据对象执行特定的交互逻辑
-const handleObjectInteraction = (object) => {
-  const objectId = object.userData.objectId;
-  const objectType = object.userData.objectType;
-
-  // 根据对象ID或类型执行不同的逻辑
-  switch (objectType) {
-    case "metal":
-      break;
-    case "wood":
-      break;
-    case "glass":
-      break;
-    default:
-  }
-
-  // 也可以根据具体的对象ID执行特定逻辑
-  if (objectId === "object_0") {
-  }
-};
-
-// 显示对象信息（示例）
-const showObjectInfo = (object) => {
-  const objectInfo = {
-    name: object.name || "未命名对象",
-    id: object.userData.objectId,
-    type: object.userData.objectType,
-    index: object.userData.meshIndex,
-    uuid: object.uuid,
-    vertices: object.userData.geometryInfo.vertices,
-    faces: object.userData.geometryInfo.faces,
-  };
-
-  const message = `您点击了: ${objectInfo.name} (ID: ${objectInfo.id})`;
-
-  // 这里可以显示一个信息提示
-  // 可以使用 Vue 的响应式数据来显示信息面板
-
-  // 示例：显示浏览器原生提示（实际项目中可以用更好的UI组件）
-  // alert(message);
-};
-
-// 节流处理鼠标移动事件
-let mouseMoveThrottleId = null;
-const MOUSE_MOVE_THROTTLE = 50; // 50ms节流
-
-// 处理鼠标悬停效果（节流版本）
-const onMouseMove = (event) => {
-  // 节流处理，避免过度计算射线检测
-  if (mouseMoveThrottleId) {
-    clearTimeout(mouseMoveThrottleId);
-  }
-
-  mouseMoveThrottleId = setTimeout(() => {
-    handleMouseMove(event);
-  }, MOUSE_MOVE_THROTTLE);
-};
-
-// 实际的鼠标移动处理逻辑
-const handleMouseMove = (event) => {
-  // 计算鼠标位置
-  const rect = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-  // 更新射线
-  raycaster.setFromCamera(mouse, camera);
-
-  // 检测悬停对象
-  const intersects = raycaster.intersectObjects(clickableObjects);
-
-  let hasChanges = false;
-
-  // 重置所有对象的悬停状态
-  clickableObjects.forEach((obj) => {
-    if (obj.userData.isHovered) {
-      obj.userData.isHovered = false;
-      // 恢复原始颜色（如果不是被点击状态）
-      if (obj.userData.originalColor && obj.material && obj.material.color) {
-        obj.material.color.copy(obj.userData.originalColor);
-        hasChanges = true;
-      }
-    }
-  });
-
-  // 设置悬停对象的高亮效果
-  if (intersects.length > 0) {
-    const hoveredObject = intersects[0].object;
-    hoveredObject.userData.isHovered = true;
-
-    // 改变鼠标样式
-    renderer.domElement.style.cursor = "pointer";
-
-    // 轻微高亮效果
-    if (hoveredObject.material && hoveredObject.material.color) {
-      if (!hoveredObject.userData.originalColor) {
-        hoveredObject.userData.originalColor =
-          hoveredObject.material.color.clone();
-      }
-      // 轻微提亮
-      const brightColor = hoveredObject.userData.originalColor.clone();
-      brightColor.multiplyScalar(1.2); // 提亮20%
-      hoveredObject.material.color.copy(brightColor);
-      hasChanges = true;
-    }
-  } else {
-    // 恢复默认鼠标样式
-    renderer.domElement.style.cursor = "default";
-  }
-
-  // 只有在有变化时才请求重新渲染
-  if (hasChanges) {
-    requestRender();
-  }
-};
-
-// 请求重新渲染
-const requestRender = () => {
-  needsRender.value = true;
-};
-
-// 智能动画循环 - 只在需要时渲染
-const animate = (currentTime = 0) => {
-  if (!isPageVisible.value) {
-    // 页面不可见时暂停渲染
-    animationId = null;
-    return;
-  }
-
-  // 节流渲染，避免过度渲染
-  if (currentTime - lastRenderTime < RENDER_THROTTLE) {
-    animationId = requestAnimationFrame(animate);
-    return;
-  }
-
-  let shouldRender = needsRender.value;
-
-  // 检查相机控制器是否需要更新
-  if (cameraController) {
-    const cameraChanged = cameraController.update();
-    if (cameraChanged) {
-      shouldRender = true;
-    }
-  }
-
-  // 只在需要时渲染
-  if (shouldRender && renderer && sceneManager && camera) {
-    renderer.render(sceneManager.scene, camera);
-    needsRender.value = false;
-    lastRenderTime = currentTime;
-  }
-
-  // 继续动画循环
-  animationId = requestAnimationFrame(animate);
-};
-
-// 启动渲染循环
-const startRenderLoop = () => {
-  if (!animationId) {
-    animationId = requestAnimationFrame(animate);
-  }
-};
-
-// 停止渲染循环
-const stopRenderLoop = () => {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
-};
-
-// 处理窗口大小变化
-const handleResize = () => {
-  if (!camera || !renderer || !modelContainer.value) return;
-
-  // 重新检测移动端状态
-  checkMobile();
-
-  // 更新相机宽高比
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-
-  // 更新渲染器大小
-  renderer.setSize(window.innerWidth, window.innerHeight);
-
-  // 窗口大小变化时需要重新渲染
-  requestRender();
-};
-
-// 页面可见性变化处理
-const handleVisibilityChange = () => {
-  isPageVisible.value = !document.hidden;
-  if (isPageVisible.value) {
-    // 页面变为可见时恢复渲染
-    requestRender();
-    startRenderLoop();
-  } else {
-    // 页面隐藏时停止渲染
-    stopRenderLoop();
-  }
-};
-
-// 设置相机视图
-const setupCameraView = () => {
-  if (!camera || !model || !currentHallInfo.value?.model) {
-    return;
-  }
-
-  // 设置相机初始位置
-  camera.position.set(
-    currentHallInfo.value.model.camera.position.x,
-    currentHallInfo.value.model.camera.position.y,
-    currentHallInfo.value.model.camera.position.z
-  );
-
-  // 设置相机目标点
-  camera.lookAt(
-    currentHallInfo.value.model.camera.target.x,
-    currentHallInfo.value.model.camera.target.y,
-    currentHallInfo.value.model.camera.target.z
-  );
-
-  // 更新相机视场角
-  if (currentHallInfo.value.model.camera.fov) {
-    camera.fov = currentHallInfo.value.model.camera.fov;
-    camera.updateProjectionMatrix();
-  }
-
-  if (cameraController) {
-    // 设置控制器限制
-    Object.assign(cameraController.controls, controlsLimits);
-    cameraController.update();
-  }
-};
 
 // 进入展品展示
 const enterInformation = async (targetExhibitId = null) => {
@@ -694,32 +147,11 @@ const retryLoad = () => {
   loadModel();
 };
 
-// 处理虚拟按键事件
-const handleVirtualKey = (keyCode, isKeyDown) => {
-  if (!cameraController) return;
-
-  // 创建一个模拟的键盘事件
-  const event = {
-    code: keyCode,
-    preventDefault: () => {},
-  };
-
-  // 根据按键状态调用相应的处理方法
-  if (isKeyDown) {
-    cameraController.handleKeyDown(event);
-  } else {
-    cameraController.handleKeyUp(event);
-  }
-
-  // 虚拟按键操作后请求重新渲染
-  requestRender();
-};
-
 // 监听展厅ID变化
 watch(currentHallId, async (newId) => {
   if (!newId) return;
   if (!halls.value.length) {
-    halls.value = await loadHallsLocal();
+    halls.value = await loadHalls();
   }
 
   // 重置状态
@@ -729,23 +161,7 @@ watch(currentHallId, async (newId) => {
   loadingProgress.value = 0;
 
   // 保存当前模型引用并彻底清理
-  const oldModel = model;
-  model = null;
-
-  if (oldModel) {
-
-    // 清空可点击对象数组
-    clickableObjects = [];
-
-    // 使用增强的模型清理方法
-    sceneManager.removeModel(oldModel);
-
-    // 强制垃圾回收提示
-    if (window.gc) {
-      window.gc();
-    }
-
-  }
+  clearModel();
 
   // 加载新模型
   await loadModel();
@@ -754,7 +170,7 @@ watch(currentHallId, async (newId) => {
 // 生命周期钩子
 onMounted(async () => {
   try {
-    halls.value = await loadHallsLocal();
+    halls.value = await loadHalls();
     // 检测移动端设备
     checkMobile();
 
@@ -766,11 +182,7 @@ onMounted(async () => {
     useEventListener(window, "resize", handleResize);
     useEventListener(document, "visibilitychange", handleVisibilityChange);
 
-    // 添加鼠标事件监听器
-    if (renderer && renderer.domElement) {
-      renderer.domElement.addEventListener("click", onMouseClick);
-      renderer.domElement.addEventListener("mousemove", onMouseMove);
-    }
+    bindMouseEvents();
 
     // 启动智能渲染循环
     startRenderLoop();
@@ -781,36 +193,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  // 停止渲染循环
-  stopRenderLoop();
-
-  // 清理节流定时器
-  if (mouseMoveThrottleId) {
-    clearTimeout(mouseMoveThrottleId);
-    mouseMoveThrottleId = null;
-  }
-
-  // 移除窗口事件监听器
-
-  // 移除鼠标事件监听器
-  if (renderer && renderer.domElement) {
-    renderer.domElement.removeEventListener("click", onMouseClick);
-    renderer.domElement.removeEventListener("mousemove", onMouseMove);
-  }
-
-  // 清理Three.js资源
-  if (cameraController) {
-    cameraController.dispose();
-  }
-  if (sceneManager) {
-    sceneManager.dispose();
-  }
-  if (renderer) {
-    renderer.dispose();
-  }
-
-  // 清理可点击对象数组
-  clickableObjects = [];
+  dispose();
 });
 </script>
 
@@ -980,258 +363,7 @@ onUnmounted(() => {
   color: white;
 }
 
-/* 返回按钮样式 */
-.back-button {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1.2rem;
-  background: #e77e37;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-  font-weight: 500;
-  z-index: 100; /* 确保在模型上层 */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 6px rgba(231, 126, 55, 0.2);
-}
-
-.back-button:hover {
-  background: #d66b24;
-  border-color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(231, 126, 55, 0.3);
-}
-
-.back-button span {
-  font-size: 1.2rem;
-}
-
-/* 查看展品按钮样式 */
-.exhibit-button {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 0.5rem 1.5rem;
-  background: #2fa3b0;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-  font-weight: 500;
-  z-index: 100; /* 确保在模型上层 */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 6px rgba(47, 163, 176, 0.2);
-}
-
-.exhibit-button:hover {
-  background: #268d99;
-  border-color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(47, 163, 176, 0.3);
-}
-
-/* 操作提示样式 */
-.control-tips {
-  position: fixed;
-  left: 20px;
-  bottom: 20px;
-  z-index: 100;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 1rem;
-  color: white;
-  font-size: 0.9rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  min-width: 160px;
-}
-
-.tips-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.tips-title {
-  font-weight: 600;
-  font-size: 1rem;
-  color: #fff;
-  margin-bottom: 0.3rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding-bottom: 0.3rem;
-}
-
-.tips-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.8rem;
-}
-
-.tips-keys {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  font-family: 'Courier New', monospace;
-  font-weight: 600;
-  font-size: 0.8rem;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  min-width: 50px;
-  text-align: center;
-}
-
-.tips-desc {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.85rem;
-}
-
-/* 虚拟方向键样式 */
-.virtual-controls {
-  display: none; /* 默认在PC端隐藏 */
-  position: fixed;
-  left: 20px;
-  bottom: 20px; /* 默认位置 */
-  z-index: 100;
-}
-
-.control-row {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 5px 0;
-}
-
-.control-btn {
-  width: 50px;
-  height: 50px;
-  border-radius: 25px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  color: white;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-}
-
-.control-btn:active {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(0.95);
-}
-
-/* 移动端适配 */
 @media (max-width: 768px) {
-  .back-button {
-    top: 15px;
-    left: 15px;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .exhibit-button {
-    top: 15px;
-    right: 15px;
-    padding: 0.5rem 1.2rem;
-    font-size: 0.9rem;
-  }
-
-  .control-tips {
-    left: 15px;
-    bottom: 15px;
-    padding: 0.8rem;
-    font-size: 0.8rem;
-    min-width: 140px;
-  }
-
-  .tips-title {
-    font-size: 0.9rem;
-  }
-
-  .tips-keys {
-    font-size: 0.7rem;
-    padding: 0.15rem 0.4rem;
-    min-width: 45px;
-  }
-
-  .tips-desc {
-    font-size: 0.75rem;
-  }
-
-  .virtual-controls {
-    display: block; /* 在移动端显示虚拟按键 */
-    bottom: 20px; /* 调整到更靠近底部的位置 */
-    padding-bottom: env(safe-area-inset-bottom); /* 适配安全区域 */
-  }
-
-  .control-row {
-    display: flex;
-    justify-content: center;
-    margin: 0.2rem 0;
-  }
-
-  .control-btn {
-    width: 50px;
-    height: 50px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.8);
-    color: #333;
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .control-btn:hover {
-    background: rgba(255, 255, 255, 1);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .control-btn:active {
-    transform: translateY(0);
-    box-shadow: none;
-  }
-
-  .up {
-    background: linear-gradient(180deg, #4caf50 0%, #81c784 100%);
-  }
-
-  .down {
-    background: linear-gradient(0deg, #f44336 0%, #e57373 100%);
-  }
-
-  .left {
-    background: linear-gradient(90deg, #2196f3 0%, #64b5f6 100%);
-  }
-
-  .right {
-    background: linear-gradient(270deg, #ff9800 0%, #ffb74d 100%);
-  }
-
   .loading-hall-icon {
     width: 80px;
     height: 80px;
