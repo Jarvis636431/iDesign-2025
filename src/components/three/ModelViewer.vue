@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader';
 import { useEventListener } from '@/composables/useEventListener';
 
 const props = defineProps({
@@ -122,6 +123,11 @@ const initThree = () => {
   // 推荐使用 three.js 官方 CDN
   dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
   loader.setDRACOLoader(dracoLoader);
+  const ktx2Loader = new KTX2Loader();
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  ktx2Loader.setTranscoderPath(`${baseUrl}basis/`);
+  ktx2Loader.detectSupport(renderer);
+  loader.setKTX2Loader(ktx2Loader);
 
   // 加载3D模型
   loader.load(
