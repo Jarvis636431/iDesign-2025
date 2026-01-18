@@ -302,7 +302,7 @@ const handleCarouselTouchEnd = (event) => {
     v-if="!isMobile"
     class="exhibition-section"
     id="exhibition"
-    :style="{ backgroundColor: activeHall.backgroundColor }"
+    :style="{ backgroundColor: activeHall?.backgroundColor || '#fff' }"
   >
     <!-- 左上角标题 -->
     <div class="hall-title-area">
@@ -363,7 +363,7 @@ const handleCarouselTouchEnd = (event) => {
     v-else
     class="exhibition-section mobile-layout"
     id="exhibition"
-    :style="{ backgroundColor: activeHall.backgroundColor }"
+    :style="{ backgroundColor: activeHall?.backgroundColor || '#fff' }"
   >
     <div class="mobile-content">
       <!-- 标题 -->
