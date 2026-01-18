@@ -2,8 +2,8 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
-import { normalizeBase, joinBase } from "../../utils/assetPath";
-import { loadJson } from "../../utils/loadJson";
+import { mapStaffGroupAssets } from "../../utils/mapAssets";
+import { loadAssets } from "../../utils/loadAssets";
 
 const { t } = useI18n();
 
@@ -13,15 +13,14 @@ const isMobile = ref(false);
 let scrollHandler = null;
 
 onMounted(() => {
-  loadJson("staff", () => import("../../constants/staff.json")).then((data) => {
-    const baseURL = normalizeBase(import.meta.env.VITE_BASE_URL || "");
-    staffGroups.value = data.map((group) => ({
-      ...group,
-      members: group.members.map((member) => ({
-        ...member,
-        avatar: joinBase(baseURL, member.avatar),
-      })),
-    }));
+  loadAssets({
+    cacheKey: "staff",
+    importer: () => import("../../constants/staff.json"),
+    mapItem: mapStaffGroupAssets,
+    baseEnvKey: "VITE_BASE_URL",
+    baseFallback: "",
+  }).then((data) => {
+    staffGroups.value = data;
     initializeRectangles();
     setupScrollHandler();
   });

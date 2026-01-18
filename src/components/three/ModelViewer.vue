@@ -85,9 +85,9 @@ const cleanupScene = () => {
 const initThree = () => {
   // 如果已存在场景，先清理
   cleanupScene();
-  
+
   scene = new THREE.Scene();
-  
+
   // 设置相机
   camera = new THREE.PerspectiveCamera(
     75,
@@ -106,11 +106,11 @@ const initThree = () => {
   // 添加轨道控制器
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  
+
   // 添加环境光和方向光
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambientLight);
-  
+
   const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
   directionalLight.position.set(1, 1, 1);
   scene.add(directionalLight);
@@ -127,23 +127,23 @@ const initThree = () => {
     props.modelUrl,
     (gltf) => {
       scene.add(gltf.scene);
-      
+
       // 自动调整相机位置以适应模型大小
       const box = new THREE.Box3().setFromObject(gltf.scene);
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
-      
+
       const maxDim = Math.max(size.x, size.y, size.z);
       const fov = camera.fov * (Math.PI / 180);
       let cameraZ = Math.abs(maxDim / Math.sin(fov / 2));
-      
+
       camera.position.z = cameraZ * 1.5;
-      
+
       // 将模型居中
       gltf.scene.position.x = -center.x;
       gltf.scene.position.y = -center.y;
       gltf.scene.position.z = -center.z;
-      
+
       controls.update();
     },
     undefined,

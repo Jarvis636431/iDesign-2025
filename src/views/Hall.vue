@@ -11,10 +11,7 @@
           />
           <div class="loading-text">Loading...</div>
         </div>
-        <div
-          class="loading-description"
-          :style="{ color: currentHallInfo?.color }"
-        >
+        <div class="loading-description" :style="{ color: currentHallInfo?.color }">
           <div class="loading-desc-text">
             <p
               v-for="(sentence, index) in formatDesc(currentHallInfo)"
@@ -46,11 +43,7 @@
 
     <!-- 模型展示区域 -->
     <div class="model-frame">
-      <div
-        v-show="!isLoading && !hasError"
-        class="model-container"
-        ref="modelContainer"
-      ></div>
+      <div v-show="!isLoading && !hasError" class="model-container" ref="modelContainer"></div>
     </div>
 
     <!-- 操作提示 -->
@@ -118,8 +111,8 @@ import * as THREE from "three";
 import { SceneManager } from "../utils/SceneManager";
 import { CameraController } from "../utils/CameraController";
 import { cameraDefaults, controlsLimits } from "../constants/halls";
-import { normalizeBase, joinBase } from "../utils/assetPath";
-import { loadJson } from "../utils/loadJson";
+import { mapHallAssets } from "../utils/mapAssets";
+import { loadAssets } from "../utils/loadAssets";
 import { fetchExhibitsByCategoryId } from "../api/exhibit";
 
 const router = useRouter();
@@ -168,20 +161,14 @@ const currentHallId = computed(() => Number(route.query.id) || 73);
 
 const halls = ref([]);
 
-const mapHallAssets = (hall, baseURL) => ({
-  ...hall,
-  icon: joinBase(baseURL, hall.icon),
-  logo: joinBase(baseURL, hall.logo),
-  border: joinBase(baseURL, hall.border),
-  mobileBorder: joinBase(baseURL, hall.mobileBorder),
-  backgroundImage: joinBase(baseURL, hall.backgroundImage),
-});
-
-const loadHallsLocal = async () => {
-  const data = await loadJson("halls", () => import("../constants/halls.json"));
-  const baseURL = normalizeBase(import.meta.env.BASE_URL || "/", "/");
-  return data.map((hall) => mapHallAssets(hall, baseURL));
-};
+const loadHallsLocal = () =>
+  loadAssets({
+    cacheKey: "halls",
+    importer: () => import("../constants/halls.json"),
+    mapItem: mapHallAssets,
+    baseEnvKey: "BASE_URL",
+    baseFallback: "/",
+  });
 
 // 获取当前展厅对应的信息
 const currentHallInfo = computed(() => {
@@ -477,7 +464,7 @@ const onMouseMove = (event) => {
   if (mouseMoveThrottleId) {
     clearTimeout(mouseMoveThrottleId);
   }
-  
+
   mouseMoveThrottleId = setTimeout(() => {
     handleMouseMove(event);
   }, MOUSE_MOVE_THROTTLE);
@@ -561,7 +548,7 @@ const animate = (currentTime = 0) => {
   }
 
   let shouldRender = needsRender.value;
-  
+
   // 检查相机控制器是否需要更新
   if (cameraController) {
     const cameraChanged = cameraController.update();
@@ -609,7 +596,7 @@ const handleResize = () => {
 
   // 更新渲染器大小
   renderer.setSize(window.innerWidth, window.innerHeight);
-  
+
   // 窗口大小变化时需要重新渲染
   requestRender();
 };
@@ -718,7 +705,7 @@ const handleVirtualKey = (keyCode, isKeyDown) => {
   } else {
     cameraController.handleKeyUp(event);
   }
-  
+
   // 虚拟按键操作后请求重新渲染
   requestRender();
 };
@@ -739,20 +726,20 @@ watch(currentHallId, async (newId) => {
   // 保存当前模型引用并彻底清理
   const oldModel = model;
   model = null;
-  
+
   if (oldModel) {
-    
+
     // 清空可点击对象数组
     clickableObjects = [];
-    
+
     // 使用增强的模型清理方法
     sceneManager.removeModel(oldModel);
-    
+
     // 强制垃圾回收提示
     if (window.gc) {
       window.gc();
     }
-    
+
   }
 
   // 加载新模型
@@ -1096,7 +1083,7 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.2);
   padding: 0.2rem 0.5rem;
   border-radius: 6px;
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   font-weight: 600;
   font-size: 0.8rem;
   color: #fff;

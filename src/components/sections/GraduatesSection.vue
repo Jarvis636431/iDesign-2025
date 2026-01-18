@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { normalizeBase, joinBase } from "../../utils/assetPath";
-import { loadJson } from "../../utils/loadJson";
+import { mapGraduateAssets } from "../../utils/mapAssets";
+import { loadAssets } from "../../utils/loadAssets";
 import GraduateCard from "../graduates/GraduateCard.vue";
 
 const { t, tm, locale } = useI18n();
@@ -163,18 +163,18 @@ const handleTouchEnd = (event) => {
 };
 
 onMounted(() => {
-  loadJson("graduates", () => import("../../constants/graduates.json")).then(
-    (data) => {
-      const baseURL = normalizeBase(import.meta.env.VITE_BASE_URL || "");
-      graduates.value = data.map((item) => ({
-        ...item,
-        avatar: joinBase(baseURL, item.avatar),
-      }));
-      if (!selectedGraduate.value && graduates.value.length > 0) {
-        selectedGraduate.value = graduates.value[0];
-      }
+  loadAssets({
+    cacheKey: "graduates",
+    importer: () => import("../../constants/graduates.json"),
+    mapItem: mapGraduateAssets,
+    baseEnvKey: "VITE_BASE_URL",
+    baseFallback: "",
+  }).then((data) => {
+    graduates.value = data;
+    if (!selectedGraduate.value && graduates.value.length > 0) {
+      selectedGraduate.value = graduates.value[0];
     }
-  );
+  });
   // 检测移动端
   checkMobile();
   window.addEventListener("resize", () => {

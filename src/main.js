@@ -1,30 +1,30 @@
-import "./assets/main.css";
-import { createApp } from "vue";
-import { createI18n } from "vue-i18n";
-import App from "./App.vue";
-import router from "./router";
-import zh from "./locales/zh.json";
-import en from "./locales/en.json";
+import './assets/main.css';
+import { createApp } from 'vue';
+import { createI18n } from 'vue-i18n';
+import App from './App.vue';
+import router from './router';
+import zh from './locales/zh.json';
+import en from './locales/en.json';
 
 const resolveInitialLocale = () => {
-  if (typeof window === "undefined") {
-    return "zh";
+  if (typeof window === 'undefined') {
+    return 'zh';
   }
 
-  const storedLocale = window.localStorage?.getItem("app-locale");
-  if (storedLocale === "zh" || storedLocale === "en") {
+  const storedLocale = window.localStorage?.getItem('app-locale');
+  if (storedLocale === 'zh' || storedLocale === 'en') {
     return storedLocale;
   }
 
-  const browserLanguage = window.navigator.language || "zh";
-  return browserLanguage.toLowerCase().startsWith("en") ? "en" : "zh";
+  const browserLanguage = window.navigator.language || 'zh';
+  return browserLanguage.toLowerCase().startsWith('en') ? 'en' : 'zh';
 };
 
 const i18n = createI18n({
   legacy: false,
   globalInjection: true,
   locale: resolveInitialLocale(),
-  fallbackLocale: "zh",
+  fallbackLocale: 'zh',
   messages: {
     zh,
     en,
@@ -34,4 +34,4 @@ const i18n = createI18n({
 const app = createApp(App);
 app.use(router);
 app.use(i18n);
-app.mount("#app");
+app.mount('#app');

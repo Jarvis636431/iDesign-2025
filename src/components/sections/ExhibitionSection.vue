@@ -1,8 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
-import { normalizeBase, joinBase } from "../../utils/assetPath";
-import { loadJson } from "../../utils/loadJson";
+import { mapHallAssets } from "../../utils/mapAssets";
+import { loadAssets } from "../../utils/loadAssets";
 import { useRouter } from "vue-router";
 
 const { t, tm } = useI18n();
@@ -219,12 +219,14 @@ const checkMobile = () => {
 
 // 生命周期钩子
 onMounted(() => {
-  loadJson("halls", () => import("../../constants/halls.json")).then((data) => {
-    const baseURL = normalizeBase(import.meta.env.BASE_URL || "/", "/");
-    halls.value = data.map((hall) => ({
-      ...hall,
-      logo: joinBase(baseURL, hall.logo),
-    }));
+  loadAssets({
+    cacheKey: "halls",
+    importer: () => import("../../constants/halls.json"),
+    mapItem: mapHallAssets,
+    baseEnvKey: "BASE_URL",
+    baseFallback: "/",
+  }).then((data) => {
+    halls.value = data;
     if (activeHallIndex.value >= halls.value.length) {
       activeHallIndex.value = 0;
     }

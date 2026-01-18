@@ -5,8 +5,8 @@ import { useRoute, useRouter } from "vue-router";
 import CustomCarousel from "@/components/slides/CustomCarousel.vue";
 import ExhibitCarousel from "@/components/exhibit/ExhibitCarousel.vue";
 import AuthorCards from "@/components/exhibit/AuthorCards.vue";
-import { normalizeBase, joinBase } from "@/utils/assetPath";
-import { loadJson } from "@/utils/loadJson";
+import { mapHallAssets } from "@/utils/mapAssets";
+import { loadAssets } from "@/utils/loadAssets";
 import { shareCardGenerator } from "@/utils/ShareCardGenerator";
 import { useExhibit } from "@/composables/useExhibit";
 import { processExhibitInfo, generateExhibitSlides } from "@/utils/exhibitUtils";
@@ -52,18 +52,19 @@ const checkMobile = () => {
 
 onMounted(async () => {
   const [hallsData, modelsData] = await Promise.all([
-    loadJson("halls", () => import("@/constants/halls.json")),
-    loadJson("exhibitModels", () => import("@/constants/exhibitModels.json")),
+    loadAssets({
+      cacheKey: "halls",
+      importer: () => import("@/constants/halls.json"),
+      mapItem: mapHallAssets,
+      baseEnvKey: "BASE_URL",
+      baseFallback: "/",
+    }),
+    loadAssets({
+      cacheKey: "exhibitModels",
+      importer: () => import("@/constants/exhibitModels.json"),
+    }),
   ]);
-  const baseURL = normalizeBase(import.meta.env.BASE_URL || "/", "/");
-  halls.value = hallsData.map((hall) => ({
-    ...hall,
-    icon: joinBase(baseURL, hall.icon),
-    logo: joinBase(baseURL, hall.logo),
-    border: joinBase(baseURL, hall.border),
-    mobileBorder: joinBase(baseURL, hall.mobileBorder),
-    backgroundImage: joinBase(baseURL, hall.backgroundImage),
-  }));
+  halls.value = hallsData;
   exhibitModels.value = modelsData;
   fetchExhibits(hallId.value);
   checkMobile();
@@ -103,14 +104,14 @@ const exhibitInfo = computed(() => {
 // 优化后的导航函数
 const goToExhibit = (direction) => {
   if (!exhibits.value.length) return;
-  
+
   let nextId;
   if (direction === "next") {
     nextId = getNextExhibitId(currentId.value);
   } else {
     nextId = getPrevExhibitId(currentId.value);
   }
-  
+
   if (nextId) {
     router.push({
       path: "/information",
@@ -237,8 +238,6 @@ const downloadShareCard = async () => {
     alert('下载失败，请稍后重试');
   }
 };
-
-
 </script>
 
 <template>
@@ -247,9 +246,7 @@ const downloadShareCard = async () => {
     <div
       class="background-blur"
       :style="{
-        backgroundImage: hallBackgroundImage
-          ? `url(${hallBackgroundImage})`
-          : undefined,
+        backgroundImage: hallBackgroundImage ? `url(${hallBackgroundImage})` : undefined,
         filter: 'blur(20px) saturate(1.2) brightness(1.1)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -258,14 +255,7 @@ const downloadShareCard = async () => {
     <div v-if="loading">展品加载中...</div>
     <div v-else-if="error">{{ error }}</div>
     <div v-else-if="!exhibitInfo">
-      <div
-        style="
-          text-align: center;
-          padding: 4rem;
-          font-size: 1.5rem;
-          color: #888;
-        "
-      >
+      <div style="text-align: center; padding: 4rem; font-size: 1.5rem; color: #888">
         无效的展品ID
       </div>
     </div>
@@ -282,9 +272,7 @@ const downloadShareCard = async () => {
         @touchend="handleTouchEnd"
       >
         <img
-          v-if="
-            hallInfo && (isMobile ? hallInfo.mobileBorder : hallInfo.border)
-          "
+          v-if="hallInfo && (isMobile ? hallInfo.mobileBorder : hallInfo.border)"
           class="border-image"
           :src="isMobile ? hallInfo.mobileBorder : hallInfo.border"
           alt="边框"
@@ -310,10 +298,10 @@ const downloadShareCard = async () => {
               />
               <span class="hall-text-group">
                 <span class="hall-text" :style="{ color: hallColor }">
-                  {{ hallInfo ? t(`halls.${hallInfo.i18nKey}.name`) : "" }}
+                  {{ hallInfo ? t(`halls.${hallInfo.i18nKey}.name`) : '' }}
                 </span>
                 <span class="hall-subtext" :style="{ color: hallColor }">
-                  {{ hallInfo ? t(`halls.${hallInfo.i18nKey}.subTitle`) : "" }}
+                  {{ hallInfo ? t(`halls.${hallInfo.i18nKey}.subTitle`) : '' }}
                 </span>
               </span>
             </div>
@@ -341,7 +329,7 @@ const downloadShareCard = async () => {
                 <div class="teacher-section">
                   <div class="section-label">指导教师</div>
                   <div class="teacher-name">
-                    {{ exhibitInfo.details.teacher || "无" }}
+                    {{ exhibitInfo.details.teacher || '无' }}
                   </div>
                   <!-- 移动端展厅图标 -->
                   <img
@@ -374,11 +362,7 @@ const downloadShareCard = async () => {
     </div>
 
     <!-- 分享弹窗 -->
-    <div
-      v-if="showShareModal"
-      class="share-modal-overlay modal"
-      @click="closeShareModal"
-    >
+    <div v-if="showShareModal" class="share-modal-overlay modal" @click="closeShareModal">
       <div class="share-modal" @click.stop>
         <!-- 分享卡片 -->
         <div class="share-card">
@@ -395,11 +379,7 @@ const downloadShareCard = async () => {
 
           <!-- 卡片图片区域 -->
           <div class="share-card-image">
-            <img
-              v-if="exhibitInfo.imageUrl"
-              :src="exhibitInfo.imageUrl"
-              alt="作品图片"
-            />
+            <img v-if="exhibitInfo.imageUrl" :src="exhibitInfo.imageUrl" alt="作品图片" />
             <div v-else class="share-card-image-placeholder">
               <span>{{ exhibitInfo.title }}</span>
             </div>
@@ -409,32 +389,16 @@ const downloadShareCard = async () => {
           <div class="share-card-footer">
             <div class="share-card-icons">
               <div class="share-icon">
-                <img
-                  src="/assets/images/icons/heart.png"
-                  alt="喜欢"
-                  class="icon-img"
-                />
+                <img src="/assets/images/icons/heart.png" alt="喜欢" class="icon-img" />
               </div>
               <div class="share-icon">
-                <img
-                  src="/assets/images/icons/message.png"
-                  alt="评论"
-                  class="icon-img"
-                />
+                <img src="/assets/images/icons/message.png" alt="评论" class="icon-img" />
               </div>
               <div class="share-icon">
-                <img
-                  src="/assets/images/icons/send.png"
-                  alt="分享"
-                  class="icon-img"
-                />
+                <img src="/assets/images/icons/send.png" alt="分享" class="icon-img" />
               </div>
               <div class="share-icon bookmark">
-                <img
-                  src="/assets/images/icons/bookmark.png"
-                  alt="收藏"
-                  class="icon-img"
-                />
+                <img src="/assets/images/icons/bookmark.png" alt="收藏" class="icon-img" />
               </div>
             </div>
 
@@ -442,11 +406,8 @@ const downloadShareCard = async () => {
               <div class="share-card-work-title">
                 <strong>{{ exhibitInfo.title }}</strong>
                 <span class="share-card-tags">
-                  #{{ hallInfo ? t(`halls.${hallInfo.i18nKey}.name`) : "" }}
-                  <span
-                    v-for="author in exhibitInfo.details.authors"
-                    :key="author.zh_names"
-                  >
+                  #{{ hallInfo ? t(`halls.${hallInfo.i18nKey}.name`) : '' }}
+                  <span v-for="author in exhibitInfo.details.authors" :key="author.zh_names">
                     #{{ author.zh_names }}
                   </span>
                 </span>
@@ -466,27 +427,14 @@ const downloadShareCard = async () => {
 
         <!-- 操作按钮 -->
         <div class="share-actions">
-          <button
-            class="share-action-btn download-btn"
-            @click="downloadShareCard"
-          >
-            下载照片
-          </button>
-          <button class="share-action-btn copy-btn" @click="copyLink">
-            复制链接
-          </button>
+          <button class="share-action-btn download-btn" @click="downloadShareCard">下载照片</button>
+          <button class="share-action-btn copy-btn" @click="copyLink">复制链接</button>
         </div>
-
-
       </div>
     </div>
 
     <!-- 全屏展示弹窗 -->
-    <div
-      v-if="showFullscreen"
-      class="fullscreen-modal-overlay"
-      @click="closeFullscreen"
-    >
+    <div v-if="showFullscreen" class="fullscreen-modal-overlay" @click="closeFullscreen">
       <div class="fullscreen-modal" @click.stop>
         <!-- 关闭按钮 -->
         <button class="fullscreen-close-btn" @click="closeFullscreen">
