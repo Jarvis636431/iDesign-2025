@@ -113,6 +113,7 @@ import { CameraController } from "../utils/CameraController";
 import { cameraDefaults, controlsLimits } from "../constants/halls";
 import { mapHallAssets } from "../utils/mapAssets";
 import { loadAssets } from "../utils/loadAssets";
+import { useEventListener } from "../composables/useEventListener";
 import { fetchExhibitsByCategoryId } from "../api/exhibit";
 
 const router = useRouter();
@@ -758,8 +759,8 @@ onMounted(async () => {
     await loadModel();
 
     // 添加事件监听器
-    window.addEventListener("resize", handleResize);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    useEventListener(window, "resize", handleResize);
+    useEventListener(document, "visibilitychange", handleVisibilityChange);
 
     // 添加鼠标事件监听器
     if (renderer && renderer.domElement) {
@@ -786,8 +787,6 @@ onUnmounted(() => {
   }
 
   // 移除窗口事件监听器
-  window.removeEventListener("resize", handleResize);
-  document.removeEventListener("visibilitychange", handleVisibilityChange);
 
   // 移除鼠标事件监听器
   if (renderer && renderer.domElement) {

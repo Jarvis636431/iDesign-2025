@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import HomeSection from "../components/sections/HomeSection.vue";
 import PrefaceSection from "../components/sections/PrefaceSection.vue";
@@ -10,6 +10,7 @@ import TeamSection from "../components/sections/TeamSection.vue";
 import EndSection from "../components/sections/EndSection.vue";
 import TransitionSlide from "../components/slides/TransitionSlide.vue";
 import TransitionSlideBetweenExhibitionAndGraduates from "../components/slides/TransitionSlideBetweenExhibitionAndGraduates.vue";
+import { useEventListener } from "../composables/useEventListener";
 
 const { t, locale } = useI18n();
 const isEnglish = computed(() => locale.value === "en");
@@ -62,14 +63,16 @@ const scrollToSection = (sectionId) => {
 };
 
 // 使用 IntersectionObserver 监测每个 section 的可见性
+let observer = null;
+
 onMounted(() => {
   // 初始检测移动端
   checkMobile();
 
   // 监听窗口大小变化
-  window.addEventListener("resize", checkMobile);
+  useEventListener(window, "resize", checkMobile);
 
-  const observer = new IntersectionObserver(
+  observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
@@ -88,11 +91,13 @@ onMounted(() => {
   document.querySelectorAll(".content-section").forEach((section) => {
     observer.observe(section);
   });
+});
 
-  return () => {
+onUnmounted(() => {
+  if (observer) {
     observer.disconnect();
-    window.removeEventListener("resize", checkMobile);
-  };
+    observer = null;
+  }
 });
 </script>
 

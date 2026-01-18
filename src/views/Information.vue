@@ -10,6 +10,7 @@ import { loadAssets } from "@/utils/loadAssets";
 import { shareCardGenerator } from "@/utils/ShareCardGenerator";
 import { useExhibit } from "@/composables/useExhibit";
 import { processExhibitInfo, generateExhibitSlides } from "@/utils/exhibitUtils";
+import { useEventListener } from "@/composables/useEventListener";
 
 const route = useRoute();
 const router = useRouter();
@@ -68,7 +69,7 @@ onMounted(async () => {
   exhibitModels.value = modelsData;
   fetchExhibits(hallId.value);
   checkMobile();
-  window.addEventListener("resize", checkMobile);
+  useEventListener(window, "resize", checkMobile);
 
   // 确保页面滚动到顶部
   await nextTick();
@@ -78,7 +79,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", checkMobile);
   // 清理ShareCardGenerator资源
   shareCardGenerator.dispose();
 });

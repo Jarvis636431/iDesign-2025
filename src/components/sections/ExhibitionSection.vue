@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { mapHallAssets } from "../../utils/mapAssets";
 import { loadAssets } from "../../utils/loadAssets";
+import { useEventListener } from "../../composables/useEventListener";
 import { useRouter } from "vue-router";
 
 const { t, tm } = useI18n();
@@ -232,7 +233,7 @@ onMounted(() => {
     }
   });
   checkMobile();
-  window.addEventListener("resize", checkMobile);
+  useEventListener(window, "resize", checkMobile);
 
   // 初始化无限轮播位置
   if (isMobile.value) {
@@ -243,7 +244,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  window.removeEventListener("resize", checkMobile);
 });
 
 // 轮播专用的触摸事件处理

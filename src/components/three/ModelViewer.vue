@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { useEventListener } from '@/composables/useEventListener';
 
 const props = defineProps({
   modelUrl: {
@@ -207,11 +208,10 @@ watch(() => props.modelUrl, async () => {
 onMounted(async () => {
   await tryInitThree();
   animate();
-  window.addEventListener('resize', handleResize);
+  useEventListener(window, 'resize', handleResize);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize);
   if (animationId) cancelAnimationFrame(animationId);
   cleanupScene();
 });

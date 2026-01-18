@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { mapGraduateAssets } from "../../utils/mapAssets";
 import { loadAssets } from "../../utils/loadAssets";
+import { useEventListener } from "../../composables/useEventListener";
 import GraduateCard from "../graduates/GraduateCard.vue";
 
 const { t, tm, locale } = useI18n();
@@ -18,6 +19,12 @@ const avatarsContainerRef = ref(null);
 const isMobile = ref(false);
 const currentIndex = ref(0);
 const cardsContainerRef = ref(null);
+const handleResize = () => {
+  checkMobile();
+  if (isMobile.value) {
+    setTimeout(() => updateCardPosition(), 100);
+  }
+};
 
 const normalizeIndex = (index, length) => {
   if (!length) return 0;
@@ -177,20 +184,12 @@ onMounted(() => {
   });
   // 检测移动端
   checkMobile();
-  window.addEventListener("resize", () => {
-    checkMobile();
-    // 窗口大小变化时重新计算位置
-    if (isMobile.value) {
-      setTimeout(() => updateCardPosition(), 100);
-    }
-  });
+  useEventListener(window, "resize", handleResize);
 
   // 添加滚轮事件监听
-  if (avatarsContainerRef.value) {
-    avatarsContainerRef.value.addEventListener("wheel", handleWheel, {
-      passive: false,
-    });
-  }
+  useEventListener(avatarsContainerRef, "wheel", handleWheel, {
+    passive: false,
+  });
 
   // 初始化移动端卡片位置
   setTimeout(() => {
@@ -201,11 +200,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // 清理事件监听
-  if (avatarsContainerRef.value) {
-    avatarsContainerRef.value.removeEventListener("wheel", handleWheel);
-  }
-  window.removeEventListener("resize", checkMobile);
 });
 </script>
 

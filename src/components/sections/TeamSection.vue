@@ -4,6 +4,7 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
 import { mapStaffGroupAssets } from "../../utils/mapAssets";
 import { loadAssets } from "../../utils/loadAssets";
+import { useEventListener } from "../../composables/useEventListener";
 
 const { t } = useI18n();
 
@@ -25,7 +26,7 @@ onMounted(() => {
     setupScrollHandler();
   });
   checkMobile();
-  window.addEventListener("resize", () => {
+  useEventListener(window, "resize", () => {
     checkMobile();
     initializeRectangles(); // 重新初始化卡片位置
   });
@@ -50,7 +51,6 @@ onBeforeUnmount(() => {
       }
     }
   }
-  window.removeEventListener("resize", checkMobile);
 });
 
 const initializeRectangles = () => {
