@@ -15,23 +15,70 @@ const props = defineProps({
 const container = ref(null);
 let scene, camera, renderer, controls;
 
+const disposeMaterial = (material) => {
+  if (!material) return;
+  const textureProps = [
+    "map",
+    "lightMap",
+    "bumpMap",
+    "normalMap",
+    "specularMap",
+    "envMap",
+    "aoMap",
+    "emissiveMap",
+    "metalnessMap",
+    "roughnessMap",
+    "alphaMap",
+  ];
+  textureProps.forEach((prop) => {
+    if (material[prop]) {
+      material[prop].dispose();
+    }
+  });
+  material.dispose();
+};
+
+const disposeObject = (object) => {
+  if (!object) return;
+  if (object.geometry) {
+    object.geometry.dispose();
+    object.geometry = null;
+  }
+  if (object.material) {
+    if (Array.isArray(object.material)) {
+      object.material.forEach(disposeMaterial);
+    } else {
+      disposeMaterial(object.material);
+    }
+    object.material = null;
+  }
+};
+
 // 初始化Three.js场景
 // 清理现有场景
 const cleanupScene = () => {
   if (scene) {
-    while(scene.children.length > 0) {
-      scene.remove(scene.children[0]);
-    }
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        disposeObject(child);
+      }
+    });
+    scene.clear();
+    scene = null;
   }
   if (renderer && container.value) {
     // 彻底清理 container 的所有子节点
     while (container.value.firstChild) {
       container.value.removeChild(container.value.firstChild);
     }
+    renderer.renderLists?.dispose?.();
     renderer.dispose();
+    renderer.forceContextLoss?.();
+    renderer = null;
   }
   if (controls) {
     controls.dispose();
+    controls = null;
   }
 };
 
@@ -101,7 +148,6 @@ const initThree = () => {
     },
     undefined,
     (error) => {
-      console.error('模型加载失败:', error);
     }
   );
 };

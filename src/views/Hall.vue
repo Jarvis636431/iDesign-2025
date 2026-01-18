@@ -118,7 +118,7 @@ import * as THREE from "three";
 import { SceneManager } from "../utils/SceneManager";
 import { CameraController } from "../utils/CameraController";
 import { cameraDefaults, controlsLimits, getHallById } from "../constants/halls";
-import axios from "axios"; // 导入 axios
+import { fetchExhibitsByCategoryId } from "../api/exhibit";
 
 const router = useRouter();
 const route = useRoute();
@@ -192,13 +192,11 @@ const initScene = async () => {
     throw new Error("模型容器未就绪");
   }
 
-  console.log("创建场景管理器...");
   // 创建场景管理器
   sceneManager = new SceneManager(modelContainer.value);
   // 设置白色背景
   sceneManager.scene.background = new THREE.Color(0xffffff);
 
-  console.log("创建相机...");
   // 创建相机
   camera = new THREE.PerspectiveCamera(
     cameraDefaults.fov,
@@ -208,7 +206,6 @@ const initScene = async () => {
   );
   camera.position.set(0, cameraDefaults.eyeHeight, 5);
 
-  console.log("创建渲染器...");
   // 创建渲染器
   renderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -226,7 +223,6 @@ const initScene = async () => {
 
   modelContainer.value.appendChild(renderer.domElement);
 
-  console.log("创建相机控制器...");
   // 创建相机控制器
   cameraController = new CameraController(camera, renderer.domElement);
 
@@ -235,7 +231,6 @@ const initScene = async () => {
     Object.assign(cameraController.controls, controlsLimits);
   }
 
-  console.log("场景初始化完成");
   return Promise.resolve();
 };
 
@@ -255,14 +250,6 @@ const loadModel = async () => {
     const fullPath = modelPath.startsWith("http")
       ? modelPath
       : `${baseURL}${modelPath}`;
-
-    console.log("模型加载信息:", {
-      baseURL,
-      modelPath,
-      fullPath,
-      currentHallId: currentHallId.value,
-      currentHallInfo: currentHallInfo.value,
-    });
 
     // 加载模型
     model = await sceneManager.loadModel(fullPath, (event) => {
@@ -284,7 +271,6 @@ const loadModel = async () => {
     isLoading.value = false;
     animate();
   } catch (error) {
-    console.error("模型加载失败:", error);
     hasError.value = true;
     errorMessage.value = `模型加载失败: ${error.message || "未知错误"}`;
     isLoading.value = false;
@@ -294,16 +280,8 @@ const loadModel = async () => {
 // 设置模型
 const setupModel = () => {
   if (!model || !currentHallInfo.value?.model) {
-    console.error("模型未加载或模型配置不存在");
     return;
   }
-
-  console.log("正在设置模型属性...");
-  console.log("配置:", {
-    scale: currentHallInfo.value.model.scale,
-    position: currentHallInfo.value.model.position,
-    rotation: currentHallInfo.value.model.rotation,
-  });
 
   model.scale.setScalar(currentHallInfo.value.model.scale);
   model.position.set(
@@ -364,16 +342,6 @@ const setupClickableObjects = () => {
     }
   });
 
-  console.log(`设置了 ${clickableObjects.length} 个可点击对象`);
-  console.log(
-    "对象列表:",
-    clickableObjects.map((obj) => ({
-      name: obj.name,
-      id: obj.userData.objectId,
-      type: obj.userData.objectType,
-      vertices: obj.userData.geometryInfo.vertices,
-    }))
-  );
 };
 
 // 处理鼠标点击事件
@@ -399,21 +367,6 @@ const onMouseClick = (event) => {
 
 // 处理对象点击
 const handleObjectClick = (object, intersection) => {
-  console.log("=== 对象点击详情 ===");
-  console.log("对象名称:", object.name || "未命名对象");
-  console.log("唯一ID:", object.userData.objectId);
-  console.log("对象类型:", object.userData.objectType);
-  console.log("网格索引:", object.userData.meshIndex);
-  console.log("点击位置:", intersection.point);
-  console.log("几何信息:", object.userData.geometryInfo);
-  console.log("Three.js UUID:", object.uuid); // Three.js内置的唯一标识符
-  console.log("材质信息:", {
-    type: object.material?.type,
-    name: object.material?.name,
-    color: object.material?.color?.getHexString(),
-  });
-  console.log("==================");
-
   // 根据对象ID执行不同的交互逻辑
   handleObjectInteraction(object);
 
@@ -461,21 +414,16 @@ const handleObjectInteraction = (object) => {
   // 根据对象ID或类型执行不同的逻辑
   switch (objectType) {
     case "metal":
-      console.log(`金属对象 ${objectId} 被点击 - 可以播放金属音效`);
       break;
     case "wood":
-      console.log(`木质对象 ${objectId} 被点击 - 可以播放木质音效`);
       break;
     case "glass":
-      console.log(`玻璃对象 ${objectId} 被点击 - 可以播放玻璃音效`);
       break;
     default:
-      console.log(`通用对象 ${objectId} 被点击`);
   }
 
   // 也可以根据具体的对象ID执行特定逻辑
   if (objectId === "object_0") {
-    console.log("这是第一个对象，可以执行特殊操作");
   }
 };
 
@@ -495,8 +443,6 @@ const showObjectInfo = (object) => {
 
   // 这里可以显示一个信息提示
   // 可以使用 Vue 的响应式数据来显示信息面板
-  console.log("对象详细信息:", objectInfo);
-  console.log(message);
 
   // 示例：显示浏览器原生提示（实际项目中可以用更好的UI组件）
   // alert(message);
@@ -665,16 +611,8 @@ const handleVisibilityChange = () => {
 // 设置相机视图
 const setupCameraView = () => {
   if (!camera || !model || !currentHallInfo.value?.model) {
-    console.error("相机或模型未就绪或模型配置不存在");
     return;
   }
-
-  console.log("正在设置相机视图...");
-  console.log("相机配置:", {
-    position: currentHallInfo.value.model.camera.position,
-    target: currentHallInfo.value.model.camera.target,
-    fov: currentHallInfo.value.model.camera.fov,
-  });
 
   // 设置相机初始位置
   camera.position.set(
@@ -700,7 +638,6 @@ const setupCameraView = () => {
     // 设置控制器限制
     Object.assign(cameraController.controls, controlsLimits);
     cameraController.update();
-    console.log("相机控制器更新完成");
   }
 };
 
@@ -717,16 +654,10 @@ const enterInformation = async (targetExhibitId = null) => {
       router.push(`/information?id=${targetExhibitId}&hallId=${hallId}`);
     } else {
       // 否则获取第一个展品并跳转（保持原有逻辑）
-      const res = await axios.get(
-        "http://idesign.tju.edu.cn/portal/api_v1/get_cates_lists",
-        {
-          params: {
-            per_page: 1,
-            current_page: 1,
-            category_id: hallId,
-          },
-        }
-      );
+      const res = await fetchExhibitsByCategoryId(hallId, {
+        perPage: 1,
+        currentPage: 1,
+      });
 
       let firstExhibitId = "";
       if (res.data?.data?.[0]?.id) {
@@ -788,7 +719,6 @@ watch(currentHallId, async (newId) => {
   model = null;
   
   if (oldModel) {
-    console.log("正在清理旧模型...");
     
     // 清空可点击对象数组
     clickableObjects = [];
@@ -801,7 +731,6 @@ watch(currentHallId, async (newId) => {
       window.gc();
     }
     
-    console.log("旧模型清理完成");
   }
 
   // 加载新模型
@@ -811,26 +740,13 @@ watch(currentHallId, async (newId) => {
 // 生命周期钩子
 onMounted(async () => {
   try {
-    console.log("开始初始化...");
-    console.log("BASE_URL:", import.meta.env.BASE_URL);
-    console.log("当前路径:", window.location.pathname);
-    console.log("完整URL:", window.location.href);
 
     // 检测移动端设备
     checkMobile();
-    console.log("移动端检测:", isMobile.value);
 
     await initScene();
-    console.log("场景初始化完成");
-
-    // 打印当前展厅信息
-    console.log("当前展厅信息:", {
-      currentHallId: currentHallId.value,
-      currentHallInfo: currentHallInfo.value,
-    });
 
     await loadModel();
-    console.log("模型加载完成");
 
     // 添加事件监听器
     window.addEventListener("resize", handleResize);
@@ -840,13 +756,11 @@ onMounted(async () => {
     if (renderer && renderer.domElement) {
       renderer.domElement.addEventListener("click", onMouseClick);
       renderer.domElement.addEventListener("mousemove", onMouseMove);
-      console.log("鼠标交互事件监听器已添加");
     }
 
     // 启动智能渲染循环
     startRenderLoop();
   } catch (error) {
-    console.error("初始化失败:", error);
     hasError.value = true;
     errorMessage.value = `初始化失败: ${error.message || "未知错误"}`;
   }
@@ -870,7 +784,6 @@ onUnmounted(() => {
   if (renderer && renderer.domElement) {
     renderer.domElement.removeEventListener("click", onMouseClick);
     renderer.domElement.removeEventListener("mousemove", onMouseMove);
-    console.log("鼠标交互事件监听器已移除");
   }
 
   // 清理Three.js资源

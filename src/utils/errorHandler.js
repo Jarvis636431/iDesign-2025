@@ -67,16 +67,7 @@ export function getUserFriendlyMessage(error) {
 export function handleError(error, context = '') {
   const errorType = getErrorType(error)
   const userMessage = getUserFriendlyMessage(error)
-  
-  // 开发环境下打印详细错误信息
-  if (import.meta.env.DEV) {
-    console.group(`🚨 Error in ${context || 'Unknown Context'}`)
-    console.error('Error Type:', errorType)
-    console.error('Original Error:', error)
-    console.error('User Message:', userMessage)
-    console.groupEnd()
-  }
-  
+
   return {
     type: errorType,
     message: userMessage,

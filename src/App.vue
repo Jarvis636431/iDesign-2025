@@ -16,7 +16,6 @@ onMounted(() => {
     const scrollContainer = document.querySelector(".scroll-container");
 
     if (!scrollContainer) {
-      console.warn("未找到滚动容器，滚轮转换无法设置");
       return;
     }
 

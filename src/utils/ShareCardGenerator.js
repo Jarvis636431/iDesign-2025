@@ -41,8 +41,8 @@ export class ShareCardGenerator {
     for (const src of commonImages) {
       try {
         await this.loadImage(src);
-      } catch (error) {
-        console.warn(`预加载图片失败: ${src}`, error);
+      } catch {
+        // 忽略预加载失败
       }
     }
   }
@@ -284,8 +284,8 @@ export class ShareCardGenerator {
         ctx.drawImage(shareIcon, cardX + 30 + iconSpacing, iconY, iconSize, iconSize);
         ctx.drawImage(shareIcon, cardX + 30 + iconSpacing * 2, iconY, iconSize, iconSize);
         ctx.drawImage(shareIcon, cardX + cardWidth - 50, iconY, iconSize, iconSize);
-      } catch (error) {
-        console.warn('图标加载失败，跳过绘制', error);
+      } catch {
+        // 使用占位符替代
       }
 
       // 绘制作品标题
@@ -329,41 +329,31 @@ export class ShareCardGenerator {
    * 下载分享卡片
    */
   async downloadShareCard(exhibitInfo, hallInfo) {
-    try {
-      const canvas = await this.generateShareCard(exhibitInfo, hallInfo);
-      
-      // 创建下载链接
-      const link = document.createElement('a');
-      link.download = `${exhibitInfo.title}-分享卡片.png`;
-      link.href = canvas.toDataURL('image/png', 0.9);
-      link.click();
-      
-      // 回收Canvas
-      this.recycleCanvas(canvas);
-      this.activeCanvas = null;
-    } catch (error) {
-      console.error('下载分享卡片失败:', error);
-      throw error;
-    }
+    const canvas = await this.generateShareCard(exhibitInfo, hallInfo);
+    
+    // 创建下载链接
+    const link = document.createElement('a');
+    link.download = `${exhibitInfo.title}-分享卡片.png`;
+    link.href = canvas.toDataURL('image/png', 0.9);
+    link.click();
+    
+    // 回收Canvas
+    this.recycleCanvas(canvas);
+    this.activeCanvas = null;
   }
 
   /**
    * 获取分享卡片的DataURL
    */
   async getShareCardDataURL(exhibitInfo, hallInfo, format = 'image/png', quality = 0.9) {
-    try {
-      const canvas = await this.generateShareCard(exhibitInfo, hallInfo);
-      const dataURL = canvas.toDataURL(format, quality);
-      
-      // 回收Canvas
-      this.recycleCanvas(canvas);
-      this.activeCanvas = null;
-      
-      return dataURL;
-    } catch (error) {
-      console.error('生成分享卡片DataURL失败:', error);
-      throw error;
-    }
+    const canvas = await this.generateShareCard(exhibitInfo, hallInfo);
+    const dataURL = canvas.toDataURL(format, quality);
+    
+    // 回收Canvas
+    this.recycleCanvas(canvas);
+    this.activeCanvas = null;
+    
+    return dataURL;
   }
 
   /**

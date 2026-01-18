@@ -74,12 +74,6 @@ const checkMobile = () => {
   
   // 如果设备类型发生变化，重新绑定滚动事件
   if (wasMobile !== isMobile.value) {
-    console.log("📱 [DEBUG] Device type changed:", {
-      wasMobile,
-      isMobile: isMobile.value,
-      windowWidth: window.innerWidth
-    });
-    
     // 移除旧的滚动事件监听器
     if (wasMobile) {
       window.removeEventListener("scroll", handleScroll);
@@ -93,22 +87,13 @@ const checkMobile = () => {
     // 添加新的滚动事件监听器
     if (isMobile.value) {
       window.addEventListener("scroll", handleScroll, { passive: true });
-      console.log("📱 [DEBUG] Switched to mobile - added window scroll listener");
     } else {
       const scrollContainer = document.querySelector(".scroll-container");
       if (scrollContainer) {
         scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
-        console.log("💻 [DEBUG] Switched to desktop - added container scroll listener");
-      } else {
-        console.warn("⚠️ [DEBUG] Scroll container not found when switching to desktop!");
       }
     }
    }
-   
-   console.log("🔍 [DEBUG] checkMobile:", {
-     windowWidth: window.innerWidth,
-     isMobile: isMobile.value,
-  });
 };
 
 // 移动端触摸事件处理
@@ -200,85 +185,42 @@ const textTransformStyle = computed(() => {
         transition: "transform 0.2s cubic-bezier(0.4,0,0.2,1)",
       };
 
-  console.log("🎨 [DEBUG] textTransformStyle:", {
-    isMobile: isMobile.value,
-    parallaxOffset: parallaxOffset.value,
-    parallaxOff: parallaxOff.value,
-    transform: style.transform,
-  });
-
   return style;
 });
 
 const handleScroll = () => {
   // 桌面端需要等待part2进入视窗，移动端无限制
   if (!isMobile.value && !isScrollListenerActive.value) {
-    console.log("🚫 [DEBUG] Desktop scroll blocked - part2 not in viewport");
     return;
   }
-
-  console.log("📜 [DEBUG] handleScroll triggered:", {
-    isMobile: isMobile.value,
-    timestamp: Date.now(),
-    scrollY: window.scrollY,
-    isScrollListenerActive: isScrollListenerActive.value,
-    parallaxOff: parallaxOff.value,
-    eventSource: isMobile.value ? 'window' : 'scroll-container'
-  });
 
   if (isMobile.value) {
     // 移动端竖直滚动
     const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     parallaxOffset.value = scrollTop * 2.0;
-    console.log("📱 [DEBUG] Mobile scroll:", {
-      parallaxOff: parallaxOff.value,
-      scrollTop,
-      parallaxOffset: parallaxOffset.value
-    });
   } else {
     // PC端横向滚动
     const scrollContainer = document.querySelector(".scroll-container");
     if (!scrollContainer) return;
     const scrollLeft = scrollContainer.scrollLeft;
     parallaxOffset.value = scrollLeft * 0.1;
-    console.log("💻 [DEBUG] Desktop scroll:", {
-      scrollContainer: !!scrollContainer,
-    });
   }
 };
 
 const setupIntersectionObserver = () => {
-  console.log("👁️ [DEBUG] Setting up Intersection Observer");
-  if (!part2Ref.value) {
-    console.warn("⚠️ [DEBUG] part2Ref not found for Intersection Observer!");
-    return;
-  }
-  console.log("✅ [DEBUG] part2Ref found, creating observer");
+  if (!part2Ref.value) return;
 
   intersectionObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          console.log(
-            "👁️ [DEBUG] Part2 entered viewport, activating scroll listener",
-            {
-              intersectionRatio: entry.intersectionRatio,
-              boundingClientRect: entry.boundingClientRect,
-              isMobile: isMobile.value
-            }
-          );
           isScrollListenerActive.value = true;
           parallaxOff.value = false; // 启用视差效果
           // 重置视差偏移
           parallaxOffset.value = 0;
-          console.log("✅ [DEBUG] Parallax enabled, parallaxOff:", parallaxOff.value);
         } else {
-          console.log(
-            "👁️ [DEBUG] Part2 left viewport, deactivating scroll listener"
-          );
           isScrollListenerActive.value = false;
           parallaxOff.value = true; // 禁用视差效果
-          console.log("❌ [DEBUG] Parallax disabled, parallaxOff:", parallaxOff.value);
         }
       });
     },
@@ -292,19 +234,11 @@ const setupIntersectionObserver = () => {
 };
 
 onMounted(() => {
-  console.log("🚀 [DEBUG] Component mounted");
-  console.log("📱 [DEBUG] Initial check:", {
-    windowWidth: window.innerWidth,
-    isMobile: window.innerWidth <= 768,
-    isScrollable: document.documentElement.scrollHeight > window.innerHeight
-  });
-
   // 初始化移动端检测
   checkMobile();
   window.addEventListener("resize", checkMobile);
 
   if (part3Ref.value) {
-    console.log("✅ [DEBUG] part3Ref found, adding events");
     // 桌面端鼠标事件
     part3Ref.value.addEventListener("mousemove", handleMouseMove);
     part3Ref.value.addEventListener("mouseenter", handleMouseEnter);
@@ -320,22 +254,13 @@ onMounted(() => {
     part3Ref.value.addEventListener("touchmove", handleTouchMove, {
       passive: false,
     });
-  } else {
-    console.warn("⚠️ [DEBUG] part3Ref not found!");
   }
 
-  console.log("📜 [DEBUG] Adding scroll event listener");
   if (isMobile.value) {
     window.addEventListener("scroll", handleScroll, { passive: true });
-    console.log("📱 [DEBUG] Mobile scroll listener added to window");
     
     // 立即检查一次滚动位置
     setTimeout(() => {
-      console.log("📱 [DEBUG] Initial mobile scroll check:", {
-        scrollY: window.scrollY,
-        documentScrollTop: document.documentElement.scrollTop,
-        bodyScrollTop: document.body.scrollTop
-      });
       handleScroll(); // 触发一次滚动处理
     }, 100);
     
@@ -348,29 +273,12 @@ onMounted(() => {
     const scrollContainer = document.querySelector(".scroll-container");
     if (scrollContainer) {
       scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
-      console.log("💻 [DEBUG] Desktop scroll listener added to container");
-    } else {
-      console.warn("⚠️ [DEBUG] Scroll container not found for desktop!");
     }
   }
 
   // 设置Intersection Observer来检测part2是否进入视窗
   setupIntersectionObserver();
 
-  // 定期检查滚动状态（可选的调试功能）
-  // scrollCheckInterval = setInterval(() => {
-  //   console.log("⏰ [DEBUG] Scroll status check:", {
-  //     currentScrollY: window.scrollY,
-  //     isMobile: isMobile.value,
-  //     isScrollListenerActive: isScrollListenerActive.value,
-  //     parallaxOff: parallaxOff.value
-  //   });
-  // }, 5000); // 每5秒检查一次
-
-  console.log("🔧 [DEBUG] Initial setup complete:", {
-    isMobile: isMobile.value,
-    parallaxOffset: parallaxOffset.value,
-  });
 });
 
 onUnmounted(() => {
@@ -401,7 +309,6 @@ onUnmounted(() => {
   if (scrollContainer) {
     scrollContainer.removeEventListener("scroll", handleScroll);
   }
-  console.log("🧹 [DEBUG] Removed all scroll event listeners");
 
   // 清理Intersection Observer
   if (intersectionObserver) {

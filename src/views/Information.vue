@@ -218,7 +218,6 @@ const downloadShareCard = async () => {
         : null
     );
   } catch (error) {
-    console.error('下载分享卡片失败:', error);
     alert('下载失败，请稍后重试');
   }
 };

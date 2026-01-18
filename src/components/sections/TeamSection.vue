@@ -101,7 +101,6 @@ const setupScrollHandler = () => {
 
       // 临时调试日志已移除以提高性能
       // if (scrollProgress > 0) {
-      //   console.log(
       //     `🔄 Continuous scroll progress: ${scrollProgress.toFixed(
       //       2
       //     )}, top: ${sectionBounds.top.toFixed(0)}`
@@ -144,7 +143,6 @@ const setupScrollHandler = () => {
             : 100 - cardProgress * moveRange;
 
         // 调试信息已移除以提高性能
-        // console.log(
         //   `Card ${rect.id}: width=${cardWidth.toFixed(
         //     0
         //   )}px, speedFactor=${widthSpeedFactor.toFixed(
